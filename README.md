@@ -1,2 +1,2 @@
 # Essence-Linear-Regression
-Source code (written in p5.js) for my video series
+Source code (written in p5.js) for my 3b1b-style Math visualization video series, Essence of Linear Regression. It's estimated to publish in summer 2019. Before I start on the series, I will finish some warmup videos first. 
