@@ -18,28 +18,55 @@ function Cell(n, x, y, w) {
     this.x = x;
     this.y = y;
     this.w = w;
+    // set display color (target values)
+    if (this.given) {
+        this.r = 37;
+        this.g = 207;
+        this.b = 217;
+        // the current values of RGB, needed for fade in effects
+        this.rc = 0;
+        this.gc = 0;
+        this.bc = 0;
+    } else {
+        this.r = 17;
+        this.g = 237;
+        this.b = 0;
+        // non-given grids, no need for fade in effects
+        this.rc = this.r;
+        this.gc = this.g;
+        this.bc = this.b;
+    }
 
-    /*** 2018-10-30
-     * For a grid with given number, display
+
+    /*** 2018-10-30,31
+     * For a grid with given number, display the number
+     * frames specify the number of frames needed for it to appear completely
      */
-    this.show = function () {
-        // show white margins
-        stroke(200);
-        strokeWeight(2);
-        noFill();
-        rect(this.x, this.y, this.w, this.w);
+    this.show = function (frames) {
 
-        /// must reset strokeWeight for proper display of text
-        strokeWeight(0);
-        textFont("Times New Roman");
-        textSize(50);
+        // display if grid is not empty
+        if (this.n > 0) {
+            strokeWeight(0);
+            textFont("Times New Roman");
+            textSize(50);
+            fill(this.rc, this.gc, this.bc);
+            // fixme: even with textAlign, need to manually set y coordinates
+            textAlign(CENTER);
+            text(this.n, this.x + this.w / 2, this.y + this.w * 0.85);
+        }
 
+        // need to display fade in effects for given grids
         if (this.given) {
-            fill(0, 255, 255); // set color of text to be cyan
-            text(this.n, this.x + this.w / 3.6, this.y + this.w * 0.85);
-        } else if (this.n !== 0) {
-            fill(0, 255, 0);
-            text(this.n, this.x + this.w / 3.6, this.y + this.w * 0.85);
+            if (this.rc < this.r || this.gc < this.g || this.bc < this.b) {
+                this.rc += this.r / frames;
+                this.gc += this.g / frames;
+                this.bc += this.b / frames;
+            }
+            if (this.rc > this.r || this.gc > this.g || this.bc > this.b) {
+                this.rc = this.r;
+                this.gc = this.g;
+                this.bc = this.b;
+            }
         }
 
     }; // fixme: semicolon?
@@ -65,12 +92,51 @@ function Cell(n, x, y, w) {
     };
 }
 
+/***
+ * Shows it growing from (x1, y1) to (x2, y2) in 20 frames
+ * type = 0 if it's a normal line, = 1 if it's a bold line
+ */
+function gridLine(x1, y1, x2, y2, type) {
+    this.x1 = x1;
+    this.y1 = y1;
+    this.x = x1;
+    this.y = y1;
+    this.x2 = x2;
+    this.y2 = y2;
+    this.type = type;
+
+    /*** 2018-10-30,31
+     * frames specify the number of frames needed for the line to appear completely
+     */
+    this.draw = function (frames) {
+        if (type === 0) {  // normal line
+            stroke(157);
+            strokeWeight(2);
+        } else {           // thick line
+            stroke(207);
+            strokeWeight(4);
+        }
+        line(this.x1, this.y1, this.x, this.y);
+
+        if (this.x < this.x2 || this.y < this.y2) {
+            this.x += (this.x2 - this.x1) / frames;
+            this.y += (this.y2 - this.y1) / frames;
+        }
+        if (this.x > this.x2 || this.y > this.y2) {  // want this.x equal to this.x2, but it may be greater than
+            this.x = this.x2;
+            this.y = this.y2;
+        }
+    };
+}
+
 
 /***--------------------
  * Main program starts here
  */
 var grid;
 var table;
+var linesHoriz;
+var linesVerti;
 
 /*** 2018-10-30
  * Loads the Sudoku grid into table in csv format
@@ -103,11 +169,15 @@ var w = 50;
 var leftoffset = (cvw - 10 * w) / 2;
 var downoffset = (cvh - 10 * w) / 2;
 
+var lin = new gridLine(100, 100, 200, 200, 0);
+
 function setup() {
     createCanvas(cvw, cvh);
     grid = make2DArray(9, 9);
+    linesHoriz = new Array(10);
+    linesVerti = new Array(10);
 
-    frameRate(50);
+    frameRate(25);  // default 25
 
     for (var i = 0; i < 9; i++) {
         for (var j = 0; j < 9; j++) {
@@ -117,21 +187,53 @@ function setup() {
             grid[i][j] = new Cell(n, j * w + leftoffset, i * w + downoffset, w);
         }
     }
+    // draw horizontal lines, y-values vary
+    // draw a thick line if i is a multiple of 3
+    for (i = 0; i < 10; i++) {
+        var y = i * w + downoffset;
+        linesHoriz[i] = new gridLine(leftoffset, y, leftoffset + 9 * w, y, (i % 3 === 0) ? 1 : 0);
+    }
+    // draw vertical lines
+    for (j = 0; j < 10; j++) {
+        var x = j * w + leftoffset;
+        linesVerti[j] = new gridLine(x, downoffset, x, downoffset + 9 * w, (j % 3 === 0) ? 1 : 0);
+    }
+
 }
 
-
+let frameOffset = 0; // time to start animation
+let xtrans = 0;
 let numTry = 1;
 let coord = 0;
 
 /*** 2018-10-30
  * Non-recursive backtracking solution for Sudoku puzzle
+ * Halts when coord exceeds 81, in which case will produce a "read undefined" error in console
  */
 function draw() {
     // black background
     background(0);
+
+    // if (frameCount > 50) {
+    //     translate(-xtrans, 0);
+    //     xtrans += 10;
+    // }
+
+    // need about 50 frames to initialize grid
     for (var i = 0; i < 9; i++) {
         for (var j = 0; j < 9; j++) {
-            grid[i][j].show();
+            // initialize from top left to bottom right
+            if (frameCount - frameOffset > 3 * (i + j)) {
+                grid[i][j].show(10);
+            }
+        }
+    }
+
+    // need about 50 frames to initialize lines
+    for (i = 0; i < 10; i++) {
+        if (frameCount - frameOffset > i * 3) { // start drawing a new line every three frames
+            linesHoriz[i].draw(20);
+            linesVerti[i].draw(20);
         }
     }
 
@@ -139,38 +241,41 @@ function draw() {
     let row = Math.floor(coord / 9); // fixme (it took me 3 hours to figure out this operator will not give an int...)
     let col = coord % 9;
 
-    if (grid[row][col].isGiven()) {
-        numTry = 1;
-        coord++;  // this grid contains a given number. Look at next grid
-    } else {
-        while (!isValid(row, col, numTry)) {
-            numTry++;
-            if (numTry > 9) {
-                fail = true;
+    // start solving after 3 seconds (75 frames)
+    if (frameCount > frameOffset + 75) {
+        if (grid[row][col].isGiven()) {
+            numTry = 1;
+            coord++;  // this grid contains a given number. Look at next grid
+        } else {
+            while (!isValid(row, col, numTry)) {
+                numTry++;
+                if (numTry > 9) {
+                    fail = true;
+                }
             }
-        }
-        if (fail) { // all numbers are tried, but no solution found. Need to backtrack
-            // remove the number on the current grid
-            grid[row][col].remove();
+            if (fail) { // all numbers are tried, but no solution found. Need to backtrack
+                // remove the number on the current grid
+                grid[row][col].remove();
 
-            // restore coord to previous non-given grid, and numTry to the number in it
-            coord--;
-            row = Math.floor(coord / 9);
-            col = coord % 9;
-            while (grid[row][col].isGiven()) {
+                // restore coord to previous non-given grid, and numTry to the number in it
                 coord--;
                 row = Math.floor(coord / 9);
                 col = coord % 9;
+                while (grid[row][col].isGiven()) {
+                    coord--;
+                    row = Math.floor(coord / 9);
+                    col = coord % 9;
+                }
+                numTry = grid[row][col].get();
+            } else {  // a valid number is placed on this grid, try next grid
+                grid[row][col].set(numTry);
+                numTry = 1;
+                coord++;
             }
-            numTry = grid[row][col].get();
-        } else {  // a valid number is placed on this grid, try next grid
-            grid[row][col].set(numTry);
-            numTry = 1;
-            coord++;
         }
     }
 
-    //saveFrames('out', 'png', 1, 25); // fixme: this will produce ridiculous behavior...
+    //saveFrames('out', 'png', 1, 15); // fixme: this will produce ridiculous behavior...
 }
 
 // copied from Sudoku.cpp
