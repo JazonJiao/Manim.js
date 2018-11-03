@@ -5,6 +5,8 @@
  * Thanks for the Coding Train for their wonderful tutorial!
  */
 
+// todo: restructure the program and put the classes in another file
+
 /*** 2018-10-30
  * The Cell class and related methods
  * Code is similar to Sudoku.cpp, in my CppMiniGames project
@@ -56,6 +58,7 @@ function Cell(n, x, y, w) {
         }
 
         // need to display fade in effects for given grids
+        // NOTE: can actually utilize the alpha value (transparency), as in EightQueens.js
         if (this.given) {
             if (this.rc < this.r || this.gc < this.g || this.bc < this.b) {
                 this.rc += this.r / frames;
@@ -93,7 +96,7 @@ function Cell(n, x, y, w) {
 }
 
 /***
- * Shows it growing from (x1, y1) to (x2, y2) in 20 frames
+ * Shows it growing from (x1, y1) to (x2, y2) in 'frames' frames
  * type = 0 if it's a normal line, = 1 if it's a bold line
  */
 function gridLine(x1, y1, x2, y2, type) {
@@ -169,7 +172,6 @@ var w = 50;
 var leftoffset = (cvw - 10 * w) / 2;
 var downoffset = (cvh - 10 * w) / 2;
 
-var lin = new gridLine(100, 100, 200, 200, 0);
 
 function setup() {
     createCanvas(cvw, cvh);
