@@ -1,3 +1,4 @@
+
 /** 2018-12-20
  * HelperGrid
  * This acts like a scaffold, and helps me find out the coordinates of the objects in a scene.
@@ -27,7 +28,6 @@ class HelperGrid extends Graphics {
         }
 
         // draw vertical lines
-
         this.g.stroke(137);
         for (let i = 100; i < this.w; i += 200) {
             this.g.line(0, i, this.w, i);
@@ -41,37 +41,38 @@ class HelperGrid extends Graphics {
             this.g.line(0, i, this.w, i);
         }
     }
-    render() {
-        image(this.g, 0, 0, this.w, this.h);
-    }
 }
-
 
 
 /** 2018-12-21
  * Grid
  * A grid similar to what 3b1b used throughout the EOLA series
+ *
  * in the derived class's show(), need to call showGrid, passing in the start time for animation
+ * in the derived class's render(), need to call this.axes.render()
+ *
+ * Timer used: timer2
  */
-class Grid extends Graphics {
+class Grid {
     constructor(args) {
-        super(args);
         //this.showLabel = args.showLabel || false;  // show numerical labels
 
         // the following parameters define the scope of the plot's grid lines on the canvas
         // NOTE: top and left must be a multiple of 50
         this.top = args.top || 0;
         this.left = args.left || 0;
-        this.bottom = args.bottom || this.h;
-        this.right = args.right || this.w;
+        this.bottom = args.bottom || height;
+        this.right = args.right || width;
 
         // define the origin's x and y coordinates on the canvas
-        this.centerX = args.centerX || this.w / 2;
-        this.centerY = args.centerY || this.h / 2;
+        this.centerX = args.centerX || width / 2;
+        this.centerY = args.centerY || height / 2;
 
-        // define how many pixels correspond to 1 in the actual data
+        // define how many pixels correspond to 1 on each axis
         this.stepX = args.stepX || 1;
         this.stepY = args.stepY || 1;
+
+        this.startTime = args.startTime;
 
         this.maxNumLines = 0;
         this.gridlineup = [];    // y-coords of grid lines above the x-axis
@@ -102,38 +103,48 @@ class Grid extends Graphics {
 
         this.timer = [];
         for (let i = 0; i < this.maxNumLines; i++) {
-            this.timer[i] = new Timer2(7);
+            this.timer[i] = new Timer2(frames(0.5));
         }
+
+        this.xAxis = new Arrow({ x1: this.left, x2: this.right, y1: this.centerY, y2: this.centerY,
+            frames: frames(6), startTime: this.startTime });
+
+        this.yAxis = new Arrow({ x1: this.centerX, x2: this.centerX, y1: this.bottom, y2: this.top,
+            frames: frames(6), startTime: this.startTime });
     }
 
-    showGrid(frame) {
+    showGrid() {
+        this.xAxis.show();
+        this.yAxis.show();
         for (let i = 0; i < this.maxNumLines; ++i) {
-            if (frameCount - frame > i) {
+            if (frameCount - this.startTime > i * 2) {
                 if (i % 2 === 1) {  // major grid line
-                    this.g.stroke(27, 177, 247);
+                    stroke(27, 177, 247);
                 } else {    // minor grid line
-                    this.g.stroke(17, 67, 77);
+                    stroke(17, 67, 77);
                 }
 
                 let t = this.timer[i].advance();
                 let right = this.left + (this.right - this.left) * t;
                 let top = this.bottom + (this.top - this.bottom) * t;
 
+                console.log(right);
+
                 if (i < this.gridlineup.length) {
                     let y = this.gridlineup[i];
-                    this.g.line(this.left, y, right, y);
+                    line(this.left, y, right, y);
                 }
                 if (i < this.gridlinedown.length) {
                     let y = this.gridlinedown[i];
-                    this.g.line(this.left, y, right, y);
+                    line(this.left, y, right, y);
                 }
                 if (i < this.gridlineleft.length) {
                     let x = this.gridlineleft[i];
-                    this.g.line(x, this.bottom, x, top);
+                    line(x, this.bottom, x, top);
                 }
                 if (i < this.gridlineright.length) {
                     let x = this.gridlineright[i];
-                    this.g.line(x, this.bottom, x, top);
+                    line(x, this.bottom, x, top);
                 }
             }
         }
@@ -141,10 +152,12 @@ class Grid extends Graphics {
 }
 
 
-
-/** 2018-12-20
+/** 2018-12-20,22
  * Plot
  * Contains a bunch of points, in addition to the grid
+ * Capable of calculating the least square line of the points, and displaying the line
+ *
+ *
  */
 class Plot extends Grid {
     // table is a p5.Table object, and is supposed to
@@ -155,34 +168,89 @@ class Plot extends Grid {
         //this.showLabel = args.showLabel || false;  // show numerical labels
 
         // the x- and y- coordinates of all the points are stored in two separate arrays
-        // transformed to the coordinates on the canvas
+        // Xs and Ys are the original coordinates
+        // ptXs and ptYs store the transformed version: the coordinates on the canvas
         this.numPts = table.getRowCount();
+
+        this.Xs = [];
+        this.Ys = [];
         this.ptXs = [];
         this.ptYs = [];
         for (let i = 0; i < this.numPts; i++) {
-            this.ptXs[i] = this.centerX + table.getNum(i, 0) * this.stepX;
-            this.ptYs[i] = this.centerY - table.getNum(i, 1) * this.stepY;
+            this.Xs[i] = table.getNum(i, 0);
+            this.Ys[i] = table.getNum(i, 1);
+            this.ptXs[i] = this.centerX + this.Xs[i] * this.stepX;
+            this.ptYs[i] = this.centerY - this.Ys[i] * this.stepY;
         }
+        this.avgX = this.avgxs();
+        this.avgY = this.avgys();
 
-        // first element corresponds to the x-axis, second to the y-axis
-        this.axes = new Arrows({
-            numArrows : 2,
-            x1s : [this.left, this.centerX],
-            x2s : [this.right, this.centerX],
-            y1s : [this.centerY, this.bottom],
-            y2s : [this.centerY, this.top],
-            frames : 150
-        });
+        // the least square coefficients
+        this.beta = 0;
+        this.beta_0 = 0;
+
+        // the parameters for displaying the least squares line on the canvas
+        this.linex1 = 0;
+        this.linex2 = 0;
+        this.liney1 = 0;
+        this.liney2 = 0;
+        this.calcParams();
+    }
+
+    avgxs() {
+        let sum = 0;
+        for (let i = 0; i < this.numPts; ++i) {
+            sum += this.Xs[i];
+        }
+        console.log(sum);
+        return sum / this.numPts;
+    }
+
+    avgys() {
+        let sum = 0;
+        for (let i = 0; i < this.numPts; ++i) {
+            sum += this.Ys[i];
+        }
+        console.log(sum);
+        return sum / this.numPts;
+    }
+
+    // calculate the parameters, and the coordinates of least squares line
+    // formula: beta = (sum of xi * yi - n * xbar * ybar) / (sum of xi^2 - n * xbar^2)
+    calcParams() {
+        let sumXY = 0, sumXsq = 0;
+        for (let i = 0; i < this.numPts; i++) {
+            sumXY += this.Xs[i] * this.Ys[i];
+            sumXsq += this.Xs[i] * this.Xs[i];
+        }
+        this.beta = (sumXY - this.numPts * this.avgX * this.avgY)
+            / (sumXsq - this.numPts * this.avgX * this.avgX);
+
+        this.beta_0 = this.avgY - this.beta * this.avgX;
+
+        let y_intercept = this.centerY - this.beta_0 * this.stepY;
+        this.linex1 = this.left;
+        this.linex2 = this.right;
+        this.liney1 = y_intercept + this.beta * (this.centerX - this.left);
+        this.liney2 = y_intercept - this.beta * (this.right - this.centerX);
     }
 
     showPoints() {
         for (let i = 0; i < this.numPts; ++i) {
-            this.g.noStroke();
-            this.g.fill(255, 255, 0);
-            this.g.ellipse(this.ptXs[i], this.ptYs[i], 10, 10);
+            noStroke();
+            fill(255, 255, 0);
+            ellipse(this.ptXs[i], this.ptYs[i], 10, 10);
         }
+        //this.g.ellipse(this.centerX, this.centerY - this.beta_0 * this.stepY, 14, 14);
+    }
+
+    // show the least squares line
+    showLine() {
+        stroke(255);
+        line(this.linex1, this.liney1, this.linex2, this.liney2);
     }
 }
+
 
 /** 2018-12-20,21
  * Arrows
@@ -190,21 +258,24 @@ class Plot extends Grid {
  * To reduce overhead, we need to make as few canvases as possible. Therefore,
  * information about all arrows that are needed for a scene will be passed in
  * as args as arrays.
+ *
+ * ----args list parameters----
+ * @mandatory (number) x1s, x2s, y1s, y2s, startTime
+ * @optional (color) colors; (number) strokeweight, tipLen, tipAngle
  */
-class Arrows extends Graphics {
+class Arrow {
     constructor(args) {
-        super({});
-        this.numArrows = args.numArrows || 1;
-        // used when user wants to define the color of the arrows, should be an array
-        // otherwise, default is each arrow will be white
-        // example: colors : [color(155), color(155)]
-        this.colors = args.colors;
+        // used when user wants to define the color of the arrows
+        this.color = args.color || color(255);
 
-        this.x1s = args.x1s;
-        this.y1s = args.y1s;
-        this.x2s = args.x2s;
-        this.y2s = args.y2s;
+        this.x1 = args.x1;
+        this.y1 = args.y1;
+        this.x2 = args.x2;
+        this.y2 = args.y2;
         this.timer = new Timer2(args.frames);
+
+        // starting frame for initialization animation
+        this.startTime = args.startTime;
 
         // define stroke weight and tip length/angle for all vectors on this canvas
         this.strokeweight = args.strokeweight || 2;
@@ -214,10 +285,10 @@ class Arrows extends Graphics {
         // x1, x2 are the coordinates of start point and end point; arrow points from x1 to x2.
         // x3, x4 are the endpoints of the two lines originating from x2 that draw the arrow.
         // Ditto for y3 and y4.
-        this.x3s = [];
-        this.x4s = [];
-        this.y3s = [];
-        this.y4s = [];
+        this.x3 = 0;
+        this.x4 = 0;
+        this.y3 = 0;
+        this.y4 = 0;
 
         this.setArrow();
     }
@@ -227,74 +298,99 @@ class Arrows extends Graphics {
     // However, arctan() will discard information about how the arrow is oriented (domain -90 ~ 90)
     // so I use another strategy: first scale the original line, then apply the rotation matrix.
     setArrow() {
-        for (let i = 0; i < this.numArrows; ++i) {
-            let x1 = this.x1s[i];
-            let y1 = this.y1s[i];
-            let x2 = this.x2s[i];
-            let y2 = this.y2s[i];
-            let dx = x1 - x2;    // note it's x1 - x2
-            let dy = y1 - y2;
 
-            let len = Math.sqrt(dx*dx + dy*dy);
+        let dx = this.x1 - this.x2;    // note it's x1 - x2
+        let dy = this.y1 - this.y2;
 
-            // calculate the position
-            let x = dx / len * this.tipLen;
-            let y = dy / len * this.tipLen;
+        let len = Math.sqrt(dx * dx + dy * dy);
 
-            let sin_theta = Math.sin(this.tipAngle);
-            let cos_theta = Math.cos(this.tipAngle);
+        // calculate the position
+        let x = dx / len * this.tipLen;
+        let y = dy / len * this.tipLen;
 
-            let x3 = cos_theta * x - sin_theta * y;
-            let y3 = sin_theta * x + cos_theta * y;
-            this.x3s[i] = x2 + x3;
-            this.y3s[i] = y2 + y3;
+        let sin_theta = Math.sin(this.tipAngle);
+        let cos_theta = Math.cos(this.tipAngle);
 
-            let x4 = cos_theta * x + sin_theta * y;
-            let y4 = cos_theta * y - sin_theta * x;
-            this.x4s[i] = x2 + x4;
-            this.y4s[i] = y2 + y4;
-        }
+        this.x3 = this.x2 + cos_theta * x - sin_theta * y;
+        this.y3 = this.y2 + sin_theta * x + cos_theta * y;
+
+        this.x4 = this.x2 + cos_theta * x + sin_theta * y;
+        this.y4 = this.y2 + cos_theta * y - sin_theta * x;
     }
 
-    show(frame) {  // frame define the starting point for animation
-        if (frameCount > frame) {
-            for (let i = 0; i < this.numArrows; i++) {
+    show() {
+        if (frameCount > this.startTime) {
 
-                // show the main line
-                let x1 = this.x1s[i];
-                let y1 = this.y1s[i];
-                let x2 = this.x2s[i];
-                let y2 = this.y2s[i];
-                let dx2 = x2 - x1;
-                let dy2 = y2 - y1;
+            // show the main line
 
-                if (this.colors) {
-                    this.g.stroke(this.colors[i]);
-                } else {
-                    this.g.stroke(255);
-                }
-                this.g.strokeWeight(this.strokeweight);
+            let dx2 = this.x2 - this.x1;
+            let dy2 = this.y2 - this.y1;
 
-                this.g.line(x1, y1,
-                    x1 + this.timer.advance() * dx2, y1 + this.timer.advance() * dy2);
-
-                // show the two line segments at the tip
-                this.g.strokeWeight(this.strokeweight - 1);
-                let dx3 = this.x3s[i] - x2;
-                let dy3 = this.y3s[i] - y2;
-                this.g.line(x2, y2,
-                    x2 + this.timer.advance() * dx3, y2 + this.timer.advance() * dy3);
-                let dx4 = this.x4s[i] - x2;
-                let dy4 = this.y4s[i] - y2;
-                this.g.line(x2, y2,
-                    x2 + this.timer.advance() * dx4, y2 + this.timer.advance() * dy4);
+            if (this.color) {
+                stroke(this.color);
+            } else {
+                stroke(255);
             }
-        }
-    }
+            strokeWeight(this.strokeweight);
+            line(this.x1, this.y1,
+                this.x1 + this.timer.advance() * dx2, this.y1 + this.timer.advance() * dy2);
 
-    render() {
-        image(this.g, 0, 0);
+            // show the two line segments at the tip
+
+            strokeWeight(this.strokeweight - 1);
+            let dx3 = this.x3 - this.x2;
+            let dy3 = this.y3 - this.y2;
+            line(this.x2, this.y2,
+                this.x2 + this.timer.advance() * dx3, this.y2 + this.timer.advance() * dy3);
+
+            let dx4 = this.x4 - this.x2;
+            let dy4 = this.y4 - this.y2;
+            line(this.x2, this.y2,
+                this.x2 + this.timer.advance() * dx4, this.y2 + this.timer.advance() * dy4);
+        }
+
     }
 }
 
 
+
+/** 2018-12-22
+ * Emphasis
+ *
+ *
+ *
+ * Since it's guaranteed to be at the bottom layer, we do not use the usual class hierarchy,
+ * and instead draw the rect on the base canvas directly.
+ *
+ * ----args list parameters----
+ * @mandatory (number) x, y, w, h
+ * @optional (number) start, end; (color) color
+ */
+class Emphasis {
+    constructor(args) {
+        this.x = args.x;
+        this.y = args.y;
+        this.w = args.w;
+        this.h = args.h;
+        this.start = args.start || frames(1);
+        this.end = args.end || frames(2);
+        this.color = args.color || color(107, 107, 17);
+
+        // timer for displaying start and end animations, respectively
+        this.timerS = new Timer1(frames(0.5));
+        this.timerE = new Timer1(frames(0.5));
+        this.t = 0;
+    }
+
+    show() {
+        noStroke();
+        fill(this.color);
+        if (frameCount > this.start) {
+            this.t = this.timerS.advance();
+        }
+        if (frameCount > this.end) {
+            this.t = 1 - this.timerE.advance();
+        }
+        rect(this.x, this.y, this.w * this.t, this.h);
+    }
+}

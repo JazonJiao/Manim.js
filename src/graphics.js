@@ -1,5 +1,5 @@
 /**
- * 2018/11/14
+ * 2018/11/14, 12/22
  *
  * Experiment of the class hierarchy of my animation library.
  *
@@ -19,20 +19,31 @@
  * Finally, in draw(), we iterate through all layers and
  * call render() for canvas operations, then show() for object animations
  *
+ * ----args list parameters----
+ * @optional (number) w, h
+ *
+ * Due to a bug in p5.js, I will have to first create a canvas twice the original size,
+ * and then use image() to render the scaled down version.
+ * Otherwise, I will have to set pixelDensity(1), which dramatically decreases image resolution.
+ *
  * @reference https://www.youtube.com/watch?v=pNDc8KXWp9E&t=529s
  */
 class Graphics {         // the master of all classes
     constructor(args) {
         this.w = args.w || 1200;
         this.h = args.h || 675;
-        this.g = createGraphics(this.w, this.h);
+        this.g = createGraphics(this.w * 2, this.h * 2);
     }
 
     // this is to be overridden by 2nd/3rd level to show the animation
-    show() {}
+    show() {
 
-    // this is to be overridden by 4th level to do operations on the canvas and display the image
-    render() {}
+    }
+
+    // this may be overridden by 4th level to do operations on the canvas and display the image
+    render() {
+        image(this.g, 0, 0, this.w, this.h);
+    }
 }
 
 /***

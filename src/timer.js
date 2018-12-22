@@ -1,4 +1,4 @@
-/**** 2018-11-20
+/**** 2018-11-20, 12-22
  * the Timer class
  * Used to animate object initialization with acceleration and/or deceleration
  * in a given number of frames.
@@ -11,9 +11,12 @@
 class Timer {
     constructor(frames) {
         this.frames = frames;
+        this.f = 1;
         this.t = 0;
     }
-    advance() {}  // to be overridden
+
+    advance() {
+    }  // to be overridden
 }
 
 /*** Timer0
@@ -49,6 +52,11 @@ class Timer1 extends Timer {
     }
 
     advance() {
+        // seems that controlling the end result purely through calculus may render this.t
+        // not exactly 1 at the end of animation. So we need to force it to 1.
+        if (this.f >= this.frames)
+            return 1;
+
         if (this.v > 0) {
             this.t += this.v;
             this.v += this.a;
@@ -62,22 +70,33 @@ class Timer1 extends Timer {
  */
 class Timer2 extends Timer {
     constructor(frames) {
+
         super(frames);
         this.v = 0;
         this.a = 4 / (frames * frames);
+        console.log(this.t);
     }
+
     advance() {
+        // seems that controlling the end result purely through calculus may render this.t
+        // not exactly 1 at the end of animation. So we need to force it to 1.
+        if (this.f >= this.frames)
+            return 1;
+
         if (this.t < 0.5) {
             this.t += this.v;
             if (this.t < 0.5) {
                 this.v += this.a;
+            } else {                 // fixme
+                this.v -= this.a;
             }
         } else if (this.v > 0) {
             this.v -= this.a;
             this.t += this.v;
         }
+        console.log(this.t);
+
+        (this.f)++;
         return this.t;
     }
 }
-
-

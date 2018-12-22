@@ -2,7 +2,7 @@
  * Global variables
  */
 
-var fr = 25;  // frame rate
+var fr = 30;  // frame rate
 
 
 

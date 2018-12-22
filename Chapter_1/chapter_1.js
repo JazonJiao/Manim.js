@@ -1,27 +1,25 @@
+
 class SLR_Plot extends Plot {    // the plot used to illustrate simple linear regression
     constructor(table) {
         super({
-            w : 700,
-            h : 675,
-            centerX : 100,
-            centerY : 550,
-            stepX : 100,
-            stepY : 100
+            right: 700,
+            centerX: 100,
+            centerY: 550,
+            stepX: 100,
+            stepY: 100,
+            startTime: 25
         }, table);
     }
 
     show() {
-        this.showGrid(0);
-        this.axes.show(0);
+        this.showGrid();
         this.showPoints();
-    }
-
-    render() {
-        this.axes.render();
-        image(this.g, 0, 0);
+        this.showLine();
     }
 }
 
+let plot;
+let table;
 
 function preload() {
     table = loadTable('SLR_data.csv', 'csv');
@@ -29,9 +27,18 @@ function preload() {
 
 
 function setup() {
-    pixelDensity(1);
+    //pixelDensity(1);
     frameRate(fr);
+
+    createCanvas(1200, 675);
+    background(0);
+
+    plot = new SLR_Plot(table);
 
 }
 
+function draw() {
+    background(0);
+    plot.show();
+}
 
