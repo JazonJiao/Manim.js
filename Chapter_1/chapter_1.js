@@ -7,18 +7,19 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             centerY: 550,
             stepX: 100,
             stepY: 100,
-            startTime: 25
+            start: 25
         }, table);
     }
 
     show() {
-        this.showGrid();
+        this.showAxes(); // this.showGrid()
         this.showPoints();
         this.showLine();
     }
 }
 
 let plot;
+let kat1;
 let table;
 
 function preload() {
@@ -35,10 +36,19 @@ function setup() {
 
     plot = new SLR_Plot(table);
 
+    kat1 = new Katex1({
+        str: "\\frac{\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} {\\sum_{i=1}^n(x_i-\\bar{x})^2}",
+        x: 750,
+        y: 200,
+        start: frames(3),
+        fadeIn: true,
+        fontsize: 60
+    });
 }
 
 function draw() {
     background(0);
     plot.show();
+    kat1.show();
 }
 

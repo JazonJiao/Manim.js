@@ -61,6 +61,7 @@ class Timer1 extends Timer {
             this.t += this.v;
             this.v += this.a;
         }
+        (this.f)++;
         return this.t;
     }
 }
@@ -70,11 +71,9 @@ class Timer1 extends Timer {
  */
 class Timer2 extends Timer {
     constructor(frames) {
-
         super(frames);
         this.v = 0;
         this.a = 4 / (frames * frames);
-        console.log(this.t);
     }
 
     advance() {
@@ -94,7 +93,6 @@ class Timer2 extends Timer {
             this.v -= this.a;
             this.t += this.v;
         }
-        console.log(this.t);
 
         (this.f)++;
         return this.t;

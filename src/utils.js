@@ -44,16 +44,12 @@ class HelperGrid extends Graphics {
 }
 
 
-/** 2018-12-21
- * Grid
- * A grid similar to what 3b1b used throughout the EOLA series
- *
- * in the derived class's show(), need to call showGrid, passing in the start time for animation
- * in the derived class's render(), need to call this.axes.render()
- *
- * Timer used: timer2
+
+/** 2018-12-23
+ * Axes
+ * Contains two arrows.
  */
-class Grid {
+class Axes {
     constructor(args) {
         //this.showLabel = args.showLabel || false;  // show numerical labels
 
@@ -72,7 +68,34 @@ class Grid {
         this.stepX = args.stepX || 1;
         this.stepY = args.stepY || 1;
 
-        this.startTime = args.startTime;
+        this.start = args.start;
+
+        this.xAxis = new Arrow({
+            x1: this.left, x2: this.right, y1: this.centerY, y2: this.centerY,
+            frames: frames(6), start: this.start
+        });
+
+        this.yAxis = new Arrow({
+            x1: this.centerX, x2: this.centerX, y1: this.bottom, y2: this.top,
+            frames: frames(6), start: this.start
+        });
+    }
+
+    showAxes() {
+        this.xAxis.show();
+        this.yAxis.show();
+    }
+}
+
+/** 2018-12-21
+ * Grid
+ * A grid similar to what 3b1b used throughout the EOLA series
+ *
+ * in the derived class's show(), need to call showGrid()
+ */
+class Grid extends Axes {
+    constructor(args) {
+        super(args);
 
         this.maxNumLines = 0;
         this.gridlineup = [];    // y-coords of grid lines above the x-axis
@@ -106,18 +129,12 @@ class Grid {
             this.timer[i] = new Timer2(frames(0.5));
         }
 
-        this.xAxis = new Arrow({ x1: this.left, x2: this.right, y1: this.centerY, y2: this.centerY,
-            frames: frames(6), startTime: this.startTime });
-
-        this.yAxis = new Arrow({ x1: this.centerX, x2: this.centerX, y1: this.bottom, y2: this.top,
-            frames: frames(6), startTime: this.startTime });
     }
 
     showGrid() {
-        this.xAxis.show();
-        this.yAxis.show();
+        this.showAxes();
         for (let i = 0; i < this.maxNumLines; ++i) {
-            if (frameCount - this.startTime > i * 2) {
+            if (frameCount - this.start > i * 2) {
                 if (i % 2 === 1) {  // major grid line
                     stroke(27, 177, 247);
                 } else {    // minor grid line
@@ -127,8 +144,6 @@ class Grid {
                 let t = this.timer[i].advance();
                 let right = this.left + (this.right - this.left) * t;
                 let top = this.bottom + (this.top - this.bottom) * t;
-
-                console.log(right);
 
                 if (i < this.gridlineup.length) {
                     let y = this.gridlineup[i];
@@ -154,12 +169,11 @@ class Grid {
 
 /** 2018-12-20,22
  * Plot
- * Contains a bunch of points, in addition to the grid
+ * Contains a bunch of points, in addition to the axes
+ * Can also derive from the Grid class
  * Capable of calculating the least square line of the points, and displaying the line
- *
- *
  */
-class Plot extends Grid {
+class Plot extends Axes {
     // table is a p5.Table object, and is supposed to
     // contain two columns, storing the data's x- and y- coordinates
     // in preload(), use: table = loadTable('SLR_data.csv', 'csv'); and pass it in
@@ -182,6 +196,17 @@ class Plot extends Grid {
             this.ptXs[i] = this.centerX + this.Xs[i] * this.stepX;
             this.ptYs[i] = this.centerY - this.Ys[i] * this.stepY;
         }
+        this.points = [];
+        for (let i = 0; i < this.numPts; i++) {
+            this.points[i] = new PlotPoint({
+                x: this.ptXs[i],
+                y: this.ptYs[i],
+                radius: 10,
+                // display all points in 1 second
+                start: this.start + i * frames(1) / this.numPts
+            })
+        }
+
         this.avgX = this.avgxs();
         this.avgY = this.avgys();
 
@@ -195,6 +220,8 @@ class Plot extends Grid {
         this.liney1 = 0;
         this.liney2 = 0;
         this.calcParams();
+
+        this.timer2 = new Timer1(frames(1));
     }
 
     avgxs() {
@@ -235,32 +262,69 @@ class Plot extends Grid {
         this.liney2 = y_intercept - this.beta * (this.right - this.centerX);
     }
 
+
     showPoints() {
         for (let i = 0; i < this.numPts; ++i) {
-            noStroke();
-            fill(255, 255, 0);
-            ellipse(this.ptXs[i], this.ptYs[i], 10, 10);
+            this.points[i].show();
         }
-        //this.g.ellipse(this.centerX, this.centerY - this.beta_0 * this.stepY, 14, 14);
     }
 
-    // show the least squares line
+    // show the least squares line; green color
     showLine() {
-        stroke(255);
-        line(this.linex1, this.liney1, this.linex2, this.liney2);
+        stroke(77, 177, 77);
+        strokeWeight(3);
+        if (frameCount > this.start + frames(1)) {
+            let t = this.timer2.advance();
+            line(this.linex1, this.liney1,
+                this.linex1 + (this.linex2 - this.linex1) * t,
+                this.liney1 + (this.liney2 - this.liney1) * t);
+        }
+
+    }
+}
+
+/** 2018-12-23
+ * PlotPoint
+ * Helper class of Plot. Capable of displaying init animations of the points
+ *
+ * ----args list parameters----
+ * @mandatory (number) x1s, x2s, y1s, y2s, start
+ */
+class PlotPoint {
+    constructor(args) {
+        this.x = args.x;
+        this.y = args.y;
+        this.radius = args.radius;
+        this.start = args.start;
+
+        this.timer = new Timer1(frames(0.7));
+        this.t = 0;
+    }
+
+    show() {
+        if (frameCount > this.start) {
+            this.t = this.timer.advance();
+
+            // draw the contour
+            noFill();
+            stroke(255, 0, 0);
+            strokeWeight((1 - this.t) * this.radius / 3);
+            arc(this.x, this.y, this.radius, this.radius, 0, this.t * TWO_PI);
+
+            // draw the ellipse
+            noStroke();
+            fill(255, 255, 0, 255 * this.t);
+            ellipse(this.x, this.y, this.radius, this.radius);
+        }
     }
 }
 
 
 /** 2018-12-20,21
- * Arrows
- *
- * To reduce overhead, we need to make as few canvases as possible. Therefore,
- * information about all arrows that are needed for a scene will be passed in
- * as args as arrays.
+ * Arrow
  *
  * ----args list parameters----
- * @mandatory (number) x1s, x2s, y1s, y2s, startTime
+ * @mandatory (number) x1s, x2s, y1s, y2s, start
  * @optional (color) colors; (number) strokeweight, tipLen, tipAngle
  */
 class Arrow {
@@ -275,7 +339,7 @@ class Arrow {
         this.timer = new Timer2(args.frames);
 
         // starting frame for initialization animation
-        this.startTime = args.startTime;
+        this.start = args.start;
 
         // define stroke weight and tip length/angle for all vectors on this canvas
         this.strokeweight = args.strokeweight || 2;
@@ -319,7 +383,7 @@ class Arrow {
     }
 
     show() {
-        if (frameCount > this.startTime) {
+        if (frameCount > this.start) {
 
             // show the main line
 
@@ -337,7 +401,7 @@ class Arrow {
 
             // show the two line segments at the tip
 
-            strokeWeight(this.strokeweight - 1);
+            strokeWeight(this.strokeweight);
             let dx3 = this.x3 - this.x2;
             let dy3 = this.y3 - this.y2;
             line(this.x2, this.y2,
@@ -348,11 +412,8 @@ class Arrow {
             line(this.x2, this.y2,
                 this.x2 + this.timer.advance() * dx4, this.y2 + this.timer.advance() * dy4);
         }
-
     }
 }
-
-
 
 /** 2018-12-22
  * Emphasis
