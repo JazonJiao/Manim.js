@@ -29,7 +29,8 @@ class Timer0 extends Timer {
     }
 
     advance() {
-        if (this.t < 0.999) {
+        this.f++;
+        if (this.t < 0.99) {
             this.t += this.v;
         }
         return this.t;

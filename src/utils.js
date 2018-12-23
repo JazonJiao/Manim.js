@@ -1,48 +1,47 @@
-
 /** 2018-12-20
  * HelperGrid
  * This acts like a scaffold, and helps me find out the coordinates of the objects in a scene.
  * It is removed when the movie is actually rendered.
  * show() and render() are both defined within this class.
  */
-class HelperGrid extends Graphics {
-    constructor() {
-        super({}); // must pass in {}, not nothing
+class HelperGrid {
+    constructor(args) {
+        this.w = width;
+        this.h = height;
     }
 
     show() {
-        this.g.strokeWeight(1);
+        strokeWeight(1);
 
         // draw horizontal helper lines
-        this.g.stroke(137);
+        stroke(137);
         for (let i = 100; i < this.w; i += 200) {
-            this.g.line(i, 0, i, this.h);
+            line(i, 0, i, this.h);
         }
-        this.g.stroke(255);
+        stroke(255);
         for (let i = 200; i < this.w; i += 200) {
-            this.g.line(i, 0, i, this.h);
+            line(i, 0, i, this.h);
         }
-        this.g.stroke(57);
+        stroke(57);
         for (let i = 50; i < this.w; i += 100) {
-            this.g.line(i, 0, i, this.h);
+            line(i, 0, i, this.h);
         }
 
         // draw vertical lines
-        this.g.stroke(137);
+        stroke(137);
         for (let i = 100; i < this.w; i += 200) {
-            this.g.line(0, i, this.w, i);
+            line(0, i, this.w, i);
         }
-        this.g.stroke(255);
+        stroke(255);
         for (let i = 200; i < this.w; i += 200) {
-            this.g.line(0, i, this.w, i);
+            line(0, i, this.w, i);
         }
-        this.g.stroke(57);
+        stroke(57);
         for (let i = 50; i < this.w; i += 100) {
-            this.g.line(0, i, this.w, i);
+            line(0, i, this.w, i);
         }
     }
 }
-
 
 
 /** 2018-12-23
@@ -279,7 +278,6 @@ class Plot extends Axes {
                 this.linex1 + (this.linex2 - this.linex1) * t,
                 this.liney1 + (this.liney2 - this.liney1) * t);
         }
-
     }
 }
 
@@ -415,31 +413,48 @@ class Arrow {
     }
 }
 
-/** 2018-12-22
- * Emphasis
- *
- *
- *
- * Since it's guaranteed to be at the bottom layer, we do not use the usual class hierarchy,
- * and instead draw the rect on the base canvas directly.
+/** 2018-12-23
+ * A rectangle, with fade-in init animation
  *
  * ----args list parameters----
  * @mandatory (number) x, y, w, h
- * @optional (number) start, end; (color) color
+ * @optional (number) start; (color) color
  */
-class Emphasis {
+class Rect {
     constructor(args) {
         this.x = args.x;
         this.y = args.y;
         this.w = args.w;
         this.h = args.h;
         this.start = args.start || frames(1);
+
+        this.timer = new Timer0(frames(1));
+    }
+
+    show() {
+
+    }
+
+}
+
+/** 2018-12-22
+ * Emphasis
+ * Essentially a shiny rectangle under the text or formula we want to emphasize
+ *
+ * ----args list parameters----
+ * @mandatory (number) x, y, w, h
+ * @optional (number) start, end; (color) color
+ */
+class Emphasis extends Rect {
+    constructor(args) {
+        super(args);
+
         this.end = args.end || frames(2);
         this.color = args.color || color(107, 107, 17);
 
         // timer for displaying start and end animations, respectively
-        this.timerS = new Timer1(frames(0.5));
-        this.timerE = new Timer1(frames(0.5));
+        this.timer = new Timer1(frames(0.5));
+        this.timer2 = new Timer1(frames(0.5));
         this.t = 0;
     }
 
@@ -447,11 +462,97 @@ class Emphasis {
         noStroke();
         fill(this.color);
         if (frameCount > this.start) {
-            this.t = this.timerS.advance();
+            this.t = this.timer.advance();
         }
         if (frameCount > this.end) {
-            this.t = 1 - this.timerE.advance();
+            this.t = 1 - this.timer2.advance();
         }
         rect(this.x, this.y, this.w * this.t, this.h);
     }
+}
+
+/** 2018-12-23
+ * A line that can show initialization animation; uses timer1
+ *
+ * ----args list parameters----
+ * @mandatory (number) x1, y1, x2, y2;
+ * @optional (color) color; (number) start, strokeweight
+ */
+class Line {
+    constructor(args) {
+        this.x1 = args.x1;
+        this.y1 = args.y1;
+        this.x2 = args.x2;
+        this.y2 = args.y2;
+
+        this.start = args.start || frames(1);
+        this.strokeweight = args.strokeweight || 3;
+        this.color = args.color || color(255);
+
+        this.timer = new Timer1(frames(1));
+    }
+
+    reset(args) {
+        this.x1 = args.x1 || this.x1;
+        this.y1 = args.y1 || this.y1;
+        this.x2 = args.x2 || this.x2;
+        this.y2 = args.y2 || this.y2;
+    }
+
+    show() {
+        if (frameCount > this.start) {
+            let t = this.timer.advance();
+            line(this.x1, this.y1,
+                this.x1 + (this.x2 - this.x1) * t, this.y1 + (this.y2 - this.y1) * t);
+        }
+    }
+
+}
+
+/** 2018-12-23
+ * DottedLine, a line like - - - -
+ *
+ * fixme: can only display from left to right/top to bottom
+ *
+ * ----args list parameters----
+ * @mandatory (number) x1, y1, x2, y2;
+ * @optional (color) color; (number) start, spacing, strokeweight
+ */
+class DottedLine extends Line {
+    constructor(args) {
+        super(args);
+        this.spacing = args.spacing || 17;
+
+        this.w = this.x2 - this.x1;
+        this.h = this.y2 - this.y1;
+        this.len = Math.sqrt(this.w * this.w + this.h * this.h);
+        this.dx = this.w / this.len * this.spacing;
+        this.dy = this.h / this.len * this.spacing;
+    }
+
+    show() {
+        let x = this.x1;
+        let y = this.y1;
+        if (frameCount > this.start) {
+            let t = this.timer.advance();
+            let xEnd = this.x1 + this.w * t;
+            let yEnd = this.y1 + this.h * t;
+
+            // I put an "or" here, otherwise if line is vertical the loop never enters
+            while (x < xEnd || y < yEnd) {
+                let x0 = x + this.dx;
+                let y0 = y + this.dy;
+                if (x0 > xEnd) {
+                    x0 = xEnd;
+                    y0 = yEnd;
+                }
+                stroke(this.color);
+                strokeWeight(this.strokeweight);
+                line(x, y, x0, y0);
+                x += 2 * this.dx;  // this 2 is arbitrary
+                y += 2 * this.dy;
+            }
+        }
+    }
+
 }
