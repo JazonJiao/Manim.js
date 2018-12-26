@@ -100,13 +100,13 @@ class Grid extends Axes {
     constructor(args) {
         super(args);
 
-        this.spacing = args.spacing || 60;
+        this.spacing = args.spacing || 50;
 
         this.maxNumLines = 0;
         this.gridlineup = [];    // y-coords of grid lines above the x-axis
         this.gridlinedown = [];  // y-coords of grid lines below the x-axis
-        this.gridlineleft = [];  // y-coords of grid lines left of y-axis
-        this.gridlineright = []; // y-coords of grid lines right of y-axis
+        this.gridlineleft = [];  // x-coords of grid lines left of y-axis
+        this.gridlineright = []; // x-coords of grid lines right of y-axis
         for (let i = 0, y = this.centerY - this.spacing; y > this.top; i++, y -= this.spacing) {
             this.gridlineup[i] = y;
             if (i > this.maxNumLines)
@@ -139,13 +139,14 @@ class Grid extends Axes {
     showGrid() {
         this.showAxes();
         for (let i = 0; i < this.maxNumLines; ++i) {
-            strokeWeight(1);
+            strokeWeight(2);
             if (frameCount - this.start > i * 2) {
-                if (i % 2 === 1) {  // major grid line
-                    stroke(27, 177, 247);
-                } else {    // minor grid line
-                    stroke(17, 67, 77);
-                }
+                // if (i % 2 === 1) {  // major grid line
+                //     stroke(27, 177, 247);
+                // } else {    // minor grid line
+                //     stroke(17, 67, 77);
+                // }
+                stroke(27, 177, 247);
 
                 let t = this.timer[i].advance();
                 let right = this.left + (this.right - this.left) * t;
@@ -490,6 +491,12 @@ class Arrow extends Line {
         this.y3 = 0;
         this.y4 = 0;
 
+        this.setArrow();
+    }
+
+    // reset the start and end points of the arrow
+    reset(args) {
+        super.reset(args);
         this.setArrow();
     }
 

@@ -80,15 +80,13 @@ class Timer2 extends Timer {
     advance() {
         // seems that controlling the end result purely through calculus may render this.t
         // not exactly 1 at the end of animation. So we need to force it to 1.
-        if (this.f >= this.frames)
+        if (this.f > this.frames)
             return 1;
 
         if (this.t < 0.5) {
             this.t += this.v;
-            if (this.t < 0.5) {
+            if (this.t < 0.5) {  // fixme
                 this.v += this.a;
-            } else {                 // fixme
-                this.v -= this.a;
             }
         } else if (this.v > 0) {
             this.v -= this.a;

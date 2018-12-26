@@ -10,21 +10,20 @@
  * The color of the text defaults to white. To change color, use \\textcolor{}{...} inside args.text
  *
  * ----args list parameters----
- * @mandatory (string) str--the string to display, color--note it's passed as a string;
+ * @mandatory (string) str--the string to display;
  * @optional (bool) fadeIn, start--if display fade in animation, the frame to start animation;
- *           (number) font_size, x, y;
+ *           (number) font_size, x, y, (string) color--note it's passed as a string;
  *           (bool) fadeOut, end--if display fade out animation, the frame to start animation;
  */
 class KatexBase {
     constructor(args) {
         this.text = args.text;
         this.size = args.font_size || 27;
-        this.x = args.x;
-        this.y = args.y;
+        this.x = args.x || 0;
+        this.y = args.y || 0;
         this.color = args.color || '#fff';
 
         this.k = createP('');
-        this.k.id('kt1');
         this.k.position(this.x, this.y);
         this.k.style('color', this.color);
         this.k.style('font-size', this.size + 'px');
