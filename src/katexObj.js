@@ -7,12 +7,13 @@
  * This structure is pretty ugly and dumb, as each new Katex text object needs a new class,
  * but as of now this is the only way I can get around the weirdness of using katex.js
  *
- * The color of the text defaults to white. To change color, use \\textcolor{}{...} inside args.str
+ * The color of the text defaults to white. To change color, use \\textcolor{}{...} inside args.text
  *
  * ----args list parameters----
  * @mandatory (string) str--the string to display, color--note it's passed as a string;
  * @optional (bool) fadeIn, start--if display fade in animation, the frame to start animation;
  *           (number) font_size, x, y;
+ *           (bool) fadeOut, end--if display fade out animation, the frame to start animation;
  */
 class KatexBase {
     constructor(args) {
@@ -30,16 +31,23 @@ class KatexBase {
 
         this.fadeIn = args.fadeIn || false;
         if (this.fadeIn) {
-
             this.start = args.start || frames(1);
             this.timer = new Timer0(frames(0.7));
             this.k.style('opacity', 0);
+        }
+        this.fadeOut = args.fadeOut || false;
+        if (this.fadeOut) {
+            this.end = args.end || frames(100);
+            this.timer2 = new Timer0(frames(0.7));
         }
     }
 
     showInit() {
         if (this.fadeIn && frameCount > this.start) {
             this.k.style('opacity', this.timer.advance());
+        }
+        if (this.fadeOut && frameCount > this.end) {
+            this.k.style('opacity', 1 - this.timer2.advance());
         }
     }
 
@@ -55,6 +63,18 @@ class KatexBase {
 //     fadeIn: true,
 //     fontsize: 80
 // });
+
+class Katex0 extends KatexBase {
+    constructor(args) {
+        super(args);
+        this.k.id('kt0');
+    }
+
+    show() {
+        this.showInit();
+        katex.render(this.text, kt0);
+    }
+}
 
 class Katex1 extends KatexBase {
     constructor(args) {
