@@ -128,7 +128,7 @@ function setup() {
     //pixelDensity(1);
     frameRate(fr);
 
-    createCanvas(1200, 675);
+    createCanvas(1200, 675, WEBGL);
     background(0);
 
     helpergrid = new HelperGrid();

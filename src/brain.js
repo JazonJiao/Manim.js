@@ -1,10 +1,3 @@
-/**
- * Brain-creature!
- * 2018-11-14
- *
- *
- */
-
 class Brain extends Graphics {
     constructor(frames) {
         super({w : 1100, h : 1100});  // make it big since we can scale the canvas
@@ -71,7 +64,7 @@ class Brain extends Graphics {
             if (j < 7) {   // not reached the end of init animation, add an intermediary vertex
                 let factor = (this.frCount % this.speed) / this.speed;    // 0 <= factor < 1
                 this.g.vertex(x + (this.xCoords[i][j] - x) * factor,
-                              y + (this.yCoords[i][j] - y) * factor);
+                    y + (this.yCoords[i][j] - y) * factor);
             } else {
                 this.showCircle(x, y, 1); // fixme: abrupt end
             }
@@ -95,10 +88,74 @@ class Brain extends Graphics {
 
             // update local frame count
             this.frCount++;
-
-            // display canvas
-            image(this.g, 100, 100, 330, 330);
         }
     }
 }
 
+
+let time = {
+    brain: frames(1),
+    move: frames(3.2)
+};
+
+class IntroBrain extends Brain {
+    constructor() {
+        super(frames(2));
+        this.timer = new Timer2(frames(1));
+    }
+
+    render() {
+        if (frameCount < time.move) {
+            image(this.g, 424, 177, 327, 327);
+        } else {
+            let t = this.timer.advance();
+            image(this.g, 424 + t * 250, 177, 327, 327);
+        }
+    }
+}
+//
+// let img;
+// let imgTimer = new Timer1(frames(1));
+// let fade;
+// let brain;
+//
+// function preload() {
+//     fade = loadImage('Fade.png');
+//     img = loadImage('181227.png');
+// }
+//
+// function setup() {
+//     // pixelDensity(2);
+//
+//     frameRate(fr);
+//     createCanvas(1200, 675);
+//     brain = new IntroBrain();
+//
+//     // img.pixelDensity(1);
+//     // img.loadPixels();
+//     // let d = pixelDensity();
+//     // let idx;
+//     // for (let x = 0; x < img.width; x++) {
+//     //     for (let y = 0; y < img.height; y++) {
+//     //         for (let i = 0; i < d; i++) {
+//     //             for (let j = 0; j < d; j++) {
+//     //                 idx = 4 * ((y * d + j) * width + (x * d + i));
+//     //                 img.pixels[idx + 3] = 177;
+//     //             }
+//     //         }
+//     //     }
+//     // }
+//     // img.updatePixels();
+// }
+//
+//
+// function draw() {
+//     background(0);
+//     if (frameCount > time.move) {
+//         let t = imgTimer.advance();
+//         image(img, 767 - t * 600, 117, 400, 400);
+//         image(fade, 267 + t * 200, 0);
+//     }
+//     brain.show();
+//     brain.render();
+// }

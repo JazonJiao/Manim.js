@@ -191,11 +191,11 @@ function setup() {
 
     kats[0] = new Katex0({
         text: "\\begin{bmatrix}" +
-            "   \\textcolor{#57c757}{u_x} & \\textcolor{#f76767}{u_y} \\\\" +
-            "\\end{bmatrix}" +
-            "\\begin{bmatrix}" +
             "   \\textcolor{#57c757}{u_x} \\\\" +
             "   \\textcolor{#f76767}{u_y}" +
+            "\\end{bmatrix}" +
+            "\\begin{bmatrix}" +
+            "   \\textcolor{#57c757}{u_x} & \\textcolor{#f76767}{u_y} \\\\" +
             "\\end{bmatrix}",
         font_size: 47,
         x: 800,
