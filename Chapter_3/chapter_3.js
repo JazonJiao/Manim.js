@@ -106,6 +106,7 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
         for (let i = 0; i < this.totalNumLines; i++) {
             // since the coordinate on the canvas is both flipped and translated, we need
             // to first get the absolute coordinates, and then translate back again.
+            // It might be better to use the p5 translate() function to do this instead...
             let x1 = this.x1s[i] - this.centerX;
             let y1 = this.centerY - this.y1s[i];
             let x2 = this.x2s[i] - this.centerX;
@@ -209,4 +210,5 @@ function draw() {
     for (let k of kats) {
         k.show();
     }
+    //showFR();
 }

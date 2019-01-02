@@ -2,7 +2,7 @@
  * Global variables
  */
 
-var fr = 30;  // frame rate
+let fr = 30;  // frame rate
 
 
 /**
@@ -20,6 +20,14 @@ function frames(sec) {
     return Math.round(fr * sec);
 }
 
-
+/**
+ * https://github.com/processing/p5.js/wiki/Optimizing-p5.js-Code-for-Performance
+ */
+function showFR() {
+    let fps = frameRate();
+    fill(255);
+    noStroke();
+    text("FPS: " + fps.toFixed(1), 10, height - 10);
+}
 
 
