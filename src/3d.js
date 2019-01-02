@@ -129,7 +129,7 @@ class Grid3D {
  *
  * ---- args list parameters ----
  * @mandatory (number) x2, y2, z2--those should be using p5's coordinate system
- * @optional (number) x1, y1, z1, radius, tipLen, tipRadius
+ * @optional (number) x1, y1, z1, radius, tipLen, tipRadius; (color) color
  */
 class Arrow3D {
     constructor(args) {
@@ -140,6 +140,7 @@ class Arrow3D {
         this.dy = args.y2 - this.y1;
         this.dz = args.z2 - this.z1;
 
+        this.color = args.color || color(177);
         this.radius = args.radius || 3;
         this.tipLen = args.tipLen || 30;
         this.tipRadius = args.tipRadius || 10;
@@ -161,6 +162,7 @@ class Arrow3D {
         let theta = Math.atan2(this.dx, this.dz);      // theta = atan2(y / x)
         let phi = Math.acos(this.dy / this.len) / 2;   // phi = acos(z / r)
 
+        // Calculate the axis of rotation. Note that the length of this vector doesn't matter.
         this.v = createVector(
             Math.sin(phi) * Math.sin(theta), // y = sin(phi) * sin(theta)
             Math.cos(phi),                   // z = cos(phi)
@@ -171,6 +173,12 @@ class Arrow3D {
 
     show() {
         push();
+        fill(this.color); // fixme
+        noStroke();
+        //
+        // directionalLight(255, 255, 255, 0, 1, 0);
+        // ambientLight(177, 177, 177);
+
         translate(this.dx / 2, this.dy / 2, this.dz / 2);
         rotate(PI, this.v);
         cylinder(this.radius, this.len);
