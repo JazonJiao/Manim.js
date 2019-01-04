@@ -128,7 +128,7 @@ function setup() {
     //pixelDensity(1);
     frameRate(fr);
 
-    createCanvas(1200, 675, WEBGL);
+    createCanvas(1200, 675);
     background(0);
 
     helpergrid = new HelperGrid();
@@ -193,5 +193,6 @@ function draw() {
     for (let k of kats) {
         k.show();
     }
+    //showFR();
 }
 
