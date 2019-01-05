@@ -1,3 +1,63 @@
+/*** 2019-01-04
+ * Text
+ * Needs to declare a font variable and set font = loadFont('../lib/font/times.ttf') in preload()
+ * There should not be a global variable named text.
+ * For mode 0 (default), the x and y define the coordinates for the upper-left corner of the text.
+ * For mode 1, the x and y define the center for the text.
+ *
+ * ---- args list parameters ----
+ * @mandatory (string) str; (number) x, y
+ * @optional (p5.Font) font; (number) mode, size, start [if initAnim is true]; (bool) initAnim
+ */
+class Text {
+    constructor(args) {
+        this.font = args.font;
+        this.str = args.str;
+        this.mode = args.mode || 0;
+
+        // I originally used the usual syntax of args.x || width / 2,
+        // but this would not work if 0 is passed in as x
+        this.x = args.x;
+        this.y = args.y;
+        this.size = args.size || 37;
+
+        this.initAnim = args.initAnim || false;
+        if (this.initAnim) {
+            this.start = args.start || frames(1);
+            this.frCount = 0;
+            this.len = this.str.length;
+            this.s = "";
+        } else {
+            this.s = this.str;
+        }
+    }
+
+    show() {
+        if (this.font) {
+            textFont(this.font);
+        }
+        if (this.mode === 0) {
+            textAlign(LEFT, TOP);
+        } else if (this.mode === 1) {
+            textAlign(CENTER, CENTER);
+        }
+        textSize(this.size);
+
+        if (this.initAnim && frameCount > this.start) {
+            // array uses 0-based index, while frameCount starts at 1
+            if (this.frCount < this.len) {
+                this.s += this.str[this.frCount];
+                this.frCount++;
+            }
+        }
+
+        fill(255);
+        noStroke();
+        text(this.s, this.x, this.y);
+    }
+}
+
+
 /*** 2018-12-23
  * KatexBase
  * Base class for all math text objects. These are displayed directly as texts on the browser,

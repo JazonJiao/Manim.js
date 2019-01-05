@@ -249,6 +249,7 @@ class Plane3D {
 
 // 2019-01-05
 // make this a standalone function since it's needed by both Grid and Arrow in animating projection
+// M is an array with 6 entries, representing two column vectors
 function calcProjectionMatrix(M) {
     // make a copy of this array since it will be changed (normalized)
     let U = M.copyWithin();
