@@ -1,9 +1,11 @@
 let time = {
-    brain: frames(1),
-    bubble: frames(2)
+    brain: frames(2),
+    bubble: frames(3),
+    text: [frames(7), frames(9), frames(11)]
 };
 
 let hg;
+let texts = [];
 let font;
 let brain;
 
@@ -23,6 +25,27 @@ function setup() {
         str: "Linear Regression",
         bubbleStart: time.bubble
     });
+    texts[0] = new Text({
+        font: font,
+        str: "Statistics",
+        x: 700,
+        y: 450,
+        start: time.text[0]
+    });
+    texts[1] = new Text({
+        font: font,
+        str: "Linear Algebra",
+        x: 700,
+        y: 500,
+        start: time.text[1]
+    });
+    texts[2] = new Text({
+        font: font,
+        str: "Machine Learning",
+        x: 700,
+        y: 550,
+        start: time.text[2]
+    });
 }
 
 function draw() {
@@ -31,4 +54,5 @@ function draw() {
     //text1.show();
     //bubble.show();
     brain.show();
+    for (let t of texts) t.show();
 }

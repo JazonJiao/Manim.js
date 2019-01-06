@@ -22,12 +22,22 @@ function frames(sec) {
 
 /**
  * https://github.com/processing/p5.js/wiki/Optimizing-p5.js-Code-for-Performance
+ *
+ * For usual 2D scenes, don't pass in parameters.
+ * For 3D scenes, declare an off-screen canvas g2 = createGraphics(100, 10);
+ * and pass in that as the parameter.
  */
-function showFR() {
+function showFR(g) {
     let fps = frameRate();
-    fill(255);
-    noStroke();
-    text("FPS: " + fps.toFixed(1), 10, height - 10);
+    if (g === undefined) {
+        fill(255);
+        noStroke();
+        text("FPS: " + fps.toFixed(1), 10, height - 10);
+    } else {
+        g.background(0);
+        g.fill(255);
+        g.noStroke();
+        g.text("FPS: " + fps.toFixed(1), 10, 10);
+        image(g, 0, 0);
+    }
 }
-
-

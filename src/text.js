@@ -6,8 +6,8 @@
  * For mode 1, the x and y define the center for the text.
  *
  * ---- args list parameters ----
- * @mandatory (string) str; (number) x, y
- * @optional (p5.Font) font; (number) mode, size, start [if initAnim is true]; (bool) initAnim
+ * @mandatory (string) str; (number) x, y; (p5.Font) font
+ * @optional (number) mode, size, start [if want to show init animation]
  */
 class Text {
     constructor(args) {
@@ -21,9 +21,8 @@ class Text {
         this.y = args.y;
         this.size = args.size || 37;
 
-        this.initAnim = args.initAnim || false;
-        if (this.initAnim) {
-            this.start = args.start || frames(1);
+        if (args.start) {
+            this.start = args.start;
             this.frCount = 0;
             this.len = this.str.length;
             this.s = "";
@@ -43,7 +42,7 @@ class Text {
         }
         textSize(this.size);
 
-        if (this.initAnim && frameCount > this.start) {
+        if (this.start && frameCount > this.start) {
             // array uses 0-based index, while frameCount starts at 1
             if (this.frCount < this.len) {
                 this.s += this.str[this.frCount];

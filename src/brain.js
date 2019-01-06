@@ -135,7 +135,6 @@ class Bubble {
             y: this.y - this.h * 0.64,
             font: args.font,
             str: args.str,
-            initAnim: true,
             start: this.start + frames(1)
         });
 

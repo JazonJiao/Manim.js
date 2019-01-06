@@ -1,3 +1,10 @@
+/*** Refactored on 2019-01-06
+ * To enable rendering 2D graphics on the screen, now every show() function of a 3D scene
+ * should accept an off-screen 3D canvas as parameter.
+ * There are still some bugs and the resolution seems not as high as before,
+ * but I'll get along with it.
+ */
+
 /*** 2018-12-29
  * Axis3D (WEBGL)
  * This class is also responsible for the basic setups of a 3D scene,
@@ -14,48 +21,27 @@ class Axes3D {
         this.camRadius = 674;
     }
 
-    show() {
+    show(g, ax) {
         // these must be called before directionalLight and ambientLight()
-        fill(177);
-        noStroke();
+        g.background(0);
+        g.fill(177);
+        g.noStroke();
 
-        directionalLight(255, 255, 255, 0, 1, 0);
-        ambientLight(177, 177, 177);
+        // fixme:
+        g.directionalLight(147, 147, 147, 0, 1, 0);
+        g.ambientLight(27, 27, 27);
 
         let camX = this.camRadius * Math.cos(this.angle);
         let camZ = this.camRadius * Math.sin(this.angle);
         this.angle += this.speed;
 
-        camera(camX, this.camY, camZ, 0, 0, 0, 0, 1, 0);
+        g.camera(camX, this.camY, camZ, 0, 0, 0, 0, 1, 0);
 
-        push();
-        rotateZ(PI / 2);
-        cylinder(3, 800);
-        pop();
-        push();
-        translate(400, 0, 0);
-        rotateZ(-PI / 2);
-        cone(10, 30);
-        pop();
-
-        push();
-        rotateX(PI / 2);
-        cylinder(3, 800);
-        pop();
-        push();
-        translate(0, 0, 400);
-        rotateX(PI / 2);
-        cone(10, 30);
-        pop();
-
-        push();
-        cylinder(3, 800);
-        pop();
-        push();
-        translate(0, -400, 0);
-        rotateX(PI);
-        cone(10, 30);
-        pop();
+        g.push();
+        g.rotateX(PI);
+        g.rotateY(PI/2);
+        g.model(ax);
+        g.pop();
     }
 }
 
@@ -94,14 +80,14 @@ class Grid3D {
         }
     }
 
-    setColor(i, j, k) {
-        stroke(map(i, 0, this.n, 72, 216),
+    setColor(g, i, j, k) {
+        g.stroke(map(i, 0, this.n, 72, 216),
             map(j, 0, this.n, 72, 216),
             map(k, 0, this.n, 72, 216));
     }
 
-    showGrid() {
-        strokeWeight(this.strokeweight);
+    showGrid(g) {
+        g.strokeWeight(this.strokeweight);
         let a, b, c, d, x, y, z;
         for (let i = 0; i < this.n; i++) {
             for (let j = 0; j < this.n; j++) {
@@ -115,16 +101,16 @@ class Grid3D {
                     b = d + this.n;
                     c = d + this.nSq;
 
-                    this.setColor(i, j, k);
+                    this.setColor(g, i, j, k);
 
                     if (k !== this.n - 1) {
-                        line(x, y, z, this.xs[a], this.ys[a], this.zs[a]);
+                        g.line(x, y, z, this.xs[a], this.ys[a], this.zs[a]);
                     }
                     if (j !== this.n - 1) {
-                        line(x, y, z, this.xs[b], this.ys[b], this.zs[b]);
+                        g.line(x, y, z, this.xs[b], this.ys[b], this.zs[b]);
                     }
                     if (i !== this.n - 1) {
-                        line(x, y, z, this.xs[c], this.ys[c], this.zs[c]);
+                        g.line(x, y, z, this.xs[c], this.ys[c], this.zs[c]);
                     }
                 }
             }
@@ -179,22 +165,32 @@ class Arrow3D {
         );
     }
 
-    show() {
-        push();
-        fill(this.color);
-        noStroke();
+    reset(args) {
+        this.x1 = args.x1 || 0;
+        this.y1 = args.y1 || 0;
+        this.z1 = args.z1 || 0;
+        this.dx = args.x2 - this.x1 || this.dx;
+        this.dy = args.y2 - this.y1 || this.dy;
+        this.dz = args.z2 - this.z1 || this.dz;
+        this.calcParam();
+    }
+
+    show(g) {
+        g.push();
+        g.fill(this.color);
+        g.noStroke();
 
         // fixme: why do I have to call directionalLight() again?
         // fixme: And why doesn't the color values matter?
-        directionalLight(1, 1, 1, 0, 1, 0);
+        g.directionalLight(1, 1, 1, 0, 1, 0);
 
-        translate(this.dx / 2, this.dy / 2, this.dz / 2);
-        rotate(PI, this.v);
-        cylinder(this.radius, this.len);
+        g.translate(this.dx / 2, this.dy / 2, this.dz / 2);
+        g.rotate(PI, this.v);
+        g.cylinder(this.radius, this.len);
 
-        translate(0, this.len / 2, 0);
-        cone(this.tipRadius, this.tipLen);  // fixme: the arrow's length will be off by tipLen/2
-        pop();
+        g.translate(0, this.len / 2, 0);
+        g.cone(this.tipRadius, this.tipLen);  // fixme: the arrow's length will be off by tipLen/2
+        g.pop();
     }
 
 }
@@ -235,15 +231,15 @@ class Plane3D {
         )
     }
 
-    showPlane() {
-        push();
-        noStroke();
-        fill(this.color);
-        rotate(PI, this.v);
-        rotateX(PI / 2);
-        // rotateZ(frameCount / 100);
-        plane(this.size, this.size);
-        pop();
+    showPlane(g) {
+        g.push();
+        g.noStroke();
+        g.fill(this.color);
+        g.rotate(PI, this.v);
+        g.rotateX(PI / 2);
+        // g.rotateZ(frameCount / 100);
+        g.plane(this.size, this.size);
+        g.pop();
     }
 }
 

@@ -4,8 +4,8 @@ let time = {
     transform: frames(2)
 };
 
-let matrix = [1, -2, 3,
-              -3, -4, 0];
+let matrix = [1, -2, 3, -3, -4, 0];
+let target = [-2, -3, 2];
 
 // 2019-01-02, 03
 class Grid_Projection extends Grid3D {
@@ -33,9 +33,9 @@ class Grid_Projection extends Grid3D {
         }
     }
 
-    show() {
+    show(g) {
         if (frameCount < this.start) {
-            this.showGrid();
+            this.showGrid(g);
         } else {                           // show transformation
             let t = this.timer.advance();
             let a, b, c, d, x1, y1, z1, x, y, z;
@@ -58,22 +58,22 @@ class Grid_Projection extends Grid3D {
                         c = d + this.nSq;
 
                         // the rgb values of the lines to be drawn
-                        this.setColor(i, j, k);
+                        this.setColor(g, i, j, k);
 
                         if (k !== this.n - 1) {
-                            line(x, y, z,
+                            g.line(x, y, z,
                                 this.xs[a] + (this.xd[a] - this.xs[a]) * t,
                                 this.ys[a] + (this.yd[a] - this.ys[a]) * t,
                                 this.zs[a] + (this.zd[a] - this.zs[a]) * t);
                         }
                         if (j !== this.n - 1) {
-                            line(x, y, z,
+                            g.line(x, y, z,
                                 this.xs[b] + (this.xd[b] - this.xs[b]) * t,
                                 this.ys[b] + (this.yd[b] - this.ys[b]) * t,
                                 this.zs[b] + (this.zd[b] - this.zs[b]) * t);
                         }
                         if (i !== this.n - 1) {
-                            line(x, y, z,
+                            g.line(x, y, z,
                                 this.xs[c] + (this.xd[c] - this.xs[c]) * t,
                                 this.ys[c] + (this.yd[c] - this.ys[c]) * t,
                                 this.zs[c] + (this.zd[c] - this.zs[c]) * t);
@@ -87,75 +87,107 @@ class Grid_Projection extends Grid3D {
 
 
 /**
- * Adds two vectors to display, in addition to the plane
+ * Adds three vectors to display, in addition to the plane
  */
 class Plane_Projection extends Plane3D {
     constructor(args) {
         super(args);
+        this.Y = args.y;   // the y in Ax = y. A is passed in as args.mat, y is args.y
         this.step = args.step || 100;
+
+        this.start = args.start;  // time to start animation: projection of y onto span{ x1, x2 }
+
+        // x1
         this.arrow1 = new Arrow3D({
             x2: this.M[0] * this.step, y2: this.M[1] * this.step, z2: this.M[2] * this.step,
             color: color([37, 147, 37])
         });
+        // x2
         this.arrow2 = new Arrow3D({
             x2: this.M[3] * this.step, y2: this.M[4] * this.step, z2: this.M[5] * this.step,
             color: color([237, 47, 47])
         });
+
+        // y
+        let x = this.Y[0] * this.step,
+            y = this.Y[1] * this.step,
+            z = this.Y[2] * this.step;
+        this.Ys = [x, y, z];
+        this.arrow3 = new Arrow3D({
+            x2: this.Ys[0], y2: this.Ys[1], z2: this.Ys[2],
+            color: color([27, 147, 227])
+        });
+        this.P = calcProjectionMatrix(this.M);
+        this.Yd = [this.P[0] * x + this.P[1] * y + this.P[2] * z,
+            this.P[3] * x + this.P[4] * y + this.P[5] * z,
+            this.P[6] * x + this.P[7] * y + this.P[8] * z];
+        this.timer = new Timer2(frames(2));
     }
 
-    show() {
-        this.showPlane();
-        this.arrow1.show();
-        this.arrow2.show();
+    show(g) {
+        this.showPlane(g);
+        this.arrow1.show(g);
+        this.arrow2.show(g);
+        if (frameCount > this.start) {
+            let t = this.timer.advance();
+            this.arrow3.reset({
+                x2: this.Ys[0] + t * (this.Yd[0] - this.Ys[0]),
+                y2: this.Ys[1] + t * (this.Yd[1] - this.Ys[1]),
+                z2: this.Ys[2] + t * (this.Yd[2] - this.Ys[2]),
+            });
+        }
+        this.arrow3.show(g);
     }
 }
 
-let gra3d;
-let gra2d;
+let g3;
+let g2;
 
 let axes;
 let grid;
 let plane1;  // this must not be named plane, otherwise plane() function would not work
+let ax;
+
+function preload() {
+    ax = loadModel('../lib/obj/axes.obj');
+}
 
 function setup() {
     frameRate(fr);
-    gra3d = createCanvas(1200, 675, WEBGL);
-    gra2d = createGraphics(200, 200);
+
+    pixelDensity(1);
+    createCanvas(1200, 675);
+    g3 = createGraphics(2400, 1350, WEBGL);
+    g2 = createGraphics(100, 10);
 
     axes = new Axes3D({
         angle: 2.5,
-        speed: -0.01
     });
 
     plane1 = new Plane_Projection({
         mat: matrix,
-        color: color(255, 255, 0, 77)
+        y: target,
+        color: color(255, 255, 0, 77),
+        start: time.transform
     });
 
     grid = new Grid_Projection({
         lineLen: 147,
         numLines: 3,
         mat: matrix,
-        start: time.transform
+        start: time.transform,
+        strokeweight: 3
     });
 }
 
-// function showFR() {
-//     let fps = frameRate();
-//     gra2d.fill(255);
-//     gra2d.noStroke();
-//     gra2d.text("FPS: " + fps.toFixed(1), 10, 10);
-//     image(gra2d, 0, 0);
-// }
 
 function draw() {
     background(0);
+    axes.show(g3, ax);
+    grid.show(g3);
+    plane1.show(g3);
 
-    axes.show();
+    image(g3, 0, 0, 1200, 675);
 
-    grid.show();
-    plane1.show();
-
-    //image(gra3d, 0, 0);
-    //showFR();
+    showFR(g2);
 }
