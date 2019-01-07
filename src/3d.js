@@ -19,11 +19,16 @@ class Axes3D {
         this.speed = args.speed || -0.0025;  // how many radians to rotate per frame
         this.camY = -567;
         this.camRadius = 674;
+        this.model = args.model;
     }
 
-    show(g, ax) {
-        // these must be called before directionalLight and ambientLight()
+    show(g) {
+        // this will make the background transparent; background(0) will make it opaque
+        // however, it will also cause the plane to not show up, as it calls g.fill(this.color);
+        // g.background(0, 0, 0, 0);
+
         g.background(0);
+        // these must be called before directionalLight and ambientLight()
         g.fill(177);
         g.noStroke();
 
@@ -40,7 +45,7 @@ class Axes3D {
         g.push();
         g.rotateX(PI);
         g.rotateY(PI/2);
-        g.model(ax);
+        g.model(this.model);
         g.pop();
     }
 }

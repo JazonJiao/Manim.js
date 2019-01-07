@@ -1,3 +1,23 @@
+/** SUMMARY OF CLASSES
+ * '-' is-a relationship; '<' has-a relationship
+ *
+ * HelperGrid
+ * Axes
+ * - Grid
+ * - Plot < PlotPoint
+ *
+ * Rect
+ * - Emphasis
+ *
+ * Line
+ * - LineCenter
+ * - DottedLine
+ * - Arrow
+ *
+ * Table < LineCenter
+ */
+
+
 /** 2018-12-20
  * HelperGrid
  * This acts like a scaffold, and helps me find out the coordinates of the objects in a scene.
@@ -183,28 +203,24 @@ class Grid extends Axes {
  * startLSLine
  */
 class Plot extends Axes {
-    // table is a p5.Table object, and is supposed to
-    // contain two columns, storing the data's x- and y- coordinates
-    // in preload(), use: table = loadTable('SLR_data.csv', 'csv'); and pass it in
-    constructor(args, table) {
+    // 2019-01-07: after refactoring, don't need to load a csv file, data is passed in as two arrays
+    constructor(args) {
         super(args);
         //this.showLabel = args.showLabel || false;  // show numerical labels
 
         // the x- and y- coordinates of all the points are stored in two separate arrays
         // Xs and Ys are the original coordinates
         // ptXs and ptYs store the transformed version: the coordinates on the canvas
-        this.numPts = table.getRowCount();
+        this.numPts = args.xs.length;
 
         // time to start displaying least squares line
         this.startLSLine = args.startLSLine || this.start + frames(1);
 
-        this.Xs = [];
-        this.Ys = [];
+        this.Xs = args.xs;
+        this.Ys = args.ys;
         this.ptXs = [];
         this.ptYs = [];
         for (let i = 0; i < this.numPts; i++) {
-            this.Xs[i] = table.getNum(i, 0);
-            this.Ys[i] = table.getNum(i, 1);
             this.ptXs[i] = this.centerX + this.Xs[i] * this.stepX;
             this.ptYs[i] = this.centerY - this.Ys[i] * this.stepY;
         }
@@ -377,11 +393,13 @@ class Emphasis extends Rect {
 }
 
 /** 2018-12-23
- * A line that can show initialization animation; uses timer1
+ * A line that can show initialization animation
+ * The animation shows the line going from (x1, y1) to (x2, y2);
+ * to show the line growing from the center point, use LineCenter
  *
  * ----args list parameters----
  * @mandatory (number) x1, y1, x2, y2;
- * @optional (color) color; (number) start, strokeweight
+ * @optional (color) color; (number) start, strokeweight, mode [defines which timer to use]
  */
 class Line {
     constructor(args) {
@@ -389,13 +407,23 @@ class Line {
         this.y1 = args.y1;
         this.x2 = args.x2;
         this.y2 = args.y2;
+        this.duration = args.duration || frames(1);
+        //this.mode = args.mode || 2;
 
         // starting frame for initialization animation
         this.start = args.start || frames(1);
         this.strokeweight = args.strokeweight || 3;
         this.color = args.color || color(255);
 
-        this.timer = new Timer2(frames(1));
+        if (args.mode === 0) {
+            this.timer = new Timer0(this.duration);
+        } else if (args.mode === 1) {
+            this.timer = new Timer1(this.duration);
+        } else if (args.mode === 2) {
+            this.timer = new Timer2(this.duration);
+        } else {
+            this.timer = new Timer2(this.duration);
+        }
     }
 
     reset(args) {
@@ -405,17 +433,43 @@ class Line {
         this.y2 = args.y2 || this.y2;
     }
 
+    showSetup() {
+        stroke(this.color);
+        strokeWeight(this.strokeweight);
+    }
+
     show() {
         if (frameCount > this.start) {
+            this.showSetup();
             let t = this.timer.advance();
-            stroke(this.color);
-            strokeWeight(this.strokeweight);
             line(this.x1, this.y1,
                 this.x1 + (this.x2 - this.x1) * t, this.y1 + (this.y2 - this.y1) * t);
         }
     }
-
 }
+
+/** 2019-01-07
+ * LineCenter
+ * A line that grows from midpoint instead of (x1, y1)
+ * Note that this class uses Timer1
+ */
+class LineCenter extends Line {
+    constructor(args) {
+        super(args);
+        this.xm = this.x1 + (this.x2 - this.x1) / 2;
+        this.ym = this.y1 + (this.y2 - this.y1) / 2;
+    }
+
+    show() {
+        if (frameCount > this.start) {
+            this.showSetup();
+            let t = this.timer.advance() / 2;
+            line(this.xm + (this.x1 - this.xm) * t, this.ym + (this.y1 - this.ym) * t,
+                this.xm + (this.x2 - this.xm) * t, this.ym + (this.y2 - this.ym) * t);
+        }
+    }
+}
+
 
 /** 2018-12-23
  * DottedLine, a line like - - - -
@@ -455,8 +509,7 @@ class DottedLine extends Line {
                     x0 = xEnd;
                     y0 = yEnd;
                 }
-                stroke(this.color);
-                strokeWeight(this.strokeweight);
+                this.showSetup();
                 line(x, y, x0, y0);
                 x += 2 * this.dx;  // this 2 is arbitrary
                 y += 2 * this.dy;
@@ -532,12 +585,7 @@ class Arrow extends Line {
             let dx2 = this.x2 - this.x1;
             let dy2 = this.y2 - this.y1;
 
-            if (this.color) {
-                stroke(this.color);
-            } else {
-                stroke(255);
-            }
-            strokeWeight(this.strokeweight);
+            this.showSetup();
             line(this.x1, this.y1,
                 this.x1 + this.timer.advance() * dx2, this.y1 + this.timer.advance() * dy2);
 
@@ -554,4 +602,98 @@ class Arrow extends Line {
                 this.x2 + this.timer.advance() * dx4, this.y2 + this.timer.advance() * dy4);
         }
     }
+}
+
+
+/*** 2019-01-07
+ * Table
+ *
+ * The width of the grid is determined by how large the last entry of the x or y array is
+ * when that number is displayed on the canvas
+ *
+ * If I make a pair of axes representing x-y coordinate plane, I can adapt this class.
+ *
+ * ---- args list parameters ----
+ * @mandatory (p5.Font) font; (array) xs, ys;
+ * @optional (number) x, y, start, size,  (string) label1, label2
+ */
+class Table {
+    constructor(args) {
+        this.x = args.x;
+        this.y = args.y;
+        this.xs = args.xs;
+        this.ys = args.ys;
+        this.font = args.font;
+        this.label1 = "x" || args.label1;
+        this.label2 = "y" || args.label2;
+        this.start = args.start || frames(1);
+
+        this.numPts = this.xs.length;
+        this.sizeY = args.size || 37;   // size of the text
+        textFont(this.font);
+        textSize(this.sizeY);
+        this.sizeX = Math.max(textWidth("" + this.xs[this.numPts - 1]),
+            textWidth("" + this.ys[this.numPts - 1]));
+
+        this.timer0 = new Timer0(frames(1));
+        this.timers = [];
+        for (let i = 0; i < this.numPts; i++) {
+            this.timers[i] = new Timer1(frames(0.5));
+        }
+        this.textX = [new TextFadeIn({
+            size: this.sizeY,
+            str: this.label1,
+            font: font,
+            x: this.x + this.sizeX * 0.6,
+            y: this.y + this.sizeY * 0.6,
+            mode: 1,
+        })];
+        this.textY = [new TextFadeIn({
+            size: this.sizeY,
+            str: this.label2,
+            font: font,
+            x: this.x + this.sizeX * 0.6,
+            y: this.y + this.sizeY * 1.8,
+            mode: 1,
+        })];
+        for (let i = 1; i < this.numPts + 1; i++) {
+            this.textX[i] = new TextFadeIn({
+                size: this.sizeY,
+                str: "" + this.ys[i - 1],
+                font: font,
+                x: this.x + this.sizeX * (0.6 + i * 1.4),
+                y: this.y + this.sizeY * 0.6,
+                mode: 1
+            });
+            this.textY[i] = new TextFadeIn({
+                size: this.sizeY,
+                str: "" + this.xs[i - 1],
+                font: font,
+                x: this.x + this.sizeX * (0.6 + i * 1.4),
+                y: this.y + this.sizeY * 1.8,
+                mode: 1
+            });
+        }
+
+        this.horizLine = new Line({
+            x1: this.x,
+            y1: this.y + this.sizeY * 1.32,
+            x2: this.x + this.sizeX * 1.4 * (this.numPts + 1),
+            y2: this.y + this.sizeY * 1.32,
+            mode: 0
+        });
+        this.vertLines = [];
+        for (let i = 0; i < this.numPts; i++) {
+            this.vertLines[i] = new LineCenter({
+
+            });
+        }
+    }
+
+    show() {
+        for (let t of this.textX) t.show();
+        for (let t of this.textY) t.show();
+        this.horizLine.show();
+    }
+
 }

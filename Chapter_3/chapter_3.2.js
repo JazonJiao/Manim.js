@@ -162,6 +162,7 @@ function setup() {
 
     axes = new Axes3D({
         angle: 2.5,
+        model: ax
     });
 
     plane1 = new Plane_Projection({
@@ -183,7 +184,7 @@ function setup() {
 
 function draw() {
     background(0);
-    axes.show(g3, ax);
+    axes.show(g3);
     grid.show(g3);
     plane1.show(g3);
 

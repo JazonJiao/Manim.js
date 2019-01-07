@@ -31,11 +31,13 @@ function showFR(g) {
     let fps = frameRate();
     if (g === undefined) {
         fill(255);
+        textSize(10);
         noStroke();
-        text("FPS: " + fps.toFixed(1), 10, height - 10);
+        text("FPS: " + fps.toFixed(1), 10, 10);
     } else {
         g.background(0);
         g.fill(255);
+        g.textSize(10);
         g.noStroke();
         g.text("FPS: " + fps.toFixed(1), 10, 10);
         image(g, 0, 0);

@@ -15,21 +15,17 @@ let time = {
     leastSqLine: frames(13)
 };
 
+let xs = [10, 14, 20, 27, 33, 41];
+let ys = [ 9, 15, 18, 29, 31, 37];
+
+
 class SLR_Plot extends Plot {    // the plot used to illustrate simple linear regression
-    constructor(table) {
+    constructor(args) {
         // somehow in the super class, the actual coordinate of x_bar is called avgX (xs)
         // and its canvas coordinate is called xbar (ptXs). I should really be more considerate
         // in how I name things...
 
-        super({
-            right: 675,
-            centerX: 100,
-            centerY: 550,
-            stepX: 10,
-            stepY: 10,
-            start: time.axes,
-            startLSLine: time.leastSqLine
-        }, table);
+        super(args);
 
         // the two dotted lines displaying x-bar and y-bar
         this.xbar = this.centerX + this.avgX * this.stepX;
@@ -114,15 +110,15 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
     }
 }
 
-let helpergrid;
+let hg;
 let plot;
 let kats = [];
 let table;
+let font;
 
 function preload() {
-    table = loadTable('SLR_data.csv', 'csv');
+    font = loadFont('../lib/font/comic.ttf');
 }
-
 
 function setup() {
     //pixelDensity(1);
@@ -131,8 +127,27 @@ function setup() {
     createCanvas(1200, 675);
     background(0);
 
-    helpergrid = new HelperGrid();
-    plot = new SLR_Plot(table);
+    hg = new HelperGrid();
+    plot = new SLR_Plot({
+        right: 675,
+        centerX: 100,
+        centerY: 550,
+        stepX: 10,
+        stepY: 10,
+        start: time.axes,
+        startLSLine: time.leastSqLine,
+        xs: xs,
+        ys: ys
+    });
+    table = new Table({
+        x: 700,
+        y: 100,
+        size: 37,
+        xs: xs,
+        ys: ys,
+        font: font
+    });
+
 
     kats[0] = new Katex0({
         text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} " +
@@ -185,14 +200,17 @@ function setup() {
 }
 
 function draw() {
+
     background(0);
-    //helpergrid.show();
+    showFR();
+    //hg.show();
 
     plot.show();
+    table.show();
 
     for (let k of kats) {
         k.show();
     }
-    //showFR();
+
 }
 

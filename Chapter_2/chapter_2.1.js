@@ -35,13 +35,34 @@ class Plane_LinComb extends Plane3D {
             x2: 0, y2: 0, z2: 0,
             color: color([247, 217, 47])
         });
+        this.lb = -1;  // lower bound for a, b
+        this.ub = 1;   // upper bound for a, b
+        this.textX = 700;
+        this.textY = 200;
+        this.textsize = 40;
 
         this.kat = new Katex0({
             text: "\\textcolor{#f7e717}{\\vec{v}} = " +
                 "~~~~~~~~\\textcolor{f76767}{x_1} + ~~~~~~~~\\textcolor{47f747}{x_2}",
-            x: 700,
-            y: 200,
-            font_size: 40
+            x: this.textX,
+            y: this.textY,
+            font_size: this.textsize
+        });
+
+        this.text1 = new Text({
+            str: "",
+            font: args.font,
+            x: this.textX + 79,
+            y: this.textY + 34,
+            size: this.textsize + 7
+        });
+
+        this.text2 = new Text({
+            str: "",
+            font: args.font,
+            x: this.textX + 282,
+            y: this.textY + 34,
+            size: this.textsize + 7
         });
     }
 
@@ -50,8 +71,8 @@ class Plane_LinComb extends Plane3D {
         this.arrow1.show(g);
         this.arrow2.show(g);
         this.arrow3.show(g);
-        let a = map(mouseX, 0, width, -1 * this.step, 1 * this.step);
-        let b = map(mouseY, 0, height, 1 * this.step, -1 * this.step);
+        let a = map(mouseX, 0, width, this.lb * this.step, this.ub * this.step);
+        let b = map(mouseY, 0, height, this.ub * this.step, this.lb * this.step);
         this.arrow4.reset({
             x2: a * this.M[0] + b * this.M[3],
             y2: a * this.M[1] + b * this.M[4],
@@ -60,7 +81,10 @@ class Plane_LinComb extends Plane3D {
         this.arrow4.show(g);
         this.kat.show();
 
-
+        this.text1.reset({ str: "" + (a / this.step).toFixed(2) });
+        this.text1.show();
+        this.text2.reset({ str: "" + (b / this.step).toFixed(2) });
+        this.text2.show();
     }
 }
 
@@ -68,6 +92,7 @@ let g3;
 let g2;
 
 let axes;
+let font;
 let hg;
 let arrows;
 let kats = [];
@@ -75,6 +100,7 @@ let ax;
 
 function preload() {
     ax = loadModel('../lib/obj/axes.obj');
+    font = loadFont('../lib/font/times.ttf');
 }
 
 function setup() {
@@ -86,21 +112,23 @@ function setup() {
     g2 = createGraphics(100, 10);
 
     axes = new Axes3D({
-        angle: 1
+        angle: 1,
+        model: ax
     });
 
     hg = new HelperGrid({});
 
     arrows = new Plane_LinComb({
         mat: matrix,
-        y: target
+        y: target,
+        font: font
     });
 }
 
 function draw() {
     background(0);
 
-    axes.show(g3, ax);
+    axes.show(g3);
     arrows.show(g3);
     hg.show();
 

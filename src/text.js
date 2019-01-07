@@ -4,34 +4,35 @@
  * There should not be a global variable named text.
  * For mode 0 (default), the x and y define the coordinates for the upper-left corner of the text.
  * For mode 1, the x and y define the center for the text.
+ * For the base class, no init animation is displayed.
+ * If want init animation, use a derived class, TextFadeIn, or TextWriteIn
  *
  * ---- args list parameters ----
  * @mandatory (string) str; (number) x, y; (p5.Font) font
- * @optional (number) mode, size, start [if want to show init animation]
+ * @optional (number) mode, size, start [if want to show init animation];
+ *           (color) color [should be an array]
  */
 class Text {
     constructor(args) {
         this.font = args.font;
         this.str = args.str;
         this.mode = args.mode || 0;
+        this.color = args.color || [255, 255, 255];
 
         // I originally used the usual syntax of args.x || width / 2,
         // but this would not work if 0 is passed in as x
         this.x = args.x;
         this.y = args.y;
         this.size = args.size || 37;
-
-        if (args.start) {
-            this.start = args.start;
-            this.frCount = 0;
-            this.len = this.str.length;
-            this.s = "";
-        } else {
-            this.s = this.str;
-        }
     }
 
-    show() {
+    reset(args) {
+        this.str = args.str || this.str;
+        this.x = args.x || this.x;
+        this.y = args.y || this.y;
+    }
+
+    showSetup() {
         if (this.font) {
             textFont(this.font);
         }
@@ -42,16 +43,52 @@ class Text {
         }
         textSize(this.size);
 
-        if (this.start && frameCount > this.start) {
-            // array uses 0-based index, while frameCount starts at 1
-            if (this.frCount < this.len) {
-                this.s += this.str[this.frCount];
-                this.frCount++;
-            }
-        }
-
-        fill(255);
         noStroke();
+    }
+
+    show() {
+        this.showSetup();
+        fill(this.color);
+        //fill(this.color[0], this.color[1], this.color[2]);
+        text(this.str, this.x, this.y);
+    }
+}
+
+// needs to pass in extra parameters in frames, start and/or duration
+class TextFadeIn extends Text {
+    constructor(args) {
+        super(args);
+        this.start = args.start || frames(1);
+        this.duration = args.duration || frames(0.7);
+        this.timer = new Timer0(this.duration);
+    }
+
+    show() {
+        this.showSetup();
+        if (frameCount > this.start) {
+            fill(this.color[0], this.color[1], this.color[2], 255 * this.timer.advance());
+            text(this.str, this.x, this.y);
+        }
+    }
+
+}
+
+// needs to pass in an extra parameter in frames, start
+class TextWriteIn extends Text {
+    constructor(args) {
+        super(args);
+        this.start = args.start || frames(1);
+        this.frCount = 0;
+        this.len = this.str.length;
+        this.s = "";
+    }
+    show() {
+        this.showSetup();
+        fill(this.color);
+        if (frameCount > this.start && this.frCount < this.len) {
+            this.s += this.str[this.frCount];
+            this.frCount++;
+        }
         text(this.s, this.x, this.y);
     }
 }

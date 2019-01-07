@@ -25,21 +25,21 @@ function setup() {
         str: "Linear Regression",
         bubbleStart: time.bubble
     });
-    texts[0] = new Text({
+    texts[0] = new TextWriteIn({
         font: font,
         str: "Statistics",
         x: 700,
         y: 450,
         start: time.text[0]
     });
-    texts[1] = new Text({
+    texts[1] = new TextWriteIn({
         font: font,
         str: "Linear Algebra",
         x: 700,
         y: 500,
         start: time.text[1]
     });
-    texts[2] = new Text({
+    texts[2] = new TextWriteIn({
         font: font,
         str: "Machine Learning",
         x: 700,

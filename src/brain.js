@@ -128,7 +128,7 @@ class Bubble {
 
         this.strokeweight = args.strokeweight || 2;
 
-        this.text = new Text({   // a center-mode text object
+        this.text = new TextFadeIn({   // a center-mode text object
             mode: 1,
             size: args.size,
             x: this.x + this.w / 2,
@@ -200,74 +200,3 @@ class ThoughtBrain extends BrainBase {
         image(this.g, this.x, this.y, this.s, this.s);
     }
 }
-
-
-// let time = {
-//     brain: frames(1),
-//     move: frames(3.2)
-// };
-//
-// class IntroBrain extends BrainBase {
-//     constructor() {
-//         super({
-//             duration: frames(2),
-//             start: frames(1)
-//         });
-//         this.timer = new Timer2(frames(1));
-//     }
-//
-//     render() {
-//         if (frameCount < time.move) {
-//             image(this.g, 424, 177, 327, 327);
-//         } else {
-//             let t = this.timer.advance();
-//             image(this.g, 424 + t * 250, 177, 327, 327);
-//         }
-//     }
-// }
-//
-// let img;
-// let imgTimer = new Timer1(frames(1));
-// let fade;
-// let brain;
-//
-// function preload() {
-//     fade = loadImage('Fade.png');
-//     img = loadImage('181227.png');
-// }
-//
-// function setup() {
-//     // pixelDensity(2);
-//
-//     frameRate(fr);
-//     createCanvas(1200, 675);
-//     brain = new IntroBrain();
-//
-//     // img.pixelDensity(1);
-//     // img.loadPixels();
-//     // let d = pixelDensity();
-//     // let idx;
-//     // for (let x = 0; x < img.width; x++) {
-//     //     for (let y = 0; y < img.height; y++) {
-//     //         for (let i = 0; i < d; i++) {
-//     //             for (let j = 0; j < d; j++) {
-//     //                 idx = 4 * ((y * d + j) * width + (x * d + i));
-//     //                 img.pixels[idx + 3] = 177;
-//     //             }
-//     //         }
-//     //     }
-//     // }
-//     // img.updatePixels();
-// }
-//
-//
-// function draw() {
-//     background(0);
-//     if (frameCount > time.move) {
-//         let t = imgTimer.advance();
-//         image(img, 767 - t * 600, 117, 400, 400);
-//         image(fade, 267 + t * 200, 0);
-//     }
-//     brain.showBrain();
-//     brain.render();
-// }
