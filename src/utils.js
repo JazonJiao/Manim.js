@@ -4,7 +4,6 @@
  * HelperGrid
  * Axes
  * - Grid
- * - Plot < PlotPoint
  *
  * Rect
  * - Emphasis
@@ -194,146 +193,6 @@ class Grid extends Axes {
 }
 
 
-/** 2018-12-20,22
- * Plot
- * Contains a bunch of points, in addition to the axes
- * Can also derive from the Grid class
- * Capable of calculating the least square line of the points, and displaying the line
- *
- * startLSLine
- */
-class Plot extends Axes {
-    // 2019-01-07: after refactoring, don't need to load a csv file, data is passed in as two arrays
-    constructor(args) {
-        super(args);
-        //this.showLabel = args.showLabel || false;  // show numerical labels
-
-        // the x- and y- coordinates of all the points are stored in two separate arrays
-        // Xs and Ys are the original coordinates
-        // ptXs and ptYs store the transformed version: the coordinates on the canvas
-        this.numPts = args.xs.length;
-
-        // time to start displaying least squares line
-        this.startLSLine = args.startLSLine || this.start + frames(1);
-
-        this.Xs = args.xs;
-        this.Ys = args.ys;
-        this.ptXs = [];
-        this.ptYs = [];
-        for (let i = 0; i < this.numPts; i++) {
-            this.ptXs[i] = this.centerX + this.Xs[i] * this.stepX;
-            this.ptYs[i] = this.centerY - this.Ys[i] * this.stepY;
-        }
-        this.points = [];
-        for (let i = 0; i < this.numPts; i++) {
-            this.points[i] = new PlotPoint({
-                x: this.ptXs[i],
-                y: this.ptYs[i],
-                radius: 10,
-                // display all points in 1 second
-                start: this.start + i * frames(1) / this.numPts
-            })
-        }
-
-        this.avgX = this.avgxs();
-        this.avgY = this.avgys();
-
-        // the least square coefficients
-        this.beta = 0;
-        this.beta_0 = 0;
-
-        // calculate the parameters for displaying the least squares line on the canvas
-        this.calcParams();
-    }
-
-    avgxs() {
-        let sum = 0;
-        for (let i = 0; i < this.numPts; ++i) {
-            sum += this.Xs[i];
-        }
-        console.log(sum);
-        return sum / this.numPts;
-    }
-
-    avgys() {
-        let sum = 0;
-        for (let i = 0; i < this.numPts; ++i) {
-            sum += this.Ys[i];
-        }
-        console.log(sum);
-        return sum / this.numPts;
-    }
-
-    // calculate the parameters, and the coordinates of least squares line
-    // formula: beta = (sum of xi * yi - n * xbar * ybar) / (sum of xi^2 - n * xbar^2)
-    calcParams() {
-        let sumXY = 0, sumXsq = 0;
-        for (let i = 0; i < this.numPts; i++) {
-            sumXY += this.Xs[i] * this.Ys[i];
-            sumXsq += this.Xs[i] * this.Xs[i];
-        }
-        this.beta = (sumXY - this.numPts * this.avgX * this.avgY)
-            / (sumXsq - this.numPts * this.avgX * this.avgX);
-
-        this.beta_0 = this.avgY - this.beta * this.avgX;
-
-        let y_intercept = this.centerY - this.beta_0 * this.stepY;
-
-        this.LSLine = new Line({
-            x1: this.left,
-            x2: this.right,
-            y1: y_intercept + this.beta * (this.centerX - this.left),
-            y2: y_intercept - this.beta * (this.right - this.centerX),
-            color: color(77, 177, 77),
-            strokeweight: 3,
-            start: this.startLSLine
-        });
-    }
-
-
-    showPoints() {
-        for (let i = 0; i < this.numPts; ++i) {
-            this.points[i].show();
-        }
-    }
-}
-
-/** 2018-12-23
- * PlotPoint
- * Helper class of Plot. Capable of displaying init animations of the points
- *
- * ----args list parameters----
- * @mandatory (number) x1s, x2s, y1s, y2s, start
- */
-class PlotPoint {
-    constructor(args) {
-        this.x = args.x;
-        this.y = args.y;
-        this.radius = args.radius;
-        this.start = args.start;
-
-        this.timer = new Timer1(frames(0.7));
-        this.t = 0;
-    }
-
-    show() {
-        if (frameCount > this.start) {
-            this.t = this.timer.advance();
-
-            // draw the contour
-            noFill();
-            stroke(255, 0, 0);
-            strokeWeight((1 - this.t) * this.radius / 3);
-            arc(this.x, this.y, this.radius, this.radius, 0, this.t * TWO_PI);
-
-            // draw the ellipse
-            noStroke();
-            fill(255, 255, 0, 255 * this.t);
-            ellipse(this.x, this.y, this.radius, this.radius);
-        }
-    }
-}
-
 /** 2018-12-23
  * A rectangle, with fade-in init animation
  *
@@ -370,7 +229,7 @@ class Emphasis extends Rect {
     constructor(args) {
         super(args);
 
-        this.end = args.end || frames(2);
+        this.end = args.end || 10000;
         this.color = args.color || color(107, 107, 17);
 
         // timer for displaying start and end animations, respectively
@@ -463,7 +322,7 @@ class LineCenter extends Line {
     show() {
         if (frameCount > this.start) {
             this.showSetup();
-            let t = this.timer.advance() / 2;
+            let t = this.timer.advance();
             line(this.xm + (this.x1 - this.xm) * t, this.ym + (this.y1 - this.ym) * t,
                 this.xm + (this.x2 - this.xm) * t, this.ym + (this.y2 - this.ym) * t);
         }
@@ -474,7 +333,7 @@ class LineCenter extends Line {
 /** 2018-12-23
  * DottedLine, a line like - - - -
  *
- * fixme: can only display from left to right/top to bottom
+ * fixme: can only display from left to right/top to bottom; cannot display diagonally
  *
  * ----args list parameters----
  * @mandatory (number) x1, y1, x2, y2;
@@ -523,14 +382,14 @@ class DottedLine extends Line {
  * Arrow
  *
  * ----args list parameters----
- * @mandatory (number) x1, x2, y1, y2, start, frames
- * @optional (color) colors; (number) strokeweight, tipLen, tipAngle
+ * @mandatory (number) x1, x2, y1, y2, start
+ * @optional (color) colors; (number) strokeweight, tipLen, tipAngle, frames
  */
 class Arrow extends Line {
     constructor(args) {
         super(args);
-        this.frames = args.frames || frames(6);
-        this.timer = new Timer2(this.frames);
+        this.duration = args.duration || frames(6);
+        this.timer = new Timer2(this.duration);
 
         // define tip length/angle for all vectors on this canvas
         this.tipLen = args.tipLen || 15;
@@ -635,40 +494,41 @@ class Table {
         this.sizeX = Math.max(textWidth("" + this.xs[this.numPts - 1]),
             textWidth("" + this.ys[this.numPts - 1]));
 
-        this.timer0 = new Timer0(frames(1));
-        this.timers = [];
-        for (let i = 0; i < this.numPts; i++) {
-            this.timers[i] = new Timer1(frames(0.5));
-        }
+        this.duration = args.duration || frames(1);
+        this.timer = new Timer0(this.duration);
         this.textX = [new TextFadeIn({
+            duration: frames(0.5),
             size: this.sizeY,
             str: this.label1,
-            font: font,
+            font: this.font,
             x: this.x + this.sizeX * 0.6,
             y: this.y + this.sizeY * 0.6,
             mode: 1,
         })];
         this.textY = [new TextFadeIn({
+            duration: frames(0.5),
             size: this.sizeY,
             str: this.label2,
-            font: font,
+            font: this.font,
             x: this.x + this.sizeX * 0.6,
             y: this.y + this.sizeY * 1.8,
             mode: 1,
         })];
         for (let i = 1; i < this.numPts + 1; i++) {
             this.textX[i] = new TextFadeIn({
+                duration: frames(0.5),
                 size: this.sizeY,
                 str: "" + this.ys[i - 1],
-                font: font,
+                font: this.font,
                 x: this.x + this.sizeX * (0.6 + i * 1.4),
                 y: this.y + this.sizeY * 0.6,
                 mode: 1
             });
             this.textY[i] = new TextFadeIn({
+                duration: frames(0.5),
                 size: this.sizeY,
                 str: "" + this.xs[i - 1],
-                font: font,
+                font: this.font,
                 x: this.x + this.sizeX * (0.6 + i * 1.4),
                 y: this.y + this.sizeY * 1.8,
                 mode: 1
@@ -676,6 +536,7 @@ class Table {
         }
 
         this.horizLine = new Line({
+            strokeweight: 2,
             x1: this.x,
             y1: this.y + this.sizeY * 1.32,
             x2: this.x + this.sizeX * 1.4 * (this.numPts + 1),
@@ -683,17 +544,32 @@ class Table {
             mode: 0
         });
         this.vertLines = [];
-        for (let i = 0; i < this.numPts; i++) {
-            this.vertLines[i] = new LineCenter({
-
+        for (let i = 1; i < this.numPts + 1; i++) {
+            this.vertLines[i - 1] = new LineCenter({
+                strokeweight: 2,
+                duration: frames(0.5),
+                x1: this.x + this.sizeX * (i * 1.4 - 0.1),
+                x2: this.x + this.sizeX * (i * 1.4 - 0.1),
+                y1: this.y + this.sizeY * 0.17,
+                y2: this.y + this.sizeY * 2.47,
+                mode: 1
             });
         }
     }
 
     show() {
-        for (let t of this.textX) t.show();
-        for (let t of this.textY) t.show();
-        this.horizLine.show();
+        if (frameCount > this.start) {
+            this.horizLine.show();
+            let t = Math.round(this.timer.advance() * (this.numPts + 1));
+            for (let i = 0; i < this.numPts + 1; i++) {
+                if (i < t) {
+                    this.textX[i].show();
+                    this.textY[i].show();
+                    if (i < this.numPts) {
+                        this.vertLines[i].show();
+                    }
+                }
+            }
+        }
     }
-
 }

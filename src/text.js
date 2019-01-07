@@ -277,3 +277,63 @@ class Katex9 extends KatexBase {
         katex.render(this.text, kt9);
     }
 }
+
+class Katex10 extends KatexBase {
+    constructor(args) {
+        super(args);
+        this.k.id('kt10');
+    }
+
+    show() {
+        this.showInit();
+        katex.render(this.text, kt10);
+    }
+}
+
+class Katex11 extends KatexBase {
+    constructor(args) {
+        super(args);
+        this.k.id('kt11');
+    }
+
+    show() {
+        this.showInit();
+        katex.render(this.text, kt11);
+    }
+}
+
+class Katex12 extends KatexBase {
+    constructor(args) {
+        super(args);
+        this.k.id('kt12');
+    }
+
+    show() {
+        this.showInit();
+        katex.render(this.text, kt12);
+    }
+}
+
+class Katex13 extends KatexBase {
+    constructor(args) {
+        super(args);
+        this.k.id('kt13');
+    }
+
+    show() {
+        this.showInit();
+        katex.render(this.text, kt13);
+    }
+}
+
+class Katex14 extends KatexBase {
+    constructor(args) {
+        super(args);
+        this.k.id('kt9');
+    }
+
+    show() {
+        this.showInit();
+        katex.render(this.text, kt14);
+    }
+}

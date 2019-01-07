@@ -1,5 +1,5 @@
 /******
- * Global variables
+ * Global variables/functions
  */
 
 let fr = 30;  // frame rate
@@ -18,6 +18,22 @@ let fr = 30;  // frame rate
  */
 function frames(sec) {
     return Math.round(fr * sec);
+}
+
+/**
+ * For scenes that requires repetition of many similar scenes that will be rendered separately,
+ * such as chapter_1, this function returns 10000, representing "forever later", for animations
+ * that I don't want to show for a given scene.
+ *
+ * @param t
+ * @returns {number}
+ */
+function getT(t) {
+    if (t === undefined) {
+        return 10000;
+    } else {
+        return t;
+    }
 }
 
 /**
