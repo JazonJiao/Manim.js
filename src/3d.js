@@ -140,6 +140,8 @@ class Arrow3D {
         this.dy = args.y2 - this.y1;
         this.dz = args.z2 - this.z1;
 
+        this.label = args.label;
+
         this.color = args.color || color(177);
         this.radius = args.radius || 3;
         this.tipLen = args.tipLen || 30;
@@ -195,6 +197,15 @@ class Arrow3D {
 
         g.translate(0, this.len / 2, 0);
         g.cone(this.tipRadius, this.tipLen);  // fixme: the arrow's length will be off by tipLen/2
+        if (this.label) {
+            if (this.dx > 0) {
+                g.rotateZ(-PI / 2);
+            } else {
+                g.rotateZ(PI / 2);
+            }
+
+            g.model(this.label);
+        }
         g.pop();
     }
 

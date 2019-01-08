@@ -19,6 +19,7 @@ class Plot extends Axes {
 
         // time to start displaying least squares line
         this.startLSLine = args.startLSLine || this.start + frames(1);
+        this.startPt = args.startPt || this.start;
 
         this.Xs = args.xs;
         this.Ys = args.ys;
@@ -32,16 +33,9 @@ class Plot extends Axes {
                 y: this.ptYs[i],
                 radius: 10,
                 // display all points in 1 second
-                start: this.start + i * frames(1) / this.numPts
+                start: this.startPt + i * frames(1) / this.numPts
             })
         }
-
-        this.avgX = this.avgxs();
-        this.avgY = this.avgys();
-
-        // the least square coefficients
-        this.beta = 0;
-        this.beta_0 = 0;
 
         // calculate the parameters for displaying the least squares line on the canvas
         this.calcParams();
@@ -69,7 +63,6 @@ class Plot extends Axes {
         for (let i = 0; i < this.numPts; ++i) {
             sum += this.Xs[i];
         }
-        console.log(sum);
         return sum / this.numPts;
     }
 
@@ -78,13 +71,16 @@ class Plot extends Axes {
         for (let i = 0; i < this.numPts; ++i) {
             sum += this.Ys[i];
         }
-        console.log(sum);
         return sum / this.numPts;
     }
+
 
     // calculate the parameters, and the coordinates of least squares line
     // formula: beta = (sum of xi * yi - n * xbar * ybar) / (sum of xi^2 - n * xbar^2)
     calcParams() {
+        this.avgX = this.avgxs();
+        this.avgY = this.avgys();
+
         let sumXY = 0, sumXsq = 0;
         for (let i = 0; i < this.numPts; i++) {
             sumXY += this.Xs[i] * this.Ys[i];
@@ -96,6 +92,8 @@ class Plot extends Axes {
         this.beta_0 = this.avgY - this.beta * this.avgX;
 
         this.y_intercept = this.centerY - this.beta_0 * this.stepY;
+        this.xbar = this.centerX + this.avgX * this.stepX;
+        this.ybar = this.centerY - this.avgY * this.stepY;
     }
 
 
@@ -124,6 +122,11 @@ class PlotPoint {
         this.t = 0;
     }
 
+    reset(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
     show() {
         if (frameCount > this.start) {
             this.t = this.timer.advance();
@@ -146,43 +149,53 @@ class PlotPoint {
 
 // define the time for init animations
 let time;
-let sceneNum = 1;
+let sceneNum = 3;
 
 // scene 1 -- paragraph 1
 switch (sceneNum) {
-    case 1:
+    case 1:  // paragraph 1
+        let t0 = frames(19);
         time = {
             axes: frames(2),
-            leastSqLine: frames(4),
-            formula: frames(6),
-            formulabeta: frames(8),
+            leastSqLine: frames(5),
+            formula: frames(8),
+            emphasizeBhat: frames(11),
+            emphasizeBend: frames(12.5),
+            formulabeta: frames(13),
+            dottedlineX: t0,
+            dottedlineY: t0,
+            rect1: t0 + 50,
+            rects: t0,
         };
         break;
-    case 2:
+    case 2:  // paragraph 2
+        time = {
+            axes: frames(1),
+            table: frames(4),
+            points: frames(7),
+            indVar: frames(10),
+            depVar: frames(13),
+            emphasizeX: frames(15),
+            emphasizeXend: frames(17),
+            simpleLR: frames(18),
+        };
+        break;
+    case 3:  // paragraph 3, 4
         time = {
             axes: frames(0),
-            table: frames(2),
-            indVar: frames(4),
-            depVar: frames(6),
-            simpleLR: frames(8),
+            linRel: frames(4),
+            leastSqLine: frames(8),
+            formula: frames(12),
+            showSlope: frames(17),
+            showIntercept: frames(19),
+            // emphasizeBhat: frames(6),
+            // emphasizeB0: frames(7),
+            // emphasizeBend: frames(8),
+            // emphasizeB0end: frames(8),
+            // emphasizeYhat: frames(9)
         };
         break;
-    case 3:
-        time = {
-            axes: frames(0),
-            linRel: frames(3),
-            leastSqLine: frames(4),
-            formula: frames(5),
-            showSlope: frames(4),
-            showIntercept: frames(5),
-            emphasizeBhat: frames(6),
-            emphasizeB0: frames(7),
-            emphasizeBend: frames(8),
-            emphasizeB0end: frames(8),
-            emphasizeYhat: frames(9)
-        };
-        break;
-    case 4:
+    case 4:  // paragraph 5, 6
         time = {
             axes: frames(0),
             formula: frames(0),
@@ -208,86 +221,70 @@ switch (sceneNum) {
             emphasizeDenom: frames(33)
         };
         break;
-    case 5:
+    case 5:  // paragraph 7 (1)
         time = {
             axes: frames(0),
             rect1: frames(0),
+            rects: frames(0),
+            dottedlineX: frames(0),
+            dottedlineY: frames(0),
             formulabeta: frames(0),
             sumRectA: frames(0),
+
             yEqualsx: frames(1),
-            //sumSqA: frames(4),
+            toxx: frames(2),
+            showCoord1: frames(3),
+            showCoordFade1: frames(5)
+        };
+        break;
+    case 6:  // paragraph 7 (2): show the line y = x-bar
+        time = {
+            axes: frames(0),
+            rect1: frames(0),
+            rects: frames(0),
+            dottedlineX: frames(0),
+            formulabeta: frames(0),
+            sumRectA: frames(0),
+            yEqualsx: frames(0),
+            toxx: frames(1),
+
+            dottedlineY: frames(4),
+        };
+        break;
+    case 7:  // paragraph 7 (3): show the squares
+        time = {
+            axes: frames(0),
+            dottedlineX: frames(0),
+            formulabeta: frames(0),
+            sumRectA: frames(0),
+            yEqualsx: frames(0),
+            toxx: frames(1),
+            dottedlineY: frames(0),
+
+            rects: frames(4),
+            rect1: frames(5.7),
+            xMinusXbarLine: frames(7),
+            xMinusXbar: frames(8),
+            sumSqA: frames(9),
+            emphasizeDenom: frames(10)
+        };
+        break;
+    case 9:
+        time = {
+            axes: frames(0),
+
+            // reset1: frames(1),
+            // reset2: frames(2),
+            quadrants: frames(3),
+            plusMinus: frames(3.7)
         }
 }
-// let time = {
-//     axes: frames(2),
-//     leastSqLine: frames(4),
-//     formula: frames(6),
-//     formulabeta: frames(8),
-// };
-
-// scene 2 -- paragraph 2
-// let time = {
-//     axes: frames(0),
-//     table: frames(2),
-//     indVar: frames(4),
-//     depVar: frames(6),
-//     simpleLR: frames(8),
-// };
-
-// scene 3 -- paragraph 3, 4 (LS line disappears at end of scene)
-// let time = {
-//     axes: frames(0),
-//     linRel: frames(3),
-//     leastSqLine: frames(4),
-//     formula: frames(5),
-//     showSlope: frames(4),
-//     showIntercept: frames(5),
-//     emphasizeBhat: frames(6),
-//     emphasizeB0: frames(7),
-//     emphasizeBend: frames(8),
-//     emphasizeB0end: frames(8),
-//     emphasizeYhat: frames(9)
-// };
-
-// scene 4 -- paragraph 5, 6
-// let time = {
-//     axes: frames(0),
-//     formula: frames(0),
-//     emphasizeBhat: frames(3) ,
-//     formulabeta: frames(4) ,
-//     emphasizeBend: frames(6) ,
-//     dottedlineX: frames(8) ,
-//     dottedlineY: frames(10) ,
-//     showCoord: frames(12) ,
-//     showCoordFade: frames(14) ,
-//     xMinusXbarLine: frames(15) ,
-//     xMinusXbar: frames(16) ,
-//     yMinusYbarLine: frames(18) ,
-//     yMinusYbar: frames(19) ,
-//     rect1: frames(21) ,
-//     formulaFadeOut: frames(22.7) ,
-//     areaEq: frames(23) ,
-//     rects: frames(25) ,
-//     areaEqFadeOut: frames(26.7) ,
-//     sumRectA: frames(27) ,
-//     emphasizeNumerator: frames(29) ,
-//     emphasizeNumEnd: frames(31) ,
-//     emphasizeDenom: frames(33)
-// };
-
-// scene 5: paragraph 7
-// let time = {
-//     axes: frames(0),
-//     rect1: frames(0),
-//     formulabeta: frames(0),
-//     sumRectA: frames(0),
-//     yEqualsx: frames(1),
-//     //sumSqA: frames(4),
-// };
-
 
 let xs = [10, 14, 20, 27, 33, 41];
-let ys = [12, 17, 18, 29, 31, 37];
+let ys = [11, 17, 18, 29, 31, 37];
+// let xs = [7, 14, 20, 27, 33, 41];
+// let ys = [-2, 4, 18, 29, 36, 37];
+let ys2 = [42, 37, 22, 19, 7, -2];
 
 
 class SLR_Plot extends Plot {    // the plot used to illustrate simple linear regression
@@ -295,12 +292,10 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
         // somehow in the super class, the actual coordinate of x_bar is called avgX (xs)
         // and its canvas coordinate is called xbar (ptXs). I should really be more considerate
         // in how I name things...
-
         super(args);
 
         // the two dotted lines displaying x-bar and y-bar
-        this.xbar = this.centerX + this.avgX * this.stepX;
-        this.ybar = this.centerY - this.avgY * this.stepY;
+
         this.xbarLine = new DottedLine({
             x1: this.xbar, x2: this.xbar,
             y1: this.top, y2: this.bottom,
@@ -380,15 +375,104 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             x1: 0, y1: 650,
             x2: 650, y2: 0,
             start: getT(time.yEqualsx),
-            color: color(77, 177, 77)
+            color: color(77, 177, 77),
+        });
+        this.quadrant2 = new Emphasis({
+            x: 0, y: 0,
+            w: this.xbar, h: this.ybar,
+            start: getT(time.quadrants),
+            color: color(77, 77, 177, 77)
+        });
+        this.quadrant4 = new Emphasis({
+            x: this.xbar, y: this.ybar,
+            w: this.right - this.xbar, h: this.bottom - this.ybar,
+            start: getT(time.quadrants),
+            color: color(77, 77, 177, 77)
+        });
+        this.plusMinus = [];
+        this.plusMinus[0] = new TextFadeIn({
+            str: "+",
+            mode: 1, font: comic,
+            x: this.xbar + (this.right - this.xbar) / 2,
+            y: this.ybar / 2,
+            size: 77,
+            start: getT(time.plusMinus)
+        });
+        this.plusMinus[1] = new TextFadeIn({
+            str: "-",
+            mode: 1, font: comic,
+            x: this.xbar / 2,
+            y: this.ybar / 2,
+            size: 77,
+            start: getT(time.plusMinus)
+        });
+        this.plusMinus[2] = new TextFadeIn({
+            str: "+",
+            mode: 1, font: comic,
+            x: this.xbar / 2,
+            y: this.ybar + (this.bottom - this.ybar) / 2,
+            size: 77,
+            start: getT(time.plusMinus)
+        });
+        this.plusMinus[3] = new TextFadeIn({
+            str: "-",
+            mode: 1, font: comic,
+            x: this.xbar + (this.right - this.xbar) / 2,
+            y: this.ybar + (this.bottom - this.ybar) / 2,
+            size: 77,
+            start: getT(time.plusMinus)
         });
     }
 
-    reset(xs, ys) {
 
+
+    reset(xs, ys) {
+        this.xo = this.Xs.copyWithin();
+        this.yo = this.Ys.copyWithin();
+        this.xd = xs;
+        this.yd = ys;
+        this.timer = new Timer2(frames(1.4));
+        this.resetted = true;
     }
 
+    resetting() {
+        let t = this.timer.advance();
+        for (let i = 0; i < this.numPts; i++) {
+            // this.Xs[i] = this.xo[i] + (this.xd[i] - this.xo[i]) * t;
+            this.Ys[i] = this.yo[i] + (this.yd[i] - this.yo[i]) * t;
+        }
+        this.calcCoords();
+        for (let i = 0; i < this.numPts; i++) {
+            this.points[i].reset(this.ptXs[i], this.ptYs[i]);
+        }
+        this.calcParams();
+        this.LSLine.reset({
+            y1: this.y_intercept + this.beta * (this.centerX - this.left),
+            y2: this.y_intercept - this.beta * (this.right - this.centerX)
+        });
+        this.ybarLine.reset({
+            y1: this.ybar, y2: this.ybar,
+        });
+        this.xMinusxbarLine.reset({
+            x1: this.xbar,
+            x2: this.ptXs[this.numPts - 1],
+            y1: this.ptYs[this.numPts - 1],
+            y2: this.ptYs[this.numPts - 1],
+        });
+        for (let i = 0; i < this.numPts; i++) {
+            this.rects[i].reset({
+                x: this.xbar,
+                y: this.ybar,
+                w: this.ptXs[i] - this.xbar,
+                h: this.ptYs[i] - this.ybar
+            })
+        }
+    };
+
     show() {
+        if (this.resetted) {
+            this.resetting();
+        }
         this.xbarLine.show();
         this.ybarLine.show();
         this.xMinusxbarLine.show();
@@ -403,6 +487,11 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
         this.slopeLine1.show();
         this.slopeLine2.show();
         this.yEqualsxLine.show();
+        this.quadrant2.show();
+        this.quadrant4.show();
+        for (let p of this.plusMinus) {
+            p.show();
+        }
     }
 
     getXbar() {
@@ -441,6 +530,7 @@ function setup() {
         centerX: 100, centerY: 550,
         stepX: 10, stepY: 10,
         start: getT(time.axes),
+        startPt: time.points,
         startLSLine: getT(time.leastSqLine),
         xs: xs, ys: ys
     });
@@ -512,9 +602,16 @@ function setup() {
 
     txts[5] = new TextWriteIn({
         str: "Sum of square areas",
-        x: 727, y: 327,
+        x: 757, y: 477,
         font: comic,
+        color: color(255, 255, 17),
         start: getT(time.sumSqA),
+    });
+    arrows[3] = new Arrow({
+        x1: 940, y1: 490,
+        x2: 1000, y2: 400,
+        start: getT(time.sumSqA),
+        color: color(255, 255, 17)
     });
 
 
@@ -552,6 +649,7 @@ function setup() {
         x: 77,
         y: plot.getYbar() - 57,
         start: getT(time.dottedlineY),
+        fadeOut: true, end: getT(time.toxx),
         fadeIn: true,
         font_size: 37,
     });
@@ -559,7 +657,7 @@ function setup() {
     kats[3] = new Katex3({
         text: "x_1 - \\bar{x}",
         x: 375,
-        y: 90,
+        y: sceneNum === 7 ? 47 : 90,
         color: color(247, 137, 27),
         start: getT(time.xMinusXbar),
         fadeIn: true,
@@ -597,11 +695,9 @@ function setup() {
         text: "Area = (x_1 - \\bar{x})(y_1 - \\bar{y})",
         x: 650, y: 77,
         color: color(255, 255, 17),
-        start: getT(time.areaEq),
-        fadeIn: true,
+        fadeIn: true, start: getT(time.areaEq),
         font_size: 42,
-        fadeOut: true,
-        end: getT(time.areaEqFadeOut)
+        fadeOut: true, end: getT(time.areaEqFadeOut)
     });
 
     kats[9] = new Katex9({
@@ -610,6 +706,24 @@ function setup() {
         color: color(247, 137, 27),
         fadeIn: true, start: getT(time.showCoord),
         fadeOut: true, end: getT(time.showCoordFade),
+        font_size: 37
+    });
+
+    kats[10] = new Katex10({
+        text: "\\bar{x}",
+        x: 77,
+        y: plot.getYbar() - 57,
+        start: getT(time.toxx),
+        fadeIn: true,
+        font_size: 37
+    });
+
+    kats[11] = new Katex11({
+        text: "(x_i, x_i)",
+        x: 520, y: 100,
+        color: color(247, 137, 27),
+        fadeIn: true, start: getT(time.showCoord1),
+        fadeOut: true, end: getT(time.showCoordFade1),
         font_size: 37
     });
 
@@ -641,13 +755,24 @@ function setup() {
         w: 267, h: 60,
         start: getT(time.emphasizeDenom)
     });
+    emps[5] = new Emphasis({
+        x: 700, y: 177,
+        w: 57, h: 40,
+        start: getT(time.emphasizeX),
+        end: getT(time.emphasizeXend)
+    })
 }
 
 function draw() {
     background(0);
-    showFR();
-    hg.show();
+    //showFR();
+    //hg.show();
     for (let e of emps) e.show();
+
+    if (frameCount === getT(time.toxx))
+        plot.reset(xs, xs);
+    if (frameCount === getT(time.reset1))
+        plot.reset(xs, ys2);
 
     plot.show();
     table.show();

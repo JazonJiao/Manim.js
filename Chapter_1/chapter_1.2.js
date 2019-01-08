@@ -1,7 +1,7 @@
 let time = {
-    brain: frames(2),
-    bubble: frames(3),
-    text: [frames(7), frames(9), frames(11)]
+    brain: frames(0),
+    bubble: frames(5),
+    text: [frames(11), frames(12.5), frames(14)]
 };
 
 let hg;
@@ -22,7 +22,7 @@ function setup() {
         start: time.brain,
         font: font,
         size: 57,
-        str: "Linear Regression",
+        str: "Multiple Regression",
         bubbleStart: time.bubble
     });
     texts[0] = new TextWriteIn({

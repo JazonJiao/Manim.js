@@ -211,6 +211,13 @@ class Rect {
         this.timer = new Timer0(frames(1));
     }
 
+    reset(args) {
+        this.x = args.x || this.x;
+        this.y = args.y || this.y;
+        this.w = args.w || this.w;
+        this.h = args.h || this.h;
+    }
+
     show() {
 
     }

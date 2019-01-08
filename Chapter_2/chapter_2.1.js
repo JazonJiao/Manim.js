@@ -1,8 +1,8 @@
 
 let time = {};
 
-let matrix = [1, -1, 1, -3, -4, 2];
-let target = [-2, -3, 2];
+let matrix = [1, -1, 1, -3, -2, 2];
+let target = [-1, -3, 1];
 
 // 2019-01-06
 // this class is quite similar to the Plane_Projection class in chapter 3.2;
@@ -16,18 +16,21 @@ class Plane_LinComb extends Plane3D {
         // x1
         this.arrow1 = new Arrow3D({
             x2: this.M[0] * this.step, y2: this.M[1] * this.step, z2: this.M[2] * this.step,
-            color: color([237, 47, 47])
+            color: color([237, 47, 47]),
+            label: args.x_1
         });
         // x2
         this.arrow2 = new Arrow3D({
             x2: this.M[3] * this.step, y2: this.M[4] * this.step, z2: this.M[5] * this.step,
-            color: color([37, 147, 37])
+            color: color([37, 147, 37]),
+            label: args.x_2
         });
 
         // y
         this.arrow3 = new Arrow3D({
             x2: this.Y[0] * this.step, y2: this.Y[1] * this.step, z2: this.Y[2] * this.step,
-            color: color([27, 147, 227])
+            color: color([27, 147, 227]),
+            label: args.y_o
         });
 
         // v = ax1 + bx2
@@ -96,10 +99,13 @@ let font;
 let hg;
 let arrows;
 let kats = [];
-let ax;
+let obj = [];
 
 function preload() {
-    ax = loadModel('../lib/obj/axes.obj');
+    obj[0] = loadModel('../lib/obj/axes.obj');
+    obj[1] = loadModel('../lib/obj/x_1.obj');
+    obj[2] = loadModel('../lib/obj/x_2.obj');
+    obj[3] = loadModel('../lib/obj/y.obj');
     font = loadFont('../lib/font/times.ttf');
 }
 
@@ -112,8 +118,8 @@ function setup() {
     g2 = createGraphics(100, 10);
 
     axes = new Axes3D({
-        angle: 1,
-        model: ax
+        angle: -1,
+        model: obj[0]
     });
 
     hg = new HelperGrid({});
@@ -121,7 +127,10 @@ function setup() {
     arrows = new Plane_LinComb({
         mat: matrix,
         y: target,
-        font: font
+        font: font,
+        x_1: obj[1],
+        x_2: obj[2],
+        y_o: obj[3]
     });
 }
 
@@ -130,12 +139,12 @@ function draw() {
 
     axes.show(g3);
     arrows.show(g3);
-    hg.show();
+    //hg.show();
 
     image(g3, 0, 0, 675, 675);
 
 
     for (let k of kats) k.show();
 
-    showFR(g2);
+    //showFR(g2);
 }
