@@ -367,11 +367,11 @@ class DottedLine extends Line {
             let yEnd = this.y1 + this.h * t;
 
             // I put an "or" here, otherwise if line is vertical the loop never enters
-            while (x < xEnd || y < yEnd) {
+            while (x < xEnd || y > yEnd) {
                 let x0 = x + this.dx;
                 let y0 = y + this.dy;
                 // Same: I put an "or" here, otherwise if line is vertical there won't be smoothness
-                if (x0 > xEnd || y0 > yEnd) {
+                if (x0 > xEnd || y0 < yEnd) {
                     x0 = xEnd;
                     y0 = yEnd;
                 }

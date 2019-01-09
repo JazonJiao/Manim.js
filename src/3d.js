@@ -9,8 +9,10 @@
  * Axis3D (WEBGL)
  * This class is also responsible for the basic setups of a 3D scene,
  * including lighting and camera. fixme: Its show() is called first in draw().
+ * in preload(), use axesObject = loadModel('../lib/obj/axes.obj'); and pass that in as model
  *
  * ---- args list parameters---
+ * @mandatory (p5.Gemoetry) model
  * @optional (number) angle, speed
  */
 class Axes3D {
@@ -129,7 +131,7 @@ class Grid3D {
  *
  * ---- args list parameters ----
  * @mandatory (number) x2, y2, z2--those should be using p5's coordinate system
- * @optional (number) x1, y1, z1, radius, tipLen, tipRadius; (color) color
+ * @optional (number) x1, y1, z1, radius, tipLen, tipRadius; (color) color; (p5.Geometry) label
  */
 class Arrow3D {
     constructor(args) {
@@ -140,6 +142,8 @@ class Arrow3D {
         this.dy = args.y2 - this.y1;
         this.dz = args.z2 - this.z1;
 
+        // this is a .obj model that represent the label of this vector
+        // I use 3ds Max to generate this model.
         this.label = args.label;
 
         this.color = args.color || color(177);
@@ -196,8 +200,8 @@ class Arrow3D {
         g.cylinder(this.radius, this.len);
 
         g.translate(0, this.len / 2, 0);
-        g.cone(this.tipRadius, this.tipLen);  // fixme: the arrow's length will be off by tipLen/2
-        if (this.label) {
+        g.cone(this.tipRadius, this.tipLen);  // fixme: the arrow's length will be off by tipLen / 2
+        if (this.label) {  // fixme: how to determine rotation based on the orientation of arrow?
             if (this.dx > 0) {
                 g.rotateZ(-PI / 2);
             } else {

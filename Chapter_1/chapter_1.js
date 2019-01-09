@@ -109,7 +109,7 @@ class Plot extends Axes {
  * Helper class of Plot. Capable of displaying init animations of the points
  *
  * ----args list parameters----
- * @mandatory (number) x1s, x2s, y1s, y2s, start
+ * @mandatory (number) x, y, radius, start
  */
 class PlotPoint {
     constructor(args) {
@@ -117,6 +117,7 @@ class PlotPoint {
         this.y = args.y;
         this.radius = args.radius;
         this.start = args.start;
+        this.color = args.color || [255, 255, 0];
 
         this.timer = new Timer1(frames(0.7));
         this.t = 0;
@@ -139,7 +140,7 @@ class PlotPoint {
 
             // draw the ellipse
             noStroke();
-            fill(255, 255, 0, 255 * this.t);
+            fill(this.color[0], this.color[1], this.color[2], 255 * this.t);
             ellipse(this.x, this.y, this.radius, this.radius);
         }
     }
@@ -150,11 +151,14 @@ class PlotPoint {
 // define the time for init animations
 let time;
 let sceneNum = 3;
+let t = 0;
+
+// todo: next time, be more careful at naming things and maybe use += to control time
 
 // scene 1 -- paragraph 1
 switch (sceneNum) {
     case 1:  // paragraph 1
-        let t0 = frames(19);
+        t = frames(19);
         time = {
             axes: frames(2),
             leastSqLine: frames(5),
@@ -169,10 +173,11 @@ switch (sceneNum) {
         };
         break;
     case 2:  // paragraph 2
+        t = 0;
         time = {
-            axes: frames(1),
-            table: frames(4),
-            points: frames(7),
+            axes: t += 30,
+            table: t += 30,
+            points: t += 50,
             indVar: frames(10),
             depVar: frames(13),
             emphasizeX: frames(15),
@@ -181,44 +186,50 @@ switch (sceneNum) {
         };
         break;
     case 3:  // paragraph 3, 4
+        let t = 0;
         time = {
             axes: frames(0),
             linRel: frames(4),
             leastSqLine: frames(8),
             formula: frames(12),
-            showSlope: frames(17),
-            showIntercept: frames(19),
-            // emphasizeBhat: frames(6),
-            // emphasizeB0: frames(7),
-            // emphasizeBend: frames(8),
-            // emphasizeB0end: frames(8),
-            // emphasizeYhat: frames(9)
+            showSlope: frames(16),
+            showIntercept: frames(18),
+            emphasizeBhat: frames(21),
+            emphasizeB0: frames(22),
+            estimates: frames(26),
+            emphasizeBend: frames(36),
+            emphasizeB0end: frames(36),
+            emphasizeYhat: frames(36.7),
+            givenx: frames(40) - t,
+            estimateLine: frames(42) - t,
+            giveny: frames(43) - t,
         };
         break;
     case 4:  // paragraph 5, 6
+        t = frames(55);
         time = {
             axes: frames(0),
             formula: frames(0),
             emphasizeBhat: frames(3),
-            formulabeta: frames(4),
-            emphasizeBend: frames(6),
-            dottedlineX: frames(8),
-            dottedlineY: frames(10),
-            showCoord: frames(12),
-            showCoordFade: frames(14),
-            xMinusXbarLine: frames(15),
-            xMinusXbar: frames(16),
-            yMinusYbarLine: frames(18),
-            yMinusYbar: frames(19),
-            rect1: frames(21),
-            formulaFadeOut: frames(22.7),
-            areaEq: frames(23),
-            rects: frames(25),
-            areaEqFadeOut: frames(26.7),
-            sumRectA: frames(27),
-            emphasizeNumerator: frames(29),
-            emphasizeNumEnd: frames(31),
-            emphasizeDenom: frames(33)
+            formulabeta: frames(6),
+            emphasizeBend: frames(20),
+            dottedlineX: frames(21),
+            dottedlineY: frames(27),
+            showCoord: frames(35),
+            showCoordFade: frames(37),
+            xMinusXbarLine: frames(38.7),
+            xMinusXbar: frames(40.7),
+            yMinusYbarLine: frames(44),
+            yMinusYbar: frames(46),
+            rect1: frames(50),
+            formulaFadeOut: frames(52.7),
+            areaEq: frames(53),
+            rects: t + frames(5),
+            areaEqFadeOut: t + frames(9.7),
+            sumRectA: t + frames(10),
+            emphasizeNumerator: t + frames(13),
+            emphasizeNumEnd: t + frames(15),
+            emphasizeDenom: t + frames(20)
         };
         break;
     case 5:  // paragraph 7 (1)
@@ -277,7 +288,8 @@ switch (sceneNum) {
             // reset2: frames(2),
             quadrants: frames(3),
             plusMinus: frames(3.7)
-        }
+        };
+        break;
 }
 
 let xs = [10, 14, 20, 27, 33, 41];
@@ -422,6 +434,29 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             size: 77,
             start: getT(time.plusMinus)
         });
+        // added for scene 3
+        let givenx = 450;
+        this.givenXPt = new PlotPoint({
+            x: givenx + this.centerX,
+            y: this.centerY,
+            radius: 24,
+            start: getT(time.givenx),
+            color: [255, 185, 0]
+        });
+        this.givenYPt = new PlotPoint({
+            x: givenx + this.centerX,
+            y: this.y_intercept - this.beta * givenx,
+            radius: 17,
+            start: getT(time.giveny),
+            color: [255, 185, 0]
+        });
+        this.estimateLine = new DottedLine({
+            x1: givenx + this.centerX, x2: givenx + this.centerX,
+            y2: this.y_intercept - this.beta * givenx, y1: this.centerY,
+            color: color(77, 177, 247),
+            strokeweight: 2,
+            start: getT(time.estimateLine)
+        });
     }
 
 
@@ -492,6 +527,9 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
         for (let p of this.plusMinus) {
             p.show();
         }
+        this.givenXPt.show();
+        this.givenYPt.show();
+        this.estimateLine.show();
     }
 
     getXbar() {
@@ -612,6 +650,14 @@ function setup() {
         x2: 1000, y2: 400,
         start: getT(time.sumSqA),
         color: color(255, 255, 17)
+    });
+
+    txts[6] = new TextWriteIn({
+        str: "\"Estimates\"",
+        x: 837, y: 248,
+        font: comic,
+        color: color(255, 255, 17),
+        start: getT(time.estimates)
     });
 
 
@@ -760,7 +806,7 @@ function setup() {
         w: 57, h: 40,
         start: getT(time.emphasizeX),
         end: getT(time.emphasizeXend)
-    })
+    });
 }
 
 function draw() {
