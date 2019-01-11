@@ -150,13 +150,20 @@ class PlotPoint {
 
 // define the time for init animations
 let time;
-let sceneNum = 3;
+let sn = 9;  // scene number
 let t = 0;
 
-// todo: next time, be more careful at naming things and maybe use += to control time
+// --------------- Suggestions for future scenes -------------------
+// todo: 1. be more careful at naming things
+// todo: 2. maybe use += to control time
+// todo: 3. enable dragging text to the correct location with mouse, instead of hardcoding x and y
+// todo: 4. to do 3,
+// todo: 5. each trivial object should have a scene number associated with it, otherwise it gets messy in setup()
+// todo: 6. incorporate the frames() function into the getT() function (DISCARD)
+
 
 // scene 1 -- paragraph 1
-switch (sceneNum) {
+switch (sn) {
     case 1:  // paragraph 1
         t = frames(19);
         time = {
@@ -166,10 +173,10 @@ switch (sceneNum) {
             emphasizeBhat: frames(11),
             emphasizeBend: frames(12.5),
             formulabeta: frames(13),
-            dottedlineX: t0,
-            dottedlineY: t0,
-            rect1: t0 + 50,
-            rects: t0,
+            dottedlineX: t,
+            dottedlineY: t,
+            rect1: t + 50,
+            rects: t,
         };
         break;
     case 2:  // paragraph 2
@@ -186,7 +193,7 @@ switch (sceneNum) {
         };
         break;
     case 3:  // paragraph 3, 4
-        let t = 0;
+        t = 0;
         time = {
             axes: frames(0),
             linRel: frames(4),
@@ -205,10 +212,9 @@ switch (sceneNum) {
             giveny: frames(43) - t,
         };
         break;
-    case 4:  // paragraph 5, 6
+    case 5:  // paragraph 5, 6
         t = frames(55);
         time = {
-            axes: frames(0),
             formula: frames(0),
             emphasizeBhat: frames(3),
             formulabeta: frames(6),
@@ -232,71 +238,75 @@ switch (sceneNum) {
             emphasizeDenom: t + frames(20)
         };
         break;
-    case 5:  // paragraph 7 (1)
+    case 7:  // paragraph 7
         time = {
             axes: frames(0),
-            rect1: frames(0),
-            rects: frames(0),
             dottedlineX: frames(0),
-            dottedlineY: frames(0),
             formulabeta: frames(0),
             sumRectA: frames(0),
-
             yEqualsx: frames(1),
             toxx: frames(2),
-            showCoord1: frames(3),
-            showCoordFade1: frames(5)
+            showCoord: frames(3),
+            dottedlineY: frames(5),
+            centroid: frames(6),
+            rects: frames(7),
+            rect1: frames(7) + 47,
+            showCoordFade: frames(9),
+            xMinusXbarLine: frames(10),
+            xMinusXbar: frames(11),
+            sumSqA: frames(12),
+            emphasizeDenom: frames(13)
         };
         break;
-    case 6:  // paragraph 7 (2): show the line y = x-bar
+    case 8:
         time = {
             axes: frames(0),
-            rect1: frames(0),
-            rects: frames(0),
-            dottedlineX: frames(0),
             formulabeta: frames(0),
-            sumRectA: frames(0),
-            yEqualsx: frames(0),
-            toxx: frames(1),
-
-            dottedlineY: frames(4),
-        };
-        break;
-    case 7:  // paragraph 7 (3): show the squares
-        time = {
-            axes: frames(0),
             dottedlineX: frames(0),
-            formulabeta: frames(0),
-            sumRectA: frames(0),
-            yEqualsx: frames(0),
-            toxx: frames(1),
             dottedlineY: frames(0),
+            sumSqA: frames(0),
+            sumRectA: frames(0),
 
-            rects: frames(4),
-            rect1: frames(5.7),
-            xMinusXbarLine: frames(7),
-            xMinusXbar: frames(8),
-            sumSqA: frames(9),
-            emphasizeDenom: frames(10)
+            rects: frames(1),
+            rect1: frames(1) + 47,
+            toxx: frames(3),
+            restore: frames(4),
+            bigA: frames(5),
+            //bigA_end: frames(6),
+            bw_0_and_1: frames(6),
+            leastSqLine: frames(7),
+            bw_0_and_1_end: frames(8),
+            to_b_greater_1: frames(9),
+            bigV: frames(10),
+            greater_than_1: frames(11),
         };
         break;
     case 9:
         time = {
             axes: frames(0),
+            formulabeta: frames(0),
+            dottedlineX: frames(0),
+            dottedlineY: frames(0),
+            sumSqA: frames(0),
+            sumRectA: frames(0),
+            rects: frames(0),
+            rect1: frames(0) + 47,
+            to_b_greater_1: frames(1),
 
-            // reset1: frames(1),
-            // reset2: frames(2),
-            quadrants: frames(3),
-            plusMinus: frames(3.7)
-        };
-        break;
+            to_b_smaller_0: frames(3),
+            is_negative: frames(4),
+            quadrants: frames(5),
+            plusMinus: frames(5.7),
+            greater_than_0: frames(6),
+
+        }
 }
 
 let xs = [10, 14, 20, 27, 33, 41];
 let ys = [11, 17, 18, 29, 31, 37];
-// let xs = [7, 14, 20, 27, 33, 41];
-// let ys = [-2, 4, 18, 29, 36, 37];
-let ys2 = [42, 37, 22, 19, 7, -2];
+let ys1 = [11, 17, 18, 29, 31, 37];
+let ys2 = [-2, 4, 18, 29, 36, 49];
+let ys3 = [40, 37, 22, 19, 7, 4];
 
 
 class SLR_Plot extends Plot {    // the plot used to illustrate simple linear regression
@@ -371,7 +381,7 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             start: getT(time.showIntercept),
             color: color(247, 117, 117)
         });
-        this.slopeLine1 = new Line({   // I just hardcoded these values
+        this.slopeLine1 = new Line({   // I just hardcoded these values..
             x1: 400, y1: 300,
             x2: 400, y2: 264,
             start: getT(time.showSlope),
@@ -407,7 +417,7 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             mode: 1, font: comic,
             x: this.xbar + (this.right - this.xbar) / 2,
             y: this.ybar / 2,
-            size: 77,
+            size: 147, color: [247, 77, 97],
             start: getT(time.plusMinus)
         });
         this.plusMinus[1] = new TextFadeIn({
@@ -415,7 +425,7 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             mode: 1, font: comic,
             x: this.xbar / 2,
             y: this.ybar / 2,
-            size: 77,
+            size: 147, color: [27, 147, 247],
             start: getT(time.plusMinus)
         });
         this.plusMinus[2] = new TextFadeIn({
@@ -423,7 +433,7 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             mode: 1, font: comic,
             x: this.xbar / 2,
             y: this.ybar + (this.bottom - this.ybar) / 2,
-            size: 77,
+            size: 147, color: [247, 77, 97],
             start: getT(time.plusMinus)
         });
         this.plusMinus[3] = new TextFadeIn({
@@ -431,7 +441,7 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             mode: 1, font: comic,
             x: this.xbar + (this.right - this.xbar) / 2,
             y: this.ybar + (this.bottom - this.ybar) / 2,
-            size: 77,
+            size: 147, color: [27, 147, 247],
             start: getT(time.plusMinus)
         });
         // added for scene 3
@@ -457,19 +467,25 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             strokeweight: 2,
             start: getT(time.estimateLine)
         });
+        this.centroid = new PlotPoint({
+            x: this.xbar, y: this.ybar,
+            radius: 17,
+            color: [255, 185, 0],
+            start: getT(time.centroid)
+        });
     }
 
-
-
+    // this method should be only called once, i.e. at one specific frame
     reset(xs, ys) {
         this.xo = this.Xs.copyWithin();
         this.yo = this.Ys.copyWithin();
-        this.xd = xs;
-        this.yd = ys;
+        this.xd = xs.copyWithin();
+        this.yd = ys.copyWithin();
         this.timer = new Timer2(frames(1.4));
         this.resetted = true;
     }
 
+    // helper method
     resetting() {
         let t = this.timer.advance();
         for (let i = 0; i < this.numPts; i++) {
@@ -502,7 +518,8 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
                 h: this.ptYs[i] - this.ybar
             })
         }
-    };
+    }
+
 
     show() {
         if (this.resetted) {
@@ -530,6 +547,7 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
         this.givenXPt.show();
         this.givenYPt.show();
         this.estimateLine.show();
+        this.centroid.show();
     }
 
     getXbar() {
@@ -626,7 +644,7 @@ function setup() {
 
     txts[4] = new TextWriteIn({
         str: "Sum of rectangle areas",
-        x: 727, y: 117,
+        x: 727, y: sn <= 100 ? 117 : 147,   // fixme
         font: comic,
         color: color(255, 255, 17),
         start: getT(time.sumRectA),
@@ -640,7 +658,7 @@ function setup() {
 
     txts[5] = new TextWriteIn({
         str: "Sum of square areas",
-        x: 757, y: 477,
+        x: 757, y: sn <= 100 ? 477 : 447,
         font: comic,
         color: color(255, 255, 17),
         start: getT(time.sumSqA),
@@ -659,7 +677,6 @@ function setup() {
         color: color(255, 255, 17),
         start: getT(time.estimates)
     });
-
 
     kats[0] = new Katex0({
         text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} " +
@@ -691,19 +708,18 @@ function setup() {
     });
 
     kats[2] = new Katex2({
-        text: "\\bar{y}",
+        text: sn === 7 ? "\\bar{x}" : "\\bar{y}",
         x: 77,
         y: plot.getYbar() - 57,
-        start: getT(time.dottedlineY),
-        fadeOut: true, end: getT(time.toxx),
-        fadeIn: true,
+        fadeIn: true, start: sn === 7 ? getT(time.dottedlineY) : getT(time.dottedlineY),
+        //fadeOut: true, end: getT(time.dottedlineY),
         font_size: 37,
     });
 
     kats[3] = new Katex3({
         text: "x_1 - \\bar{x}",
         x: 375,
-        y: sceneNum === 7 ? 47 : 90,
+        y: sn === 7 ? 47 : 90,  // fixme
         color: color(247, 137, 27),
         start: getT(time.xMinusXbar),
         fadeIn: true,
@@ -747,8 +763,8 @@ function setup() {
     });
 
     kats[9] = new Katex9({
-        text: "(x_1, y_1)",
-        x: 520, y: 90,
+        text: sn === 7 ? "(x_i, x_i)" : "(x_1, y_1)",
+        x: 520, y: sn === 7 ? 100 : 90,
         color: color(247, 137, 27),
         fadeIn: true, start: getT(time.showCoord),
         fadeOut: true, end: getT(time.showCoordFade),
@@ -756,22 +772,51 @@ function setup() {
     });
 
     kats[10] = new Katex10({
-        text: "\\bar{x}",
-        x: 77,
-        y: plot.getYbar() - 57,
-        start: getT(time.toxx),
-        fadeIn: true,
-        font_size: 37
+        text: sn === 7 ? "(\\bar{x}, \\bar{x})" : "(\\bar{x}, \\bar{y})",
+        x: plot.getXbar() + 17, y: plot.getYbar() - 27,
+        font_size: 37,
+        fadeIn: true, start: getT(time.centroid)
     });
 
-    kats[11] = new Katex11({
-        text: "(x_i, x_i)",
-        x: 520, y: 100,
-        color: color(247, 137, 27),
-        fadeIn: true, start: getT(time.showCoord1),
-        fadeOut: true, end: getT(time.showCoordFade1),
-        font_size: 37
-    });
+    if (sn === 8) {
+        kats[11] = new Katex11({
+            text: "∈(0, 1)",
+            x: 637, y: 337, font_size: 37,
+            fadeIn: true, start: getT(time.bw_0_and_1),
+            fadeOut: true, end: getT(time.bw_0_and_1_end),
+        });
+        kats[12] = new Katex12({
+            text: ">1",
+            x: 657, y: 337, font_size: 37,
+            fadeIn: true, start: getT(time.greater_than_1),
+        });
+        kats[13] = new Katex13({
+            text: "\\bigwedge",
+            x: 857, y: 47, font_size: 167,
+            color: color(47, 177, 247),
+            fadeIn: true, start: getT(time.bigA),
+            fadeOut: true, end: getT(time.bw_0_and_1)
+        });
+        kats[14] = new Katex14({
+            text: "\\bigvee",
+            x: 857, y: 47, font_size: 167,
+            color: color(47, 177, 247),
+            fadeIn: true, start: getT(time.bigV),
+            fadeOut: true, end: getT(time.greater_than_1)
+        });
+    }
+    if (sn === 9) {
+        kats[11] = new Katex11({
+            text: ">0",
+            x: 900, y: 497, font_size: 37,
+            fadeIn: true, start: getT(time.greater_than_0),
+        });
+        kats[12] = new Katex12({
+            text: "<0",
+            x: 657, y: 337, font_size: 37,
+            fadeIn: true, start: getT(time.is_negative),
+        });
+    }
 
     emps[0] = new Emphasis({
         x: 890, y: 140,
@@ -817,8 +862,12 @@ function draw() {
 
     if (frameCount === getT(time.toxx))
         plot.reset(xs, xs);
-    if (frameCount === getT(time.reset1))
+    if (frameCount === getT(time.restore))
+        plot.reset(xs, ys1);
+    if (frameCount === getT(time.to_b_greater_1))
         plot.reset(xs, ys2);
+    if (frameCount === getT(time.to_b_smaller_0))
+        plot.reset(xs, ys3);
 
     plot.show();
     table.show();

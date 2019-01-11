@@ -329,7 +329,7 @@ class Katex13 extends KatexBase {
 class Katex14 extends KatexBase {
     constructor(args) {
         super(args);
-        this.k.id('kt9');
+        this.k.id('kt14');
     }
 
     show() {
