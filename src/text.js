@@ -114,7 +114,7 @@ class TextWriteIn extends Text {
 class KatexBase {
     constructor(args) {
         this.text = args.text;
-        this.size = args.font_size || 27;
+        this.size = args.font_size || 37;
         this.x = args.x || 0;
         this.y = args.y || 0;
         this.color = args.color || '#fff';

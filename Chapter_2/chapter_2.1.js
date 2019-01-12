@@ -44,7 +44,7 @@ class Plane_LinComb extends Plane3D {
         this.textY = 200;
         this.textsize = 40;
 
-        this.kat = new Katex0({
+        this.kat = new Katex14({
             text: "\\textcolor{#f7e717}{\\vec{v}} = " +
                 "~~~~~~~~\\textcolor{f76767}{x_1} + ~~~~~~~~\\textcolor{47f747}{x_2}",
             x: this.textX,
@@ -113,8 +113,8 @@ function setup() {
     frameRate(fr);
 
     pixelDensity(1);
-    createCanvas(1200, 675);
-    g3 = createGraphics(1350, 1350, WEBGL);
+    createCanvas(cvw, cvh);
+    g3 = createGraphics(cvh * 2, cvh * 2, WEBGL);  // a square to be displayed to the left
     g2 = createGraphics(100, 10);
 
     axes = new Axes3D({
@@ -132,6 +132,15 @@ function setup() {
         x_2: obj[2],
         y_o: obj[3]
     });
+    kats[0] = new Katex0({
+        text: "\\beta_0\\newline\\downarrow",
+        x: 820, y: 87,
+
+    });
+    kats[1] = new Katex1({
+        text: "\\beta_1\\newline\\downarrow",
+        x: 1020, y: 87,
+    })
 }
 
 function draw() {
@@ -141,10 +150,10 @@ function draw() {
     arrows.show(g3);
     //hg.show();
 
-    image(g3, 0, 0, 675, 675);
+    image(g3, 0, 0, cvh, cvh);
 
 
     for (let k of kats) k.show();
 
-    //showFR(g2);
+    showFR(g2);
 }

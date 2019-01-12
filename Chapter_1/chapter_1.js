@@ -244,18 +244,19 @@ switch (sn) {
             dottedlineX: frames(0),
             formulabeta: frames(0),
             sumRectA: frames(0),
-            yEqualsx: frames(1),
-            toxx: frames(2),
-            showCoord: frames(3),
-            dottedlineY: frames(5),
-            centroid: frames(6),
-            rects: frames(7),
-            rect1: frames(7) + 47,
-            showCoordFade: frames(9),
-            xMinusXbarLine: frames(10),
-            xMinusXbar: frames(11),
-            sumSqA: frames(12),
-            emphasizeDenom: frames(13)
+            yEqualsx: frames(5),
+            toxx: frames(8),
+            showCoord: frames(11),
+            dottedlineY: frames(16),
+            centroid: frames(22),
+            rects: frames(23),
+            rect1: frames(23) + 47,
+            showCoordFade: frames(28),
+            xMinusXbarLine: frames(30),
+            xMinusXbar: frames(30.5),
+            sumSqA: frames(33.5),
+            emphasizeDenom: frames(35),
+            emphasizeNumerator: frames(43.5)
         };
         break;
     case 8:
@@ -303,7 +304,7 @@ switch (sn) {
 }
 
 let xs = [10, 14, 20, 27, 33, 41];
-let ys = [11, 17, 18, 29, 31, 37];
+let ys = sn === 9 ? [40, 37, 22, 19, 7, 4] : [11, 17, 18, 29, 31, 37];
 let ys1 = [11, 17, 18, 29, 31, 37];
 let ys2 = [-2, 4, 18, 29, 36, 49];
 let ys3 = [40, 37, 22, 19, 7, 4];
@@ -399,51 +400,53 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             start: getT(time.yEqualsx),
             color: color(77, 177, 77),
         });
-        this.quadrant2 = new Emphasis({
-            x: 0, y: 0,
-            w: this.xbar, h: this.ybar,
-            start: getT(time.quadrants),
-            color: color(77, 77, 177, 77)
-        });
-        this.quadrant4 = new Emphasis({
-            x: this.xbar, y: this.ybar,
-            w: this.right - this.xbar, h: this.bottom - this.ybar,
-            start: getT(time.quadrants),
-            color: color(77, 77, 177, 77)
-        });
-        this.plusMinus = [];
-        this.plusMinus[0] = new TextFadeIn({
-            str: "+",
-            mode: 1, font: comic,
-            x: this.xbar + (this.right - this.xbar) / 2,
-            y: this.ybar / 2,
-            size: 147, color: [247, 77, 97],
-            start: getT(time.plusMinus)
-        });
-        this.plusMinus[1] = new TextFadeIn({
-            str: "-",
-            mode: 1, font: comic,
-            x: this.xbar / 2,
-            y: this.ybar / 2,
-            size: 147, color: [27, 147, 247],
-            start: getT(time.plusMinus)
-        });
-        this.plusMinus[2] = new TextFadeIn({
-            str: "+",
-            mode: 1, font: comic,
-            x: this.xbar / 2,
-            y: this.ybar + (this.bottom - this.ybar) / 2,
-            size: 147, color: [247, 77, 97],
-            start: getT(time.plusMinus)
-        });
-        this.plusMinus[3] = new TextFadeIn({
-            str: "-",
-            mode: 1, font: comic,
-            x: this.xbar + (this.right - this.xbar) / 2,
-            y: this.ybar + (this.bottom - this.ybar) / 2,
-            size: 147, color: [27, 147, 247],
-            start: getT(time.plusMinus)
-        });
+        if (sn === 9) {
+            this.quadrant2 = new Emphasis({
+                x: 0, y: 0,
+                w: this.xbar, h: this.ybar,
+                start: getT(time.quadrants),
+                color: color(77, 77, 177, 77)
+            });
+            this.quadrant4 = new Emphasis({
+                x: this.xbar, y: this.ybar,
+                w: this.right - this.xbar, h: this.bottom - this.ybar,
+                start: getT(time.quadrants),
+                color: color(77, 77, 177, 77)
+            });
+            this.plusMinus = [];
+            this.plusMinus[0] = new TextFadeIn({
+                str: "+",
+                mode: 1, font: comic,
+                x: this.xbar + (this.right - this.xbar) / 2,
+                y: this.ybar / 2,
+                size: 147, color: [247, 77, 97],
+                start: getT(time.plusMinus)
+            });
+            this.plusMinus[1] = new TextFadeIn({
+                str: "-",
+                mode: 1, font: comic,
+                x: this.xbar / 2,
+                y: this.ybar / 2,
+                size: 147, color: [27, 147, 247],
+                start: getT(time.plusMinus)
+            });
+            this.plusMinus[2] = new TextFadeIn({
+                str: "+",
+                mode: 1, font: comic,
+                x: this.xbar / 2,
+                y: this.ybar + (this.bottom - this.ybar) / 2,
+                size: 147, color: [247, 77, 97],
+                start: getT(time.plusMinus)
+            });
+            this.plusMinus[3] = new TextFadeIn({
+                str: "-",
+                mode: 1, font: comic,
+                x: this.xbar + (this.right - this.xbar) / 2,
+                y: this.ybar + (this.bottom - this.ybar) / 2,
+                size: 147, color: [27, 147, 247],
+                start: getT(time.plusMinus)
+            });
+        }
         // added for scene 3
         let givenx = 450;
         this.givenXPt = new PlotPoint({
@@ -539,10 +542,12 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
         this.slopeLine1.show();
         this.slopeLine2.show();
         this.yEqualsxLine.show();
-        this.quadrant2.show();
-        this.quadrant4.show();
-        for (let p of this.plusMinus) {
-            p.show();
+        if (sn === 9) {
+            this.quadrant2.show();
+            this.quadrant4.show();
+            for (let p of this.plusMinus) {
+                p.show();
+            }
         }
         this.givenXPt.show();
         this.givenYPt.show();
@@ -577,7 +582,7 @@ function setup() {
     //pixelDensity(1);
     frameRate(fr);
 
-    createCanvas(1200, 675);
+    createCanvas(cvw, cvh);
     background(0);
 
     hg = new HelperGrid();
@@ -723,7 +728,6 @@ function setup() {
         color: color(247, 137, 27),
         start: getT(time.xMinusXbar),
         fadeIn: true,
-        font_size: 37
     });
 
     kats[4] = new Katex4({
@@ -733,7 +737,6 @@ function setup() {
         color: color(247, 137, 27),
         start: getT(time.yMinusYbar),
         fadeIn: true,
-        font_size: 37
     });
 
     kats[6] = new Katex6({
@@ -774,7 +777,6 @@ function setup() {
     kats[10] = new Katex10({
         text: sn === 7 ? "(\\bar{x}, \\bar{x})" : "(\\bar{x}, \\bar{y})",
         x: plot.getXbar() + 17, y: plot.getYbar() - 27,
-        font_size: 37,
         fadeIn: true, start: getT(time.centroid)
     });
 
@@ -856,7 +858,7 @@ function setup() {
 
 function draw() {
     background(0);
-    //showFR();
+    showFR();
     //hg.show();
     for (let e of emps) e.show();
 
