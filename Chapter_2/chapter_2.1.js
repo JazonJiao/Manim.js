@@ -1,3 +1,5 @@
+// 3D scene
+
 
 let time = {};
 
@@ -17,20 +19,22 @@ class Plane_LinComb extends Plane3D {
         this.arrow1 = new Arrow3D({
             x2: this.M[0] * this.step, y2: this.M[1] * this.step, z2: this.M[2] * this.step,
             color: color([237, 47, 47]),
-            label: args.x_1
+            label: args.x_1,
         });
         // x2
         this.arrow2 = new Arrow3D({
             x2: this.M[3] * this.step, y2: this.M[4] * this.step, z2: this.M[5] * this.step,
             color: color([37, 147, 37]),
-            label: args.x_2
+            label: args.x_2,
+            fcn: ((g) => { g.rotateZ(PI / 2); })
         });
 
         // y
         this.arrow3 = new Arrow3D({
             x2: this.Y[0] * this.step, y2: this.Y[1] * this.step, z2: this.Y[2] * this.step,
             color: color([27, 147, 227]),
-            label: args.y_o
+            label: args.y_o,
+            fcn: ((g) => { g.rotateZ(PI / 2); })
         });
 
         // v = ax1 + bx2

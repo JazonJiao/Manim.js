@@ -336,6 +336,14 @@ class LineCenter extends Line {
     }
 }
 
+/*** 2019-01-12
+ * LineStd
+ * A line with parameters a, b, c that define its equation ax + by = c.
+ * It is drawn on top of Axis / Grid, so also need to pass in the
+ */
+class LineStd extends Line {
+
+}
 
 /** 2018-12-23
  * DottedLine, a line like - - - -

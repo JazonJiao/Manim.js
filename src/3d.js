@@ -128,10 +128,15 @@ class Grid3D {
 
 /*** 2018-12-30
  * Arrow3D (WEBGL)
+ * label is a .obj model that represent the label of this vector.
+ * I use 3ds Max to generate this model. If a label is passed in,
+ * we can decide how to orient it by passing in an (anonymous) function,
+ * with the canvas as its parameter.
  *
  * ---- args list parameters ----
  * @mandatory (number) x2, y2, z2--those should be using p5's coordinate system
- * @optional (number) x1, y1, z1, radius, tipLen, tipRadius; (color) color; (p5.Geometry) label
+ * @optional (number) x1, y1, z1, radius, tipLen, tipRadius; (color) color;
+ *           (p5.Geometry) label; (function) fcn
  */
 class Arrow3D {
     constructor(args) {
@@ -142,9 +147,12 @@ class Arrow3D {
         this.dy = args.y2 - this.y1;
         this.dz = args.z2 - this.z1;
 
-        // this is a .obj model that represent the label of this vector
-        // I use 3ds Max to generate this model.
+        // this is
+        //
         this.label = args.label;
+        if (this.label) {
+            this.fcn = args.fcn || ((g) => { g.rotateZ(-PI / 2); });  // default rotation function
+        }
 
         this.color = args.color || color(177);
         this.radius = args.radius || 3;
@@ -202,11 +210,12 @@ class Arrow3D {
         g.translate(0, this.len / 2, 0);
         g.cone(this.tipRadius, this.tipLen);  // fixme: the arrow's length will be off by tipLen / 2
         if (this.label) {  // fixme: how to determine rotation based on the orientation of arrow?
-            if (this.dx > 0) {
-                g.rotateZ(-PI / 2);
-            } else {
-                g.rotateZ(PI / 2);
-            }
+            // if (this.dx > 0) {
+            //     g.rotateZ(-PI / 2);
+            // } else {
+            //     g.rotateZ(PI / 2);
+            // }
+            this.fcn(g);
 
             g.model(this.label);
         }

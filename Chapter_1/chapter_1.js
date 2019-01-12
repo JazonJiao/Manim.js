@@ -150,7 +150,7 @@ class PlotPoint {
 
 // define the time for init animations
 let time;
-let sn = 9;  // scene number
+
 let t = 0;
 
 // --------------- Suggestions for future scenes -------------------
@@ -216,6 +216,7 @@ switch (sn) {
         t = frames(55);
         time = {
             formula: frames(0),
+
             emphasizeBhat: frames(3),
             formulabeta: frames(6),
             emphasizeBend: frames(20),
@@ -244,6 +245,7 @@ switch (sn) {
             dottedlineX: frames(0),
             formulabeta: frames(0),
             sumRectA: frames(0),
+
             yEqualsx: frames(5),
             toxx: frames(8),
             showCoord: frames(11),
@@ -267,22 +269,24 @@ switch (sn) {
             dottedlineY: frames(0),
             sumSqA: frames(0),
             sumRectA: frames(0),
+            rects: frames(0),
+            rect1: frames(0) + 47,
+            toxx: frames(1),
 
-            rects: frames(1),
-            rect1: frames(1) + 47,
-            toxx: frames(3),
-            restore: frames(4),
-            bigA: frames(5),
+            restore: frames(5),
+            bigA: frames(9),
             //bigA_end: frames(6),
-            bw_0_and_1: frames(6),
-            leastSqLine: frames(7),
-            bw_0_and_1_end: frames(8),
-            to_b_greater_1: frames(9),
-            bigV: frames(10),
-            greater_than_1: frames(11),
+            bw_0_and_1: frames(14),
+            leastSqLine: frames(20),
+            bw_0_and_1_end: frames(26),
+            to_b_greater_1: frames(27),
+            bigV: frames(30),
+            restore2: frames(30.3),       // show square areas
+            to_b_smaller_0: frames(31),   // restore
+            greater_than_1: frames(35),
         };
         break;
-    case 9:
+    case 9:   // paragraphs 9 and 10
         time = {
             axes: frames(0),
             formulabeta: frames(0),
@@ -290,24 +294,80 @@ switch (sn) {
             dottedlineY: frames(0),
             sumSqA: frames(0),
             sumRectA: frames(0),
+            leastSqLine: frames(0),
             rects: frames(0),
             rect1: frames(0) + 47,
             to_b_greater_1: frames(1),
 
-            to_b_smaller_0: frames(3),
-            is_negative: frames(4),
-            quadrants: frames(5),
-            plusMinus: frames(5.7),
-            greater_than_0: frames(6),
+            to_b_smaller_0: frames(5),
+            is_negative: frames(8),
+            quadrant2: frames(11),
+            quadrant4: frames(13.5),
+            minuses: frames(17.7),
 
-        }
+            y_bar_fade: frames(22),
+            toxx: frames(22),      // show square areas
+            emphasizeDenom: frames(23.5),
+            greater_than_0: frames(24),
+            pluses: frames(27),
+            restore2: frames(30),  // restore
+
+            showIntercept: frames(36),
+            centroid: frames(40),
+
+        };
+        break;
+    case 10:
+        time = {
+            axes: frames(0),
+            formulabeta: frames(0),
+            dottedlineX: frames(0),
+            dottedlineY: frames(0),
+            sumSqA: frames(0),
+            sumRectA: frames(0),
+            leastSqLine: frames(0),
+            rects: frames(0),
+            rect1: frames(0) + 47,
+            toxx: frames(1),
+
+            to_b_smaller_0: frames(5),
+            ybar_start: frames(5),
+            showIntercept: frames(6),
+            centroid: frames(10),
+            emphasizeNumerator: frames(16.5),
+            emphasizeDenom: frames(17),
+        };
+        break;
+    case 11:
+        time = {
+            axes: frames(0),
+            formulabeta: frames(0),
+            dottedlineX: frames(0),
+            dottedlineY: frames(0),
+            sumSqA: frames(0),
+            sumRectA: frames(0),
+            leastSqLine: frames(0),
+            rects: frames(0),
+            rect1: frames(0) + 47,
+            //to_b_greater_1: frames(1),
+
+            division_line1: frames(2),
+            cov: frames(3),
+            toxx: frames(2.5),
+            division_line2: frames(3),
+            var: frames(4)
+
+        };
+        break;
 }
 
 let xs = [10, 14, 20, 27, 33, 41];
-let ys = sn === 9 ? [40, 37, 22, 19, 7, 4] : [11, 17, 18, 29, 31, 37];
+let ys4 = sn === 8 ? [10, 14, 20, 27, 33, 41] : [40, 36, 24, 19, 7, 4];
+
+let ys = sn >= 9 ? [40, 36, 24, 19, 7, 4] : [11, 17, 18, 29, 31, 37];
 let ys1 = [11, 17, 18, 29, 31, 37];
 let ys2 = [-2, 4, 18, 29, 36, 49];
-let ys3 = [40, 37, 22, 19, 7, 4];
+let ys3 = sn === 9 || 10 ? [40, 36, 24, 19, 7, 4] : [-2, 4, 18, 29, 36, 49];
 
 
 class SLR_Plot extends Plot {    // the plot used to illustrate simple linear regression
@@ -404,47 +464,48 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
             this.quadrant2 = new Emphasis({
                 x: 0, y: 0,
                 w: this.xbar, h: this.ybar,
-                start: getT(time.quadrants),
+                start: getT(time.quadrant2),
                 color: color(77, 77, 177, 77)
             });
             this.quadrant4 = new Emphasis({
                 x: this.xbar, y: this.ybar,
                 w: this.right - this.xbar, h: this.bottom - this.ybar,
-                start: getT(time.quadrants),
+                start: getT(time.quadrant4),
                 color: color(77, 77, 177, 77)
             });
+
             this.plusMinus = [];
             this.plusMinus[0] = new TextFadeIn({
                 str: "+",
                 mode: 1, font: comic,
                 x: this.xbar + (this.right - this.xbar) / 2,
-                y: this.ybar / 2,
+                y: this.ybar / 2 - 50,
                 size: 147, color: [247, 77, 97],
-                start: getT(time.plusMinus)
+                start: getT(time.pluses)
             });
             this.plusMinus[1] = new TextFadeIn({
                 str: "-",
                 mode: 1, font: comic,
                 x: this.xbar / 2,
-                y: this.ybar / 2,
+                y: this.ybar / 2 - 50,
                 size: 147, color: [27, 147, 247],
-                start: getT(time.plusMinus)
+                start: getT(time.minuses)
             });
             this.plusMinus[2] = new TextFadeIn({
                 str: "+",
                 mode: 1, font: comic,
                 x: this.xbar / 2,
-                y: this.ybar + (this.bottom - this.ybar) / 2,
+                y: this.ybar + (this.bottom - this.ybar) / 2 - 50,
                 size: 147, color: [247, 77, 97],
-                start: getT(time.plusMinus)
+                start: getT(time.pluses)
             });
             this.plusMinus[3] = new TextFadeIn({
                 str: "-",
                 mode: 1, font: comic,
                 x: this.xbar + (this.right - this.xbar) / 2,
-                y: this.ybar + (this.bottom - this.ybar) / 2,
+                y: this.ybar + (this.bottom - this.ybar) / 2 - 50,
                 size: 147, color: [27, 147, 247],
-                start: getT(time.plusMinus)
+                start: getT(time.minuses)
             });
         }
         // added for scene 3
@@ -521,6 +582,11 @@ class SLR_Plot extends Plot {    // the plot used to illustrate simple linear re
                 h: this.ptYs[i] - this.ybar
             })
         }
+        if (sn === 9) {
+            this.quadrant2.reset({ w: this.xbar, h: this.ybar, });
+            this.quadrant4.reset({ x: this.xbar, y: this.ybar,
+                w: this.right - this.xbar, h: this.bottom - this.ybar, });
+        }
     }
 
 
@@ -568,6 +634,7 @@ let hg;
 let plot;
 let kats = [];
 let txts = [];
+let lines = [];
 let arrows = [];
 let emps = [];
 let table;
@@ -654,12 +721,6 @@ function setup() {
         color: color(255, 255, 17),
         start: getT(time.sumRectA),
     });
-    arrows[2] = new Arrow({
-        x1: 920, y1: 170,
-        x2: 1000, y2: 280,
-        start: getT(time.sumRectA),
-        color: color(255, 255, 17)
-    });
 
     txts[5] = new TextWriteIn({
         str: "Sum of square areas",
@@ -668,12 +729,20 @@ function setup() {
         color: color(255, 255, 17),
         start: getT(time.sumSqA),
     });
-    arrows[3] = new Arrow({
-        x1: 940, y1: 490,
-        x2: 1000, y2: 400,
-        start: getT(time.sumSqA),
-        color: color(255, 255, 17)
-    });
+    if (sn < 11) {
+        arrows[2] = new Arrow({
+            x1: 920, y1: 170,
+            x2: 1000, y2: 280,
+            start: getT(time.sumRectA),
+            color: color(255, 255, 17)
+        });
+        arrows[3] = new Arrow({
+            x1: 940, y1: 490,
+            x2: 1000, y2: 400,
+            start: getT(time.sumSqA),
+            color: color(255, 255, 17)
+        });
+    }
 
     txts[6] = new TextWriteIn({
         str: "\"Estimates\"",
@@ -716,8 +785,8 @@ function setup() {
         text: sn === 7 ? "\\bar{x}" : "\\bar{y}",
         x: 77,
         y: plot.getYbar() - 57,
-        fadeIn: true, start: sn === 7 ? getT(time.dottedlineY) : getT(time.dottedlineY),
-        //fadeOut: true, end: getT(time.dottedlineY),
+        fadeIn: true, start: sn === 10 ? getT(time.ybar_start) : getT(time.dottedlineY),
+        fadeOut: true, end: getT(time.y_bar_fade),
         font_size: 37,
     });
 
@@ -740,12 +809,12 @@ function setup() {
     });
 
     kats[6] = new Katex6({
-        text: "\\hat{\\beta_0}",
-        x: 117, y: 457,
+        text: sn === 9 || 10 ? "\\hat{\\beta_0}=\\bar{y}-\\hat{\\beta}\\bar{x}" : "\\hat{\\beta_0}",
+        x: 124, y: sn === 9 || 10 ? 7 : 457,
         color: color(247, 117, 117),
         start: getT(time.showIntercept),
         fadeIn: true,
-        font_size: 42
+        font_size: sn === 9 || 10 ? 40 : 42
     });
     kats[7] = new Katex7({
         text: "\\hat{\\beta}",
@@ -776,20 +845,20 @@ function setup() {
 
     kats[10] = new Katex10({
         text: sn === 7 ? "(\\bar{x}, \\bar{x})" : "(\\bar{x}, \\bar{y})",
-        x: plot.getXbar() + 17, y: plot.getYbar() - 27,
+        x: plot.getXbar() + 17, y: plot.getYbar() - (sn >= 9 ? 87 : 27),
         fadeIn: true, start: getT(time.centroid)
     });
 
     if (sn === 8) {
         kats[11] = new Katex11({
             text: "∈(0, 1)",
-            x: 637, y: 337, font_size: 37,
+            x: 637, y: 337, font_size: 37, color: color(247, 137, 27),
             fadeIn: true, start: getT(time.bw_0_and_1),
             fadeOut: true, end: getT(time.bw_0_and_1_end),
         });
         kats[12] = new Katex12({
             text: ">1",
-            x: 657, y: 337, font_size: 37,
+            x: 657, y: 337, font_size: 37, color: color(247, 137, 27),
             fadeIn: true, start: getT(time.greater_than_1),
         });
         kats[13] = new Katex13({
@@ -810,14 +879,53 @@ function setup() {
     if (sn === 9) {
         kats[11] = new Katex11({
             text: ">0",
-            x: 900, y: 497, font_size: 37,
+            x: 1047, y: 367, font_size: 37, color: color(247, 137, 27),
             fadeIn: true, start: getT(time.greater_than_0),
         });
         kats[12] = new Katex12({
             text: "<0",
-            x: 657, y: 337, font_size: 37,
+            x: 657, y: 337, font_size: 37, color: color(247, 137, 27),
             fadeIn: true, start: getT(time.is_negative),
         });
+    }
+    if (sn === 11) {
+        kats[11] = new Katex11({
+            text: "Cov(X, Y)=",
+            color: color(37, 236, 97),
+            fadeIn: true, start: getT(time.cov),
+            x: 817, y: 34
+        });
+        kats[12] = new Katex12({
+            text: "Var(X)=",
+            color: color(37, 236, 97),
+            fadeIn: true, start: getT(time.var),
+            x: 841, y: 395
+        });
+        lines[0] = new Line({
+            x1: 727, x2: 1127,
+            y1: 174, y2: 174,
+            color: color(255, 255, 17),
+            start: getT(time.division_line1)
+        });
+        lines[1] = new Line({
+            x1: 757, x2: 1107,
+            y1: 534, y2: 534,
+            color: color(255, 255, 17),
+            start: getT(time.division_line2)
+        });
+        txts[7] = new TextFadeIn({
+            str: "n - 1",
+            x: 897, y: 177,
+            font: comic, color: [255, 255, 17],
+            start: getT(time.division_line1)
+        });
+        txts[8] = new TextFadeIn({
+            str: "n - 1",
+            x: 897, y: 537,
+            font: comic, color: [255, 255, 17],
+            start: getT(time.division_line2)
+        });
+
     }
 
     emps[0] = new Emphasis({
@@ -866,6 +974,8 @@ function draw() {
         plot.reset(xs, xs);
     if (frameCount === getT(time.restore))
         plot.reset(xs, ys1);
+    if (frameCount === getT(time.restore2))
+        plot.reset(xs, ys4);
     if (frameCount === getT(time.to_b_greater_1))
         plot.reset(xs, ys2);
     if (frameCount === getT(time.to_b_smaller_0))
@@ -877,6 +987,6 @@ function draw() {
     for (let k of kats) k.show();
     for (let t of txts) t.show();
     for (let a of arrows) a.show();
-
+    for (let l of lines) l.show();
 }
 

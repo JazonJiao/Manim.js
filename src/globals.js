@@ -10,6 +10,8 @@ let cvw = 1250;
 // canvas height. Ensure 16:9 ratio
 let cvh = 675;
 
+let sn = 10;  // scene number
+
 /**
  * All animations are controlled by the number of frames passed.
  * since we might want to change the frame rate (the variable fr), it's good to encapsulate this
