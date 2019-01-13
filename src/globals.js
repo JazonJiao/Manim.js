@@ -5,12 +5,14 @@
 let fr = 30;  // frame rate
 
 // canvas width. Set to 1200 normally, 1250 if want to monitor frame rate during recording
-let cvw = 1250;
+let cvw = 1200;
 
 // canvas height. Ensure 16:9 ratio
 let cvh = 675;
 
-let sn = 10;  // scene number
+let sn = 11;  // scene number
+
+
 
 /**
  * All animations are controlled by the number of frames passed.
@@ -29,8 +31,9 @@ function frames(sec) {
 
 /**
  * For scenes that requires repetition of many similar scenes that will be rendered separately,
- * such as chapter_1, this function returns 10000, representing "forever later", for animations
- * that I don't want to show for a given scene.
+ * such as chapter_1, this function returns 10000, representing
+ * "forever (actually 5 minutes) later", for animations that I don't want to show for a given scene.
+ *
  *
  * @param t
  * @returns {number}

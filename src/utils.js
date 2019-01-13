@@ -64,10 +64,12 @@ class HelperGrid {
 
 /** 2018-12-23
  * Axes
- * Contains two arrows.
+ * Contains two arrows. If labelX and labelY are passed in, this class would be a singleton.
+ * To be displayed correctly, labelX and labelY should contain only 1 character.
  *
  * ---- args list parameters ----
- * @optional (number) top, bottom, left, right, centerX, centerY, stepX, stepY
+ * @optional (number) top, bottom, left, right, centerX, centerY, stepX, stepY;
+ *           (string) labelX, labelY, (number) offsetX, offsetY
  */
 class Axes {
     constructor(args) {
@@ -88,7 +90,24 @@ class Axes {
         this.stepX = args.stepX || 1;
         this.stepY = args.stepY || 1;
 
-        this.start = args.start;
+        this.start = args.start || 0;
+
+        if (args.labelX) {
+            this.offsetX = args.offsetX || -17;  // default offset value based on displaying x
+            this.label1 = new KatexAxis1({
+                text: args.labelX,
+                x: this.right + this.offsetX, y: this.centerY - 87,
+                fadeIn: true, start: this.start,
+            });
+        }
+        if (args.labelY) {
+            this.offsetY = args.offsetY || -44;  // default offset value based on displaying y
+            this.label2 = new KatexAxis2({
+                text: args.labelY,
+                x: this.centerX + 21, y: this.top + this.offsetY,
+                fadeIn: true, start: this.start,
+            })
+        }
 
         this.xAxis = new Arrow({
             x1: this.left, x2: this.right, y1: this.centerY, y2: this.centerY,
@@ -104,6 +123,8 @@ class Axes {
     showAxes() {
         this.xAxis.show();
         this.yAxis.show();
+        if (this.label1) this.label1.show();
+        if (this.label2) this.label2.show();
     }
 }
 
@@ -159,13 +180,13 @@ class Grid extends Axes {
         this.showAxes();
         for (let i = 0; i < this.maxNumLines; ++i) {
             strokeWeight(2);
-            if (frameCount - this.start > i * 2) {
-                // if (i % 2 === 1) {  // major grid line
-                //     stroke(27, 177, 247);
-                // } else {    // minor grid line
-                //     stroke(17, 67, 77);
-                // }
-                stroke(27, 177, 247);
+            if (frameCount - this.start - frames(1) > i * 2) {
+                if (i % 2 === 1) {  // major grid line
+                    stroke(27, 177, 247);
+                } else {    // minor grid line
+                    stroke(17, 67, 77);
+                }
+                //stroke(27, 177, 247);
 
                 let t = this.timer[i].advance();
                 let right = this.left + (this.right - this.left) * t;
@@ -192,6 +213,161 @@ class Grid extends Axes {
     }
 }
 
+/** 2018-12-20,22
+ * Plot
+ * Contains a bunch of points, in addition to the axes
+ * Can also derive from the Grid class
+ * Capable of calculating the least square line of the points, and displaying the line
+ *
+ * startLSLine
+ */
+class Plot extends Axes {
+    // 2019-01-07: after refactoring, don't need to load a csv file, data is passed in as two arrays
+    constructor(args) {
+        super(args);
+        //this.showLabel = args.showLabel || false;  // show numerical labels
+
+        // the x- and y- coordinates of all the points are stored in two separate arrays
+        // Xs and Ys are the original coordinates
+        // ptXs and ptYs store the transformed version: the coordinates on the canvas
+        this.numPts = args.xs.length;
+
+        // time to start displaying least squares line
+        this.startLSLine = args.startLSLine || this.start + frames(1);
+        this.startPt = args.startPt || this.start;
+
+        this.Xs = args.xs;
+        this.Ys = args.ys;
+        this.ptXs = [];
+        this.ptYs = [];
+        this.calcCoords();
+        this.points = [];
+        for (let i = 0; i < this.numPts; i++) {
+            this.points[i] = new PlotPoint({
+                x: this.ptXs[i],
+                y: this.ptYs[i],
+                radius: 10,
+                // display all points in 1 second
+                start: this.startPt + i * frames(1) / this.numPts
+            })
+        }
+
+        // calculate the parameters for displaying the least squares line on the canvas
+        this.calcParams();
+
+        this.LSLine = new Line({
+            x1: this.left,
+            x2: this.right,
+            y1: this.y_intercept + this.beta * (this.centerX - this.left),
+            y2: this.y_intercept - this.beta * (this.right - this.centerX),
+            color: color(77, 177, 77),
+            strokeweight: 3,
+            start: this.startLSLine
+        });
+    }
+
+    calcCoords() {
+        for (let i = 0; i < this.numPts; i++) {
+            this.ptXs[i] = this.centerX + this.Xs[i] * this.stepX;
+            this.ptYs[i] = this.centerY - this.Ys[i] * this.stepY;
+        }
+    }
+
+    avgxs() {
+        let sum = 0;
+        for (let i = 0; i < this.numPts; ++i) {
+            sum += this.Xs[i];
+        }
+        return sum / this.numPts;
+    }
+
+    avgys() {
+        let sum = 0;
+        for (let i = 0; i < this.numPts; ++i) {
+            sum += this.Ys[i];
+        }
+        return sum / this.numPts;
+    }
+
+
+    // calculate the parameters, and the coordinates of least squares line
+    // formula: beta = (sum of xi * yi - n * xbar * ybar) / (sum of xi^2 - n * xbar^2)
+    calcParams() {
+        this.avgX = this.avgxs();
+        this.avgY = this.avgys();
+
+        let sumXY = 0, sumXsq = 0;
+        for (let i = 0; i < this.numPts; i++) {
+            sumXY += this.Xs[i] * this.Ys[i];
+            sumXsq += this.Xs[i] * this.Xs[i];
+        }
+        this.beta = (sumXY - this.numPts * this.avgX * this.avgY)
+            / (sumXsq - this.numPts * this.avgX * this.avgX);
+
+        this.beta_0 = this.avgY - this.beta * this.avgX;
+
+        this.y_intercept = this.centerY - this.beta_0 * this.stepY;
+        this.xbar = this.centerX + this.avgX * this.stepX;
+        this.ybar = this.centerY - this.avgY * this.stepY;
+    }
+
+
+    showPoints() {
+        for (let i = 0; i < this.numPts; ++i) {
+            this.points[i].show();
+        }
+    }
+}
+
+/** 2018-12-23
+ * Point
+ * Capable of displaying init animations of the point
+ *
+ * ----args list parameters----
+ * @mandatory (number) x, y
+ * @optional (number) radius, start; (array) color
+ */
+class Point {
+    constructor(args) {
+        this.x = args.x;
+        this.y = args.y;
+        this.radius = args.radius || 10;
+        this.start = args.start || 0;
+        this.color = args.color || [255, 255, 0];
+
+        this.timer = new Timer1(frames(0.7));
+        this.t = 0;
+    }
+
+    reset(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    show() {
+        if (frameCount > this.start) {
+            this.t = this.timer.advance();
+
+            // draw the contour
+            noFill();
+            stroke(255, 0, 0);
+            strokeWeight((1 - this.t) * this.radius / 3);
+            arc(this.x, this.y, this.radius, this.radius, 0, this.t * TWO_PI);
+
+            // draw the ellipse
+            noStroke();
+            fill(this.color[0], this.color[1], this.color[2], 255 * this.t);
+            ellipse(this.x, this.y, this.radius, this.radius);
+        }
+    }
+}
+
+class PlotPoint extends Point {
+    constructor(args) {
+        super(args);
+    }
+
+}
 
 /** 2018-12-23
  * A rectangle, with fade-in init animation

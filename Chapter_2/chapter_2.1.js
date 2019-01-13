@@ -1,10 +1,10 @@
 // 3D scene
 
-
-let time = {};
-
+// used for chapter 2
 let matrix = [1, -1, 1, -3, -2, 2];
 let target = [-1, -3, 1];
+
+let time = {};
 
 // 2019-01-06
 // this class is quite similar to the Plane_Projection class in chapter 3.2;
@@ -134,7 +134,8 @@ function setup() {
         font: font,
         x_1: obj[1],
         x_2: obj[2],
-        y_o: obj[3]
+        y_o: obj[3],
+        size: 300
     });
     kats[0] = new Katex0({
         text: "\\beta_0\\newline\\downarrow",
@@ -155,7 +156,6 @@ function draw() {
     //hg.show();
 
     image(g3, 0, 0, cvh, cvh);
-
 
     for (let k of kats) k.show();
 

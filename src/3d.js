@@ -147,11 +147,9 @@ class Arrow3D {
         this.dy = args.y2 - this.y1;
         this.dz = args.z2 - this.z1;
 
-        // this is
-        //
         this.label = args.label;
         if (this.label) {
-            this.fcn = args.fcn || ((g) => { g.rotateZ(-PI / 2); });  // default rotation function
+            this.fcn = args.fcn || ((g) => g.rotateZ(-PI / 2));  // default rotation function
         }
 
         this.color = args.color || color(177);
@@ -224,12 +222,16 @@ class Arrow3D {
 
 }
 
-/** 2019-01-02
+/** 2019-01-02, 01-13
  * Plane3D (WEBGL)
- * A plane defined by two basis vectors which span it.
+ * A plane defined by:
+ * (1) two basis vectors which span it (in p5's coordinate system), OR
+ * (2) the general equation px + qy + rz = s (in case 1, s would be 0) (in standard coordinates), OR
+ * (3) the relation z = ax + by + c (in standard coordinates)
+ * In the latter two cases,  // fixme: how to scale them appropriately? yet to test it on regression data
  *
  * ---- args list parameters ----
- * @mandatory (array[6]) M
+ * @mandatory (array[6]) M  **OR**  (number) p,q,r,s  **OR** (number) a,b,c
  * @optional (number) size; (color) color
  */
 class Plane3D {
@@ -237,38 +239,57 @@ class Plane3D {
         // an array in the form [a,b,c, d,e,f], representing 2 column vectors
         // coordinates should be in p5's coordinate system
         this.M = args.mat;
+
+        this.a = args.a;
+        this.b = args.b;
+        this.c = args.c;
+
+        this.p = args.p;
+        this.q = args.q;
+        this.r = args.r;
+        this.s = args.s;
+
         this.color = args.color || color(255, 77);
-        this.size = args.size || 674;
+        this.size = args.size || 400; // defaults to half the length of each axis on each direction
 
         this.calcParams();
     }
 
     calcParams() {
-        // calculate the cross product of the two basis vectors
-        let x = this.M[1] * this.M[5] - this.M[2] * this.M[4];
-        let y = this.M[2] * this.M[3] - this.M[0] * this.M[5];
-        let z = this.M[0] * this.M[4] - this.M[1] * this.M[3];
+        if (this.M) {
+            // calculate the cross product of the two basis vectors
+            this.p = this.M[1] * this.M[5] - this.M[2] * this.M[4];
+            this.r = this.M[2] * this.M[3] - this.M[0] * this.M[5];
+            this.q = this.M[0] * this.M[4] - this.M[1] * this.M[3];
+            this.s = 0;
+        }
+        // calculate the line in the form z = ax + by + c
+        if (this.M || this.a) {
+            this.a = -this.p / this.r;
+            this.b = -this.q / this.r;
+            this.c = this.s / this.r;
+        }
 
-        // for explanations of this calculation, @see class Arrow3D
-        let len = Math.sqrt(x * x + y * y + z * z);
-        let theta = Math.atan2(x, z);
-        let phi = Math.acos(y / len) / 2;
-        this.v = createVector(
-            Math.sin(phi) * Math.sin(theta),
-            Math.cos(phi),
-            Math.sin(phi) * Math.cos(theta)
-        )
+        // calculate the coordinates of vertices of this plane, in standard coordinate system
+        // fixme: the height is successfully flipped in mode 1, what about others?
+        this.xs = [this.size, -this.size, -this.size, this.size];
+        this.ys = [this.size, this.size, -this.size, -this.size];
+        this.zs = [];
+        for (let i = 0; i < 4; i++) {
+            this.zs[i] = (this.a * this.xs[i] + this.b * this.ys[i] + this.c);
+        }
     }
 
     showPlane(g) {
-        g.push();
+        //g.push();
         g.noStroke();
         g.fill(this.color);
-        g.rotate(PI, this.v);
-        g.rotateX(PI / 2);
-        // g.rotateZ(frameCount / 100);
-        g.plane(this.size, this.size);
-        g.pop();
+        g.beginShape();
+        for (let i = 0; i < 4; i++) {
+            g.vertex(this.xs[i], this.zs[i], this.ys[i]);
+        }
+        g.endShape(CLOSE);
+        //g.pop();
     }
 }
 

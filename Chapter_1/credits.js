@@ -2,8 +2,6 @@
 
 let hg;
 let txts = [];
-let lines = [];
-let arrows = [];
 let comic;
 
 
@@ -24,9 +22,17 @@ function setup() {
         start: 0,
         size: 27,
         font: comic
+    });
+    txts[1] = new TextWriteIn({
+        str: "P.S. they are not my sponsor... yet",
+        x: 841,
+        y: 637,
+        size: 22,
+        font: comic,
+        start: frames(1)
     })
 }
 
 function draw() {
-    for (let t of txts) t.show();
+    txts[0].show();
 }

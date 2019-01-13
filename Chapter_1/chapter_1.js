@@ -1,150 +1,3 @@
-/** 2018-12-20,22
- * Plot
- * Contains a bunch of points, in addition to the axes
- * Can also derive from the Grid class
- * Capable of calculating the least square line of the points, and displaying the line
- *
- * startLSLine
- */
-class Plot extends Axes {
-    // 2019-01-07: after refactoring, don't need to load a csv file, data is passed in as two arrays
-    constructor(args) {
-        super(args);
-        //this.showLabel = args.showLabel || false;  // show numerical labels
-
-        // the x- and y- coordinates of all the points are stored in two separate arrays
-        // Xs and Ys are the original coordinates
-        // ptXs and ptYs store the transformed version: the coordinates on the canvas
-        this.numPts = args.xs.length;
-
-        // time to start displaying least squares line
-        this.startLSLine = args.startLSLine || this.start + frames(1);
-        this.startPt = args.startPt || this.start;
-
-        this.Xs = args.xs;
-        this.Ys = args.ys;
-        this.ptXs = [];
-        this.ptYs = [];
-        this.calcCoords();
-        this.points = [];
-        for (let i = 0; i < this.numPts; i++) {
-            this.points[i] = new PlotPoint({
-                x: this.ptXs[i],
-                y: this.ptYs[i],
-                radius: 10,
-                // display all points in 1 second
-                start: this.startPt + i * frames(1) / this.numPts
-            })
-        }
-
-        // calculate the parameters for displaying the least squares line on the canvas
-        this.calcParams();
-
-        this.LSLine = new Line({
-            x1: this.left,
-            x2: this.right,
-            y1: this.y_intercept + this.beta * (this.centerX - this.left),
-            y2: this.y_intercept - this.beta * (this.right - this.centerX),
-            color: color(77, 177, 77),
-            strokeweight: 3,
-            start: this.startLSLine
-        });
-    }
-
-    calcCoords() {
-        for (let i = 0; i < this.numPts; i++) {
-            this.ptXs[i] = this.centerX + this.Xs[i] * this.stepX;
-            this.ptYs[i] = this.centerY - this.Ys[i] * this.stepY;
-        }
-    }
-
-    avgxs() {
-        let sum = 0;
-        for (let i = 0; i < this.numPts; ++i) {
-            sum += this.Xs[i];
-        }
-        return sum / this.numPts;
-    }
-
-    avgys() {
-        let sum = 0;
-        for (let i = 0; i < this.numPts; ++i) {
-            sum += this.Ys[i];
-        }
-        return sum / this.numPts;
-    }
-
-
-    // calculate the parameters, and the coordinates of least squares line
-    // formula: beta = (sum of xi * yi - n * xbar * ybar) / (sum of xi^2 - n * xbar^2)
-    calcParams() {
-        this.avgX = this.avgxs();
-        this.avgY = this.avgys();
-
-        let sumXY = 0, sumXsq = 0;
-        for (let i = 0; i < this.numPts; i++) {
-            sumXY += this.Xs[i] * this.Ys[i];
-            sumXsq += this.Xs[i] * this.Xs[i];
-        }
-        this.beta = (sumXY - this.numPts * this.avgX * this.avgY)
-            / (sumXsq - this.numPts * this.avgX * this.avgX);
-
-        this.beta_0 = this.avgY - this.beta * this.avgX;
-
-        this.y_intercept = this.centerY - this.beta_0 * this.stepY;
-        this.xbar = this.centerX + this.avgX * this.stepX;
-        this.ybar = this.centerY - this.avgY * this.stepY;
-    }
-
-
-    showPoints() {
-        for (let i = 0; i < this.numPts; ++i) {
-            this.points[i].show();
-        }
-    }
-}
-
-/** 2018-12-23
- * PlotPoint
- * Helper class of Plot. Capable of displaying init animations of the points
- *
- * ----args list parameters----
- * @mandatory (number) x, y, radius, start
- */
-class PlotPoint {
-    constructor(args) {
-        this.x = args.x;
-        this.y = args.y;
-        this.radius = args.radius;
-        this.start = args.start;
-        this.color = args.color || [255, 255, 0];
-
-        this.timer = new Timer1(frames(0.7));
-        this.t = 0;
-    }
-
-    reset(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    show() {
-        if (frameCount > this.start) {
-            this.t = this.timer.advance();
-
-            // draw the contour
-            noFill();
-            stroke(255, 0, 0);
-            strokeWeight((1 - this.t) * this.radius / 3);
-            arc(this.x, this.y, this.radius, this.radius, 0, this.t * TWO_PI);
-
-            // draw the ellipse
-            noStroke();
-            fill(this.color[0], this.color[1], this.color[2], 255 * this.t);
-            ellipse(this.x, this.y, this.radius, this.radius);
-        }
-    }
-}
 
 //let orange = color(247, 137, 27);  // fixme: why doesn't it work?
 
@@ -351,12 +204,14 @@ switch (sn) {
             rect1: frames(0) + 47,
             //to_b_greater_1: frames(1),
 
+            emphasizeNumerator: frames(1),
             division_line1: frames(2),
             cov: frames(3),
+            emphasizeNumEnd: frames(4),
             toxx: frames(2.5),
-            division_line2: frames(3),
-            var: frames(4)
-
+            emphasizeDenom: frames(5),
+            division_line2: frames(5),
+            var: frames(7),
         };
         break;
 }
@@ -915,13 +770,13 @@ function setup() {
         });
         txts[7] = new TextFadeIn({
             str: "n - 1",
-            x: 897, y: 177,
+            x: 897, y: 167,
             font: comic, color: [255, 255, 17],
             start: getT(time.division_line1)
         });
         txts[8] = new TextFadeIn({
             str: "n - 1",
-            x: 897, y: 537,
+            x: 897, y: 527,
             font: comic, color: [255, 255, 17],
             start: getT(time.division_line2)
         });

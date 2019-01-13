@@ -103,6 +103,10 @@ class TextWriteIn extends Text {
  * This structure is pretty ugly and dumb, as each new Katex text object needs a new class,
  * but as of now this is the only way I can get around the weirdness of using katex.js
  *
+ * To avoid naming conflicts, classes that require Katex displays will have a new class of
+ * Katex object exclusively for them (KatexAxis1, 2),
+ * but if used, then these classes will have to be singletons.
+ *
  * The color of the text defaults to white. To change color, use \\textcolor{}{...} inside args.text
  *
  * ----args list parameters----
@@ -335,5 +339,29 @@ class Katex14 extends KatexBase {
     show() {
         this.showInit();
         katex.render(this.text, kt14);
+    }
+}
+
+class KatexAxis1 extends KatexBase {
+    constructor(args) {
+        super(args);
+        this.k.id('ktaxis1');
+    }
+
+    show() {
+        this.showInit();
+        katex.render(this.text, ktaxis1);
+    }
+}
+
+class KatexAxis2 extends KatexBase {
+    constructor(args) {
+        super(args);
+        this.k.id('ktaxis2');
+    }
+
+    show() {
+        this.showInit();
+        katex.render(this.text, ktaxis2);
     }
 }

@@ -106,7 +106,7 @@ class BrainBase extends Graphics {
 
 /*** 2019-01-05
  * Bubble
- * Thought bubble, used in conjunction with the Brain-creature
+ * Thought bubble (semi-transparent), used in conjunction with the Brain-creature
  *
  * x and y coordinates define the LOWER-LEFT corner of the shape;
  * (to change to LOWER-RIGHT, simply change this.x + ... to this.x - ...)
@@ -155,7 +155,7 @@ class Bubble {
         this.text.show();
         stroke(255);
         strokeWeight(this.strokeweight);
-        noFill();
+        fill(0, 177);           // the bubble is semi-transparent
 
         for (let i = 0; i < 4; i++) {
             if (frameCount - this.start > i * frames(0.2)) {
