@@ -1,3 +1,20 @@
+
+
+
+let X_ = [
+    [1, 1, 1, 1],
+    [1, -1, -1, 1],
+    [1, 1, -1, -2]];
+let y_ = [-1, 2, 4, -2];
+
+// the plane used to show multiple regression on 2 independent variables
+class MR_Plane extends Axes3D {
+    constructor(args) {
+        super(args);
+
+    }
+}
+
 let axes;
 let obj;
 let pl;
