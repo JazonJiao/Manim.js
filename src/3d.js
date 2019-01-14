@@ -228,7 +228,7 @@ class Arrow3D {
  * (1) two basis vectors which span it (in p5's coordinate system), OR
  * (2) the general equation px + qy + rz = s (in case 1, s would be 0) (in standard coordinates), OR
  * (3) the relation z = ax + by + c (in standard coordinates)
- * In the latter two cases,  // fixme: how to scale them appropriately? yet to test it on regression data
+ * // fixme: display will be weird when it's steep
  *
  * ---- args list parameters ----
  * @mandatory (array[6]) M  **OR**  (number) p,q,r,s  **OR** (number) a,b,c
@@ -264,19 +264,19 @@ class Plane3D {
             this.s = 0;
         }
         // calculate the line in the form z = ax + by + c
-        if (this.M || this.a) {
+        if (this.M || this.p) {
             this.a = -this.p / this.r;
             this.b = -this.q / this.r;
             this.c = this.s / this.r;
         }
 
         // calculate the coordinates of vertices of this plane, in standard coordinate system
-        // fixme: the height is successfully flipped in mode 1, what about others?
         this.xs = [this.size, -this.size, -this.size, this.size];
         this.ys = [this.size, this.size, -this.size, -this.size];
         this.zs = [];
         for (let i = 0; i < 4; i++) {
-            this.zs[i] = (this.a * this.xs[i] + this.b * this.ys[i] + this.c);
+            // somehow, we need to flip the height for mode 1
+            this.zs[i] = (this.a * this.xs[i] + this.b * this.ys[i] + this.c) * (this.M ? 1 : -1);
         }
     }
 
