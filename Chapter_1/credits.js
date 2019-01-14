@@ -21,7 +21,8 @@ function setup() {
         x: 37, y: 277,
         start: 0,
         size: 27,
-        font: comic
+        font: comic,
+        start: frames(2)
     });
     txts[1] = new TextWriteIn({
         str: "P.S. they are not my sponsor... yet",
@@ -29,7 +30,7 @@ function setup() {
         y: 637,
         size: 22,
         font: comic,
-        start: frames(1)
+        start: frames(2)
     })
 }
 

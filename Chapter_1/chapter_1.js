@@ -204,14 +204,16 @@ switch (sn) {
             rect1: frames(0) + 47,
             //to_b_greater_1: frames(1),
 
-            emphasizeNumerator: frames(1),
-            division_line1: frames(2),
-            cov: frames(3),
-            emphasizeNumEnd: frames(4),
-            toxx: frames(2.5),
-            emphasizeDenom: frames(5),
-            division_line2: frames(5),
-            var: frames(7),
+            //emphasizeNumerator: frames(1),
+            division_line1: frames(5),
+            n_1: frames(11),
+            cov: frames(12.5),
+            //emphasizeNumEnd: frames(4),
+            toxx: frames(16.5),
+            //emphasizeDenom: frames(15),
+            division_line2: frames(17),
+            n_2: frames(19.5),
+            var: frames(21.5),
         };
         break;
 }
@@ -770,15 +772,15 @@ function setup() {
         });
         txts[7] = new TextFadeIn({
             str: "n - 1",
-            x: 897, y: 167,
+            x: 897, y: 174,
             font: comic, color: [255, 255, 17],
-            start: getT(time.division_line1)
+            start: getT(time.n_1)
         });
         txts[8] = new TextFadeIn({
             str: "n - 1",
-            x: 897, y: 527,
+            x: 897, y: 534,
             font: comic, color: [255, 255, 17],
-            start: getT(time.division_line2)
+            start: getT(time.n_2)
         });
 
     }
