@@ -5,7 +5,7 @@
 let fr = 30;  // frame rate
 
 // canvas width. Set to 1200 normally, 1250 if want to monitor frame rate during recording
-let cvw = 1250;
+let cvw = 1200;
 
 // canvas height. Ensure 16:9 ratio
 let cvh = 675;

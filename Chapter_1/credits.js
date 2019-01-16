@@ -19,7 +19,6 @@ function setup() {
             "Source Code (written in p5.js): https://github.com/JazonJiao/Essence-Linear-Regression\n" +
             "",
         x: 37, y: 277,
-        start: 0,
         size: 27,
         font: comic,
         start: frames(2)

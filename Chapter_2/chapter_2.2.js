@@ -67,10 +67,20 @@ class Grid_Three_Lines extends Grid {
         let beta_hat = (sumXY - this.numPts * avgX * avgY) / (sumXsq - this.numPts * avgX * avgX);
         let beta_0_hat = avgY - beta_hat * avgX;
 
+        let x = beta_0_hat * this.stepX + this.centerX;
+        let y = this.centerY - beta_hat * this.stepY;
+
         this.closestPoint = new PlotPoint({
-            x: beta_0_hat * this.stepX + this.centerX,
-            y: this.centerY - beta_hat * this.stepY ,
-            start: getT(time.lines)  // fixme
+            x: x, y: y,
+            start: getT(time.lines),  // fixme
+            radius: 24,
+            color: [247, 177, 47]
+        });
+        this.kat = new Katex14({
+            text: "(\\hat{\\beta_0}, \\hat{\\beta})",
+            x: x + 17,
+            y: y - 97,
+            start: getT(time.lines)
         })
 
     }
@@ -79,10 +89,18 @@ class Grid_Three_Lines extends Grid {
         this.showGrid();
         for (let l of this.lines) l.show();
         this.closestPoint.show();
+        this.kat.show();
     }
 }
 
 let grid;
+let kats = [];
+let comic;
+let brain;
+
+function preload() {
+    comic = loadFont('../lib/font/comic.ttf');
+}
 
 function setup() {
     frameRate(fr);
@@ -96,10 +114,18 @@ function setup() {
         stepY: 100,
         start: getT(time.grid)
     });
+    //kats[0] =
+    brain = new ThoughtBrain({
+        x: 67, y: 517,
+        size: 277,
+        font: comic,
+        str: "\"closest solution\""
+    })
 
 }
 
 function draw() {
     background(0);
     grid.show();
+    brain.show();
 }

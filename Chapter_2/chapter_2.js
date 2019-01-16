@@ -100,6 +100,6 @@ function draw() {
     background(0);
     axes.showPlane(g3);
     image(g3, 0, 0, cvw, cvh);
-    showFR(g2);
+    //showFR(g2);
     kat.show();
 }

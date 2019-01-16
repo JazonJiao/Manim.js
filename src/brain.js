@@ -152,7 +152,6 @@ class Bubble {
     }
 
     show() {
-        this.text.show();
         stroke(255);
         strokeWeight(this.strokeweight);
         fill(0, 177);           // the bubble is semi-transparent
@@ -164,7 +163,7 @@ class Bubble {
                     0, 6.283 * this.timers[i].advance());
             }
         }
-
+        this.text.show();
     }
 }
 
@@ -173,7 +172,7 @@ class Bubble {
  *
  * ---- args list parameters ----
  * @mandatory (number) x, y; (font) font; (string) str
- * @optional (number) start, duration, bubbleStart, size,
+ * @optional (number) start, duration, bubbleStart, size, font_size
  */
 
 class ThoughtBrain extends BrainBase {
@@ -181,15 +180,15 @@ class ThoughtBrain extends BrainBase {
         super(args);
         this.x = args.x || 170;
         this.y = args.y || 440;
-        this.s = 400;   // when displaying, the size of the brain (w is already defined)
+        this.s = args.size || 400;   // when displaying, the size of the brain (w is already defined)
 
         this.bubble = new Bubble({
             x: this.x + this.s / 2,
             y: this.y + this.s / 8,
-            w: 600,
-            h: 400,
+            w: this.s * 1.5,
+            h: this.s,
             font: args.font,
-            size: args.size,  // font size
+            size: args.font_size,  // font size
             str: args.str,
             start: args.bubbleStart || this.start
         })

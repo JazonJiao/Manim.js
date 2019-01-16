@@ -141,6 +141,12 @@ class KatexBase {
         }
     }
 
+    reset(args) {
+        this.x = args.x || this.x;
+        this.y = args.y || this.y;
+        this.size = args.size || this.size;
+    }
+
     showInit() {
         if (this.fadeIn && frameCount > this.start) {
             this.k.style('opacity', this.timer.advance());

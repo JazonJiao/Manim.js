@@ -42,6 +42,14 @@ class Plane_LinComb extends Plane3D {
             x2: 0, y2: 0, z2: 0,
             color: color([247, 217, 47])
         });
+
+        // r = y - v, endpoint same as arrow3
+        this.arrow5 = new Arrow3D({
+            x2: this.Y[0] * this.step, y2: this.Y[1] * this.step, z2: this.Y[2] * this.step,
+            color: color([247, 27, 247])
+        });
+
+
         this.lb = -1;  // lower bound for a, b
         this.ub = 1;   // upper bound for a, b
         this.textX = 700;
@@ -80,12 +88,18 @@ class Plane_LinComb extends Plane3D {
         this.arrow3.show(g);
         let a = map(mouseX, 0, width, this.lb * this.step, this.ub * this.step);
         let b = map(mouseY, 0, height, this.ub * this.step, this.lb * this.step);
+        let x = a * this.M[0] + b * this.M[3];
+        let y = a * this.M[1] + b * this.M[4];
+        let z = a * this.M[2] + b * this.M[5];
         this.arrow4.reset({
-            x2: a * this.M[0] + b * this.M[3],
-            y2: a * this.M[1] + b * this.M[4],
-            z2: a * this.M[2] + b * this.M[5]
+            x2: x, y2: y, z2: z
         });
         this.arrow4.show(g);
+
+        this.arrow5.reset({
+            x1: x, y1: y, z1: z,
+        });
+        this.arrow5.show(g);
         this.kat.show();
 
         this.text1.reset({ str: "" + (a / this.step).toFixed(2) });
@@ -122,7 +136,7 @@ function setup() {
     g2 = createGraphics(100, 10);
 
     axes = new Axes3D({
-        angle: -1,
+        angle: 0,
         model: obj[0]
     });
 

@@ -143,9 +143,10 @@ class Arrow3D {
         this.x1 = args.x1 || 0;
         this.y1 = args.y1 || 0;
         this.z1 = args.z1 || 0;
-        this.dx = args.x2 - this.x1;
-        this.dy = args.y2 - this.y1;
-        this.dz = args.z2 - this.z1;
+
+        this.x2 = args.x2;
+        this.y2 = args.y2;
+        this.z2 = args.z2;
 
         this.label = args.label;
         if (this.label) {
@@ -155,11 +156,16 @@ class Arrow3D {
         this.color = args.color || color(177);
         this.radius = args.radius || 3;
         this.tipLen = args.tipLen || 30;
+
         this.tipRadius = args.tipRadius || 10;
         this.calcParam();
     }
 
     calcParam() {
+        this.dx = this.x2 - this.x1;
+        this.dy = this.y2 - this.y1;
+        this.dz = this.z2 - this.z1;
+
         // To perform the proper rotation of the cylinder (which is drawn along p5's y-axis),
         // I originally transformed the coordinates from Cartesian into spherical,
         // and then called rotateX(theta) and rotateZ(phi).
@@ -169,26 +175,36 @@ class Arrow3D {
         // and then perform a 180-degree rotation around that axis.
         this.len = Math.sqrt(this.dx * this.dx + this.dy * this.dy + this.dz * this.dz);
 
+        // if we don't do this, the final arrow length will be off by this.tipLen / 2,
+        // since the center of the cone sits on the end of the cylinder.
+        // We will also subtract this.tipLen / 2 from this.len at the end of other calculations.
+        let scale = this.len / (this.len + this.tipLen / 2);
+        // These define how we should translate the coordinates.
+        this.tx = this.x1 + (this.x2 - this.x1) * scale / 2;
+        this.ty = this.y1 + (this.y2 - this.y1) * scale / 2;
+        this.tz = this.z1 + (this.z2 - this.z1) * scale / 2;
+
         // Note that the x, y, and z's are completely out of place in the calculations,
         // because of p5's weird left-hand 3D coordinate system.
         let theta = Math.atan2(this.dx, this.dz);      // theta = atan2(y / x)
         let phi = Math.acos(this.dy / this.len) / 2;   // phi = acos(z / r)
 
         // Calculate the axis of rotation. Note that the length of this vector doesn't matter.
-        this.v = createVector(
-            Math.sin(phi) * Math.sin(theta), // y = sin(phi) * sin(theta)
-            Math.cos(phi),                   // z = cos(phi)
-            Math.sin(phi) * Math.cos(theta)  // x = sin(phi) * cos(theta)
-        );
+        let x = Math.sin(phi) * Math.sin(theta);  // y = sin(phi) * sin(theta)
+        let y = Math.cos(phi);                    // z = cos(phi)
+        let z = Math.sin(phi) * Math.cos(theta);  // x = sin(phi) * cos(theta)
+        this.v = createVector(x, y, z);
+
+        this.len -= this.tipLen / 2;
     }
 
     reset(args) {
-        this.x1 = args.x1 || 0;
-        this.y1 = args.y1 || 0;
-        this.z1 = args.z1 || 0;
-        this.dx = args.x2 - this.x1 || this.dx;
-        this.dy = args.y2 - this.y1 || this.dy;
-        this.dz = args.z2 - this.z1 || this.dz;
+        this.x1 = args.x1 || this.x1;
+        this.y1 = args.y1 || this.y1;
+        this.z1 = args.z1 || this.z1;
+        this.x2 = args.x2 || this.x2;
+        this.y2 = args.y2 || this.y2;
+        this.z2 = args.z2 || this.z2;
         this.calcParam();
     }
 
@@ -201,12 +217,12 @@ class Arrow3D {
         // fixme: And why doesn't the color values matter?
         g.directionalLight(1, 1, 1, 0, 1, 0);
 
-        g.translate(this.dx / 2, this.dy / 2, this.dz / 2);
+        g.translate(this.tx, this.ty, this.tz);
         g.rotate(PI, this.v);
         g.cylinder(this.radius, this.len);
 
         g.translate(0, this.len / 2, 0);
-        g.cone(this.tipRadius, this.tipLen);  // fixme: the arrow's length will be off by tipLen / 2
+        g.cone(this.tipRadius, this.tipLen);
         if (this.label) {  // fixme: how to determine rotation based on the orientation of arrow?
             // if (this.dx > 0) {
             //     g.rotateZ(-PI / 2);
