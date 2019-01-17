@@ -136,19 +136,16 @@ class Grid3D {
  * with the canvas as its parameter.
  *
  * ---- args list parameters ----
- * @mandatory (number) x2, y2, z2--those should be using p5's coordinate system
- * @optional (number) x1, y1, z1, radius, tipLen, tipRadius; (color) color;
+ * @mandatory (array) to--[x2, y2, z2] in standard coordinates,
+ * @optional (array) from; (number) radius, tipLen, tipRadius; (color) color;
  *           (p5.Geometry) label; (function) fcn
  */
 class Arrow3D {
     constructor(args) {
-        this.x1 = args.x1 || 0;
-        this.y1 = args.y1 || 0;
-        this.z1 = args.z1 || 0;
+        let tmp = args.from || [0, 0, 0];
+        this.from = stdToP5(tmp);
 
-        this.x2 = args.x2;
-        this.y2 = args.y2;
-        this.z2 = args.z2;
+        this.to = stdToP5(args.to);
 
         this.label = args.label;
         if (this.label) {
@@ -164,6 +161,12 @@ class Arrow3D {
     }
 
     calcParam() {
+        this.x1 = this.from[0];
+        this.y1 = this.from[1];
+        this.z1 = this.from[2];
+        this.x2 = this.to[0];
+        this.y2 = this.to[1];
+        this.z2 = this.to[2];
         this.dx = this.x2 - this.x1;
         this.dy = this.y2 - this.y1;
         this.dz = this.z2 - this.z1;
@@ -182,9 +185,9 @@ class Arrow3D {
         // We will also subtract this.tipLen / 2 from this.len at the end of other calculations.
         let scale = this.len / (this.len + this.tipLen / 2);
         // These define how we should translate the coordinates.
-        this.tx = this.x1 + (this.x2 - this.x1) * scale / 2;
-        this.ty = this.y1 + (this.y2 - this.y1) * scale / 2;
-        this.tz = this.z1 + (this.z2 - this.z1) * scale / 2;
+        this.tx = this.x1 + (this.dx) * scale / 2;
+        this.ty = this.y1 + (this.dy) * scale / 2;
+        this.tz = this.z1 + (this.dz) * scale / 2;
 
         // Note that the x, y, and z's are completely out of place in the calculations,
         // because of p5's weird left-hand 3D coordinate system.
@@ -200,15 +203,28 @@ class Arrow3D {
         this.len -= this.tipLen / 2;
     }
 
+    // as in the ctor, the parameters should be in std coordinates.
+    // It's this method's responsibility to convert to p5's coordinates.
     reset(args) {
-        this.x1 = args.x1 || this.x1;
-        this.y1 = args.y1 || this.y1;
-        this.z1 = args.z1 || this.z1;
-        this.x2 = args.x2 || this.x2;
-        this.y2 = args.y2 || this.y2;
-        this.z2 = args.z2 || this.z2;
-        this.calcParam();
+        let r = false;
+        if (args.from) {
+            r = true;
+            this.from = stdToP5(args.from);
+        }
+        if (args.to) {
+            r = true;
+            this.to = stdToP5(args.to);
+        }
+        if (r) {
+            this.calcParam();
+        }
     }
+
+    // resetP5(args) {
+    //     this.from = args.from || this.from;
+    //     this.to = args.to || this.to;
+    //     this.calcParam();
+    // }
 
     show(g) {
         g.push();
@@ -229,7 +245,7 @@ class Arrow3D {
         g.specularMaterial(this.color);
 
         g.translate(this.tx, this.ty, this.tz);
-        g.rotate(PI, this.v);
+        g.rotate(PI, this.v); // frameCount / 77
         g.cylinder(this.radius, this.len);
 
         g.translate(0, this.len / 2, 0);
@@ -251,10 +267,10 @@ class Arrow3D {
 
 /** 2019-01-02, 01-13
  * Plane3D (WEBGL)
- * A plane defined by:
- * (1) two basis vectors which span it (in p5's coordinate system), OR
- * (2) the general equation px + qy + rz = s (in case 1, s would be 0) (in standard coordinates), OR
- * (3) the relation z = ax + by + c (in standard coordinates)
+ * A plane defined by (in standard coordinates):
+ * (1) two basis vectors which span it, OR
+ * (2) the general equation px + qy + rz = s (in case 1, s would be 0), OR
+ * (3) the relation z = ax + by + c
  * // fixme: display will be weird when it's steep
  *
  * ---- args list parameters ----
@@ -265,7 +281,7 @@ class Plane3D {
     constructor(args) {
         // an array in the form [a,b,c, d,e,f], representing 2 column vectors
         // coordinates should be in p5's coordinate system
-        this.M = args.mat;
+        this.M = stdToP5(args.mat);
 
         this.a = args.a;
         this.b = args.b;

@@ -1,8 +1,6 @@
 // 3D scene
 
-// used for chapter 2
-let matrix = [1, -1, 1, -3, -2, 2];
-let target = [-1, -3, 1];
+
 
 let time = {};
 
@@ -15,37 +13,38 @@ class Plane_LinComb extends Plane3D {
         this.Y = args.y;   // the y in Ax = y. A is passed in as args.mat, y is args.y
         this.step = args.step || 100;
 
-        // x1
+        // x1; NOTE that the y-coordinate needs to be inverted, ditto others
+        // Error log: used this.M, but this.M is already converted to p5 coordinates
         this.arrow1 = new Arrow3D({
-            x2: this.M[0] * this.step, y2: this.M[1] * this.step, z2: this.M[2] * this.step,
+            to: [matrix[0] * this.step, matrix[1] * this.step, matrix[2] * this.step],
             color: color([237, 47, 47]),
             label: args.x_1,
         });
         // x2
         this.arrow2 = new Arrow3D({
-            x2: this.M[3] * this.step, y2: this.M[4] * this.step, z2: this.M[5] * this.step,
+            to: [matrix[3] * this.step, matrix[4] * this.step, matrix[5] * this.step],
             color: color([37, 147, 37]),
             label: args.x_2,
-            fcn: ((g) => { g.rotateZ(PI / 2); })
+            fcn: ((g) => { g.rotateZ(-PI / 2); g.rotateX(PI); })
         });
 
         // y
         this.arrow3 = new Arrow3D({
-            x2: this.Y[0] * this.step, y2: this.Y[1] * this.step, z2: this.Y[2] * this.step,
+            to: [this.Y[0] * this.step, this.Y[1] * this.step, this.Y[2] * this.step],
             color: color([27, 147, 227]),
             label: args.y_o,
-            fcn: ((g) => { g.rotateZ(PI / 2); })
+            fcn: ((g) => { g.rotateZ(-PI / 2); })
         });
 
         // v = ax1 + bx2
         this.arrow4 = new Arrow3D({
-            x2: 0, y2: 0, z2: 0,
+            to: [0, 0, 0],
             color: color([247, 217, 47])
         });
 
         // r = y - v, endpoint same as arrow3
         this.arrow5 = new Arrow3D({
-            x2: this.Y[0] * this.step, y2: this.Y[1] * this.step, z2: this.Y[2] * this.step,
+            to: [this.Y[0] * this.step, this.Y[1] * this.step, this.Y[2] * this.step],
             color: color([247, 27, 247]),
             // label: args.r_o,
             // fcn: ((g) => { g.rotateZ(PI / 2); })
@@ -90,16 +89,16 @@ class Plane_LinComb extends Plane3D {
         this.arrow3.show(g);
         let a = map(mouseX, 0, width, this.lb * this.step, this.ub * this.step);
         let b = map(mouseY, 0, height, this.ub * this.step, this.lb * this.step);
-        let x = a * this.M[0] + b * this.M[3];
-        let y = a * this.M[1] + b * this.M[4];
-        let z = a * this.M[2] + b * this.M[5];
+        let x = a * matrix[0] + b * matrix[3];
+        let y = a * matrix[1] + b * matrix[4];
+        let z = a * matrix[2] + b * matrix[5];
         this.arrow4.reset({
-            x2: x, y2: y, z2: z
+            to: [x, y, z]
         });
         this.arrow4.show(g);
 
         this.arrow5.reset({
-            x1: x, y1: y, z1: z,
+            from: [x, y, z]
         });
         this.arrow5.show(g);
         this.kat.show();

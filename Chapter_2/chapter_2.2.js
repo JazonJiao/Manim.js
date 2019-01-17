@@ -20,14 +20,15 @@ class Grid_Three_Lines extends Grid {
         for (let i = 0; i < this.numPts; i++) {
             let arr = this.calcLineParams(1, xs[i], ys[i]);
             this.lines[i] = new Line({
-                x1: arr[0], y1: arr[1], x2: arr[2], y2: arr[3],
+                x1: arr[0], y1: arr[1],
+                x2: arr[2], y2: arr[3],
                 start: getT(time.lines),
                 color: i === 0 ? color(237, 47, 47) :
                     (i === 1 ? color(37, 147, 37) : color(247, 217, 47))
             });
         }
 
-        this.caldClosestPoint();
+        this.calcClosestPoint();
     }
 
     // Takes in the ax + by = c representation of the line.
@@ -49,7 +50,7 @@ class Grid_Three_Lines extends Grid {
     // I tried to do this by refactoring the Plot class and make its calcParams() method
     // a free method, but then I broke a lot of previous code, so I have to write a lot of
     // redundant code here... I know its bad style but whatever
-    caldClosestPoint() {
+    calcClosestPoint() {
         let avgX = 0, avgY = 0;
         for (let i = 0; i < this.numPts; i++) {
             avgX += xs[i];

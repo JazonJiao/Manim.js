@@ -4,9 +4,6 @@ let time = {
     transform: frames(2)
 };
 
-let matrix = [1, -2, 3, -3, -4, 0];
-let target = [-2, -3, 2];
-
 // 2019-01-02, 03
 class Grid_Projection extends Grid3D {
     constructor(args) {
@@ -21,7 +18,7 @@ class Grid_Projection extends Grid3D {
         this.xd = [];
         this.yd = [];
         this.zd = [];
-        this.P = calcProjectionMatrix(this.U);
+        this.P = calcProjectionMatrix(stdToP5(this.U));
         // calculate the destination coordinates
         for (let i = 0; i < this.nCb; i++) { // iterate through n^3 entries
             let x = this.xs[i],
@@ -99,12 +96,12 @@ class Plane_Projection extends Plane3D {
 
         // x1
         this.arrow1 = new Arrow3D({
-            x2: this.M[0] * this.step, y2: this.M[1] * this.step, z2: this.M[2] * this.step,
+            to: [matrix[0] * this.step, matrix[1] * this.step, matrix[2] * this.step],
             color: color([37, 147, 37])
         });
         // x2
         this.arrow2 = new Arrow3D({
-            x2: this.M[3] * this.step, y2: this.M[4] * this.step, z2: this.M[5] * this.step,
+            to: [matrix[3] * this.step, matrix[4] * this.step, matrix[5] * this.step],
             color: color([237, 47, 47])
         });
 
@@ -114,11 +111,12 @@ class Plane_Projection extends Plane3D {
             z = this.Y[2] * this.step;
         this.Ys = [x, y, z];
         this.arrow3 = new Arrow3D({
-            x2: this.Ys[0], y2: this.Ys[1], z2: this.Ys[2],
+            to: this.Ys,
             color: color([27, 147, 227])
         });
-        this.P = calcProjectionMatrix(this.M);
-        this.Yd = [this.P[0] * x + this.P[1] * y + this.P[2] * z,
+        this.P = calcProjectionMatrix(matrix);
+        this.Yd = [
+            this.P[0] * x + this.P[1] * y + this.P[2] * z,
             this.P[3] * x + this.P[4] * y + this.P[5] * z,
             this.P[6] * x + this.P[7] * y + this.P[8] * z];
         this.timer = new Timer2(frames(2));
@@ -131,9 +129,9 @@ class Plane_Projection extends Plane3D {
         if (frameCount > this.start) {
             let t = this.timer.advance();
             this.arrow3.reset({
-                x2: this.Ys[0] + t * (this.Yd[0] - this.Ys[0]),
-                y2: this.Ys[1] + t * (this.Yd[1] - this.Ys[1]),
-                z2: this.Ys[2] + t * (this.Yd[2] - this.Ys[2]),
+                to: [this.Ys[0] + t * (this.Yd[0] - this.Ys[0]),
+                    this.Ys[1] + t * (this.Yd[1] - this.Ys[1]),
+                    this.Ys[2] + t * (this.Yd[2] - this.Ys[2])]
             });
         }
         this.arrow3.show(g);

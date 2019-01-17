@@ -12,6 +12,27 @@ let cvh = 675;
 
 let sn = 11;  // scene number
 
+// used for chapter 2
+let matrix = [1, 1, 1, -3, 2, 2];
+let target = [-2, -1, 3];
+
+
+
+/*** Refactored on 2019-01-17
+ *
+ * Transforms from standard coordinates into p5's coordinates,
+ * so that the display of vectors, etc. is correct upon the x-y-z axes model.
+ *
+ */
+function stdToP5(a, b, c) {
+    //if (a.length === undefined)
+
+    if (a.length === 3) {
+        return [a[1], -a[2], a[0]];
+    } else if (a.length === 6) {
+        return [a[1], -a[2], a[0], a[4], -a[5], a[3]];
+    }
+}
 
 
 /**
