@@ -30,13 +30,15 @@ class Axes3D {
         // g.background(0, 0, 0, 0);
 
         g.background(0);
-        // these must be called before directionalLight and ambientLight()
-        g.fill(177);
-        g.noStroke();
 
-        // fixme:
-        g.directionalLight(147, 147, 147, 0, 1, 0);
+        // @see Arrow3D class
+        //g.fill(177);
+        //g.noStroke();
+
+        g.directionalLight(27, 27, 27, 0, 1, 0);
         g.ambientLight(27, 27, 27);
+
+        g.specularMaterial(177);
 
         let camX = this.camRadius * Math.cos(this.angle);
         let camZ = this.camRadius * Math.sin(this.angle);
@@ -210,12 +212,21 @@ class Arrow3D {
 
     show(g) {
         g.push();
-        g.fill(this.color);
-        g.noStroke();
+        //g.fill(this.color);
+        //g.noStroke();
 
         // fixme: why do I have to call directionalLight() again?
         // fixme: And why doesn't the color values matter?
-        g.directionalLight(1, 1, 1, 0, 1, 0);
+        // fixme: why would this line slow down the rendering significantly? (190116)
+        //g.directionalLight(1, 1, 1, 0, 1, 0);
+
+        // 2019-01-16
+        // If I use fill(), then each fill must be followed by directionalLight(),
+        // which is a really expensive method. On a canvas with 5 arrows, the FPS will
+        // quickly drop to about 5. If I use specularMaterial, it has the same effect
+        // as fill(), but I would only need to call directionalLight() and ambientLight()
+        // once, in the Axes3D class, which greatly improves performance.
+        g.specularMaterial(this.color);
 
         g.translate(this.tx, this.ty, this.tz);
         g.rotate(PI, this.v);

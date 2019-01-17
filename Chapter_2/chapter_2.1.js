@@ -46,7 +46,9 @@ class Plane_LinComb extends Plane3D {
         // r = y - v, endpoint same as arrow3
         this.arrow5 = new Arrow3D({
             x2: this.Y[0] * this.step, y2: this.Y[1] * this.step, z2: this.Y[2] * this.step,
-            color: color([247, 27, 247])
+            color: color([247, 27, 247]),
+            // label: args.r_o,
+            // fcn: ((g) => { g.rotateZ(PI / 2); })
         });
 
 
@@ -124,6 +126,7 @@ function preload() {
     obj[1] = loadModel('../lib/obj/x_1.obj');
     obj[2] = loadModel('../lib/obj/x_2.obj');
     obj[3] = loadModel('../lib/obj/y.obj');
+    // obj[4] = loadModel('../lib/obj/r.obj');
     font = loadFont('../lib/font/times.ttf');
 }
 
@@ -149,6 +152,7 @@ function setup() {
         x_1: obj[1],
         x_2: obj[2],
         y_o: obj[3],
+        // r_o: obj[4],
         size: 300
     });
     kats[0] = new Katex0({
@@ -164,10 +168,15 @@ function setup() {
 
 function draw() {
     background(0);
-
     axes.show(g3);
+    // g3.pointLight(147, 147, 147, 0, 1, 0);
+    // g3.ambientLight(27, 27, 27);
+
     arrows.show(g3);
     //hg.show();
+
+
+
 
     image(g3, 0, 0, cvh, cvh);
 
