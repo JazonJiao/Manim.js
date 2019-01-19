@@ -128,6 +128,7 @@ class TextWriteIn extends Text {
 // });
 class KatexTxt {
     constructor(ctx, args) {
+        console.log(ctx);
         this.s = ctx;
         this.text = args.text;
         this.size = args.font_size || 37;
@@ -135,12 +136,15 @@ class KatexTxt {
         this.y = args.y || 0;
         this.color = args.color || '#fff';
         this.domId = args.id || 'KATEX-' + parseInt(Math.random().toString().substr(2)); // Rand ID
+        this.canvasPos = ctx.canvas.getBoundingClientRect();
 
         this.k = this.s.createP('');
-        this.k.position(this.x, this.y);
+        this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y); // Based on the canvas position in the DOM
         this.k.style('color', this.color);
         this.k.style('font-size', this.size + 'px');
         this.k.id(this.domId);
+
+        console.log(ctx.canvas.getBoundingClientRect());
 
         this.fadeIn = args.fadeIn || false;
         if (this.fadeIn) {
