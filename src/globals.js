@@ -10,7 +10,7 @@ let cvw = 1200;
 // canvas height. Ensure 16:9 ratio
 let cvh = 675;
 
-let sn = 11;  // scene number
+let scn = 11;  // scene number
 
 // used for chapter 2
 let matrix = [1, 1, 1, -3, 2, 2];
@@ -77,14 +77,15 @@ function getT(t) {
  * For 3D scenes, declare an off-screen canvas g2 = createGraphics(100, 10);
  * and pass in that as the parameter.
  */
-function showFR(g) {
-    let fps = frameRate();
+function showFR(s, g) {
+    const fps = s.frameRate();
     let pos = (cvw === 1200) ? 0 : 1200;
+
     if (g === undefined) {
-        fill(255);
-        textSize(10);
-        noStroke();
-        text("FPS: " + fps.toFixed(1), pos, 10);
+        s.fill(255);
+        s.textSize(10);
+        s.noStroke();
+        s.text("FPS: " + fps.toFixed(1), pos, 10);
     } else {
         g.background(0);
         g.fill(255);
