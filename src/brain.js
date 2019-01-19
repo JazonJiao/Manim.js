@@ -6,8 +6,8 @@
  * @optional (number) start, duration
  */
 class BrainBase extends Graphics {
-    constructor(args) {
-        super({w : 1100, h : 1100});  // make it big since we can scale the canvas
+    constructor(ctx, args) {
+        super(ctx, {w : 1100, h : 1100});  // make it big since we can scale the canvas
 
         this.start = args.start || frames(1);
         this.duration = args.duration || frames(1);   // duration of init animation
@@ -83,12 +83,12 @@ class BrainBase extends Graphics {
     }
 
     showBrain() {
-        if (frameCount > this.start) {
+        if (this.s.frameCount > this.start) {
             // the thick lines
             this.g.noFill();
             this.g.strokeWeight(47);
             this.g.stroke(27, 177, 37);
-            this.g.strokeJoin(ROUND);
+            this.g.strokeJoin(this.s.ROUND);
             this.showWire();
 
             // the thin lines
@@ -117,7 +117,8 @@ class BrainBase extends Graphics {
  * @optional (number) start, end, stokeweight
  */
 class Bubble {
-    constructor(args) {
+    constructor(ctx, args) {
+        this.s = ctx;
         this.x = args.x;
         this.y = args.y;
         this.w = args.w;
@@ -128,7 +129,7 @@ class Bubble {
 
         this.strokeweight = args.strokeweight || 2;
 
-        this.text = new TextFadeIn({   // a center-mode text object
+        this.text = new TextFadeIn(this.s, {   // a center-mode text object
             mode: 1,
             size: args.size,
             x: this.x + this.w / 2,
@@ -152,14 +153,14 @@ class Bubble {
     }
 
     show() {
-        stroke(255);
-        strokeWeight(this.strokeweight);
-        fill(0, 177);           // the bubble is semi-transparent
+        this.s.stroke(255);
+        this.s.strokeWeight(this.strokeweight);
+        this.s.fill(0, 177);           // the bubble is semi-transparent
 
         for (let i = 0; i < 4; i++) {
-            if (frameCount - this.start > i * frames(0.2)) {
+            if (this.s.frameCount - this.start > i * frames(0.2)) {
                 // somehow the constant TWO_PI would not work here
-                arc(this.c[i][0], this.c[i][1], this.c[i][2], this.c[i][3],
+                this.s.arc(this.c[i][0], this.c[i][1], this.c[i][2], this.c[i][3],
                     0, 6.283 * this.timers[i].advance());
             }
         }
@@ -176,17 +177,17 @@ class Bubble {
  */
 
 class ThoughtBrain extends BrainBase {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
         this.x = args.x || 170;
         this.y = args.y || 440;
-        this.s = args.size || 400;   // when displaying, the size of the brain (w is already defined)
+        this.size = args.size || 400;   // when displaying, the size of the brain (w is already defined)
 
-        this.bubble = new Bubble({
-            x: this.x + this.s / 2,
-            y: this.y + this.s / 8,
-            w: this.s * 1.5,
-            h: this.s,
+        this.bubble = new Bubble(this.s,{
+            x: this.x + this.size / 2,
+            y: this.y + this.size / 8,
+            w: this.size * 1.5,
+            h: this.size,
             font: args.font,
             size: args.font_size,  // font size
             str: args.str,
@@ -196,6 +197,6 @@ class ThoughtBrain extends BrainBase {
     show() {
         this.showBrain();
         this.bubble.show();
-        image(this.g, this.x, this.y, this.s, this.s);
+        this.s.image(this.g, this.x, this.y, this.size, this.size);
     }
 }

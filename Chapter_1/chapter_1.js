@@ -1,5 +1,5 @@
 // S is the p5.js sketh variable
-const Chapter1 = function (s) {
+const Chap1Part1 = function (s) {
     var self = this;
     //let orange = s.color(247, 137, 27);  // fixme: why doesn't it work?
 
@@ -856,4 +856,4 @@ const Chapter1 = function (s) {
     };
 };
 
-const chap1P5 = new p5(Chapter1);
+new p5(Chap1Part1);
