@@ -293,7 +293,7 @@ class Plot extends Axes {
 
 
     // calculate the parameters, and the coordinates of least squares line
-    // formula: beta = (sum of xi * yi - n * xbar * ybar) / (sum of xi^2 - n * xbar^2)
+    // formula: beta = (sum of xi * yi - n * coordX * coordY) / (sum of xi^2 - n * coordX^2)
     calcParams() {
         this.avgX = this.avgxs();
         this.avgY = this.avgys();
@@ -309,8 +309,8 @@ class Plot extends Axes {
         this.beta_0 = this.avgY - this.beta * this.avgX;
 
         this.y_intercept = this.centerY - this.beta_0 * this.stepY;
-        this.xbar = this.centerX + this.avgX * this.stepX;
-        this.ybar = this.centerY - this.avgY * this.stepY;
+        this.coordX = this.centerX + this.avgX * this.stepX;
+        this.coordY = this.centerY - this.avgY * this.stepY;
     }
 
 

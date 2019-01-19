@@ -232,14 +232,14 @@ const Chapter1 = function (s) {
 
     class SLR_Plot extends Plot { // the plot used to illustrate simple linear regression
         constructor(ctx, args) {
-            // somehow in the super class, the actual coordinate of xLine is called avgX (xCoords)
-            // and its canvas coordinate is called xLine (ptXs). I should really be more considerate
+            // somehow in the super class, the actual coordinate of coordX is called avgX (xCoords)
+            // and its canvas coordinate is called coordX (ptXs). I should really be more considerate
             // in how I name things...
             super(ctx, args);
 
             // the two dotted lines displaying x-line and y-line
             this.xBarLine = new DottedLine(s,{
-                x1: this.xLine, x2: this.xLine,
+                x1: this.coordX, x2: this.coordX,
                 y1: this.top, y2: this.bottom,
                 color: s.color(77, 177, 247),
                 strokeweight: 2,
@@ -247,16 +247,16 @@ const Chapter1 = function (s) {
             });
             this.yLineLine = new DottedLine(s, {
                 x1: this.left, x2: this.right,
-                y1: this.yLine, y2: this.yLine,
+                y1: this.coordY, y2: this.coordY,
                 color: s.color(77, 177, 247),
                 strokeweight: 2,
                 start: getT(time.dottedlineY)
             });
 
-            // the lines showing x1 - xLine and y1 - yLine
+            // the lines showing x1 - coordX and y1 - coordY
             let index = this.numPts - 1;
             this.xMinusxLineLine = new Line(s, {
-                x1: this.xLine,
+                x1: this.coordX,
                 x2: this.ptXs[index],
                 y1: this.ptYs[index],
                 y2: this.ptYs[index],
@@ -266,7 +266,7 @@ const Chapter1 = function (s) {
             this.yMinusyLineLine = new Line(s, {
                 x1: this.ptXs[index],
                 x2: this.ptXs[index],
-                y1: this.yLine,
+                y1: this.coordY,
                 y2: this.ptYs[index],
                 start: getT(time.yMinusYbarLine),
                 color: s.color(247, 137, 27)
@@ -276,20 +276,20 @@ const Chapter1 = function (s) {
             this.rects = [];
             for (let i = 0; i < this.numPts - 1; ++i) {
                 this.rects[i] = new Emphasis(s, {
-                    x: this.xLine,
-                    y: this.yLine,
-                    w: this.ptXs[i] - this.xLine,
-                    h: this.ptYs[i] - this.yLine,
+                    x: this.coordX,
+                    y: this.coordY,
+                    w: this.ptXs[i] - this.coordX,
+                    h: this.ptYs[i] - this.coordY,
                     start: getT(time.rects) + i * frames(2) / this.numPts,
                     end: frames(1000),  // todo
                     color: s.color(207, 207, 27, 87)
                 });
             }
             this.rects[index] = new Emphasis(s, {
-                x: this.xLine,
-                y: this.yLine,
-                w: this.ptXs[index] - this.xLine,
-                h: this.ptYs[index] - this.yLine,
+                x: this.coordX,
+                y: this.coordY,
+                w: this.ptXs[index] - this.coordX,
+                h: this.ptYs[index] - this.coordY,
                 start: getT(time.rect1),
                 end: frames(1000),  // todo
                 color: s.color(207, 207, 27, 87)
@@ -322,13 +322,13 @@ const Chapter1 = function (s) {
             if (scn === 9) {
                 this.quadrant2 = new Emphasis(s, {
                     x: 0, y: 0,
-                    w: this.xLine, h: this.yLine,
+                    w: this.coordX, h: this.coordY,
                     start: getT(time.quadrant2),
                     color: s.color(77, 77, 177, 77)
                 });
                 this.quadrant4 = new Emphasis(s, {
-                    x: this.xLine, y: this.yLine,
-                    w: this.right - this.xLine, h: this.bottom - this.yLine,
+                    x: this.coordX, y: this.coordY,
+                    w: this.right - this.coordX, h: this.bottom - this.coordY,
                     start: getT(time.quadrant4),
                     color: s.color(77, 77, 177, 77)
                 });
@@ -337,32 +337,32 @@ const Chapter1 = function (s) {
                 this.plusMinus[0] = new TextFadeIn(s, {
                     str: "+",
                     mode: 1, font: comic,
-                    x: this.xLine + (this.right - this.xLine) / 2,
-                    y: this.yLine / 2 - 50,
+                    x: this.coordX + (this.right - this.coordX) / 2,
+                    y: this.coordY / 2 - 50,
                     size: 147, color: [247, 77, 97],
                     start: getT(time.pluses)
                 });
                 this.plusMinus[1] = new TextFadeIn(s, {
                     str: "-",
                     mode: 1, font: comic,
-                    x: this.xLine / 2,
-                    y: this.yLine / 2 - 50,
+                    x: this.coordX / 2,
+                    y: this.coordY / 2 - 50,
                     size: 147, color: [27, 147, 247],
                     start: getT(time.minuses)
                 });
                 this.plusMinus[2] = new TextFadeIn(s, {
                     str: "+",
                     mode: 1, font: comic,
-                    x: this.xLine / 2,
-                    y: this.yLine + (this.bottom - this.yLine) / 2 - 50,
+                    x: this.coordX / 2,
+                    y: this.coordY + (this.bottom - this.coordY) / 2 - 50,
                     size: 147, color: [247, 77, 97],
                     start: getT(time.pluses)
                 });
                 this.plusMinus[3] = new TextFadeIn(s, {
                     str: "-",
                     mode: 1, font: comic,
-                    x: this.xLine + (this.right - this.xLine) / 2,
-                    y: this.yLine + (this.bottom - this.yLine) / 2 - 50,
+                    x: this.coordX + (this.right - this.coordX) / 2,
+                    y: this.coordY + (this.bottom - this.coordY) / 2 - 50,
                     size: 147, color: [27, 147, 247],
                     start: getT(time.minuses)
                 });
@@ -391,7 +391,7 @@ const Chapter1 = function (s) {
                 start: getT(time.estimateLine)
             });
             this.centroid = new PlotPoint(s, {
-                x: this.xLine, y: this.yLine,
+                x: this.coordX, y: this.coordY,
                 radius: 17,
                 color: [255, 185, 0],
                 start: getT(time.centroid)
@@ -425,27 +425,27 @@ const Chapter1 = function (s) {
                 y2: this.y_intercept - this.beta * (this.right - this.centerX)
             });
             this.yLineLine.reset({
-                y1: this.yLine, y2: this.yLine,
+                y1: this.coordY, y2: this.coordY,
             });
             this.xMinusxLineLine.reset({
-                x1: this.xLine,
+                x1: this.coordX,
                 x2: this.ptXs[this.numPts - 1],
                 y1: this.ptYs[this.numPts - 1],
                 y2: this.ptYs[this.numPts - 1],
             });
             for (let i = 0; i < this.numPts; i++) {
                 this.rects[i].reset({
-                    x: this.xLine,
-                    y: this.yLine,
-                    w: this.ptXs[i] - this.xLine,
-                    h: this.ptYs[i] - this.yLine
+                    x: this.coordX,
+                    y: this.coordY,
+                    w: this.ptXs[i] - this.coordX,
+                    h: this.ptYs[i] - this.coordY
                 })
             }
             if (scn === 9) {
-                this.quadrant2.reset({w: this.xLine, h: this.yLine,});
+                this.quadrant2.reset({w: this.coordX, h: this.coordY,});
                 this.quadrant4.reset({
-                    x: this.xLine, y: this.yLine,
-                    w: this.right - this.xLine, h: this.bottom - this.yLine,
+                    x: this.coordX, y: this.coordY,
+                    w: this.right - this.coordX, h: this.bottom - this.coordY,
                 });
             }
         }
@@ -483,11 +483,11 @@ const Chapter1 = function (s) {
         }
 
         getXbar() {
-            return this.xLine;
+            return this.coordX;
         }
 
         getYbar() {
-            return this.yLine;
+            return this.coordY;
         }
     }
 
