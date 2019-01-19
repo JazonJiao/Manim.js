@@ -612,7 +612,7 @@ const Chapter1 = function (s) {
             start: getT(time.estimates)
         });
 
-        kats[0] = new Katex0(s, {
+        kats[0] = new KatexTxt(s, {
             text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} " +
                 "{\\sum_{i=1}^n(x_i-\\bar{x})^2}",
             x: 670,
@@ -621,151 +621,151 @@ const Chapter1 = function (s) {
             fadeIn: true,
             font_size: 54
         });
+
+        kats[5] = new KatexTxt(s, {
+            text: "\\hat{y}=\\hat{\\beta}x+\\hat{\\beta_0}",
+            x: 797, y: 107,
+            start: getT(time.formula),
+            fadeIn: true,
+            font_size: 47,
+            fadeOut: true,
+            end: getT(time.formulaFadeOut)
+        });
         //
-        // kats[5] = new Katex5(s, {
-        //     text: "\\hat{y}=\\hat{\\beta}x+\\hat{\\beta_0}",
-        //     x: 797, y: 107,
-        //     start: getT(time.formula),
-        //     fadeIn: true,
-        //     font_size: 47,
-        //     fadeOut: true,
-        //     end: getT(time.formulaFadeOut)
-        // });
+        kats[1] = new KatexTxt(s, {
+            text: "\\bar{x}",
+            x: plot.getXbar() - 7,
+            y: s.height - 160,
+            start: getT(time.dottedlineX),
+            fadeIn: true,
+            font_size: 37
+        });
 
-        // kats[1] = new Katex1(s, {
-        //     text: "\\bar{x}",
-        //     x: plot.getXbar() - 7,
-        //     y: s.height - 160,
-        //     start: getT(time.dottedlineX),
-        //     fadeIn: true,
-        //     font_size: 37
-        // });
+        kats[2] = new KatexTxt(s, {
+            text: scn === 7 ? "\\bar{x}" : "\\bar{y}",
+            x: 77,
+            y: plot.getYbar() - 57,
+            fadeIn: true, start: scn === 10 ? getT(time.yLine_start) : getT(time.dottedlineY),
+            fadeOut: true, end: getT(time.yLine_fade),
+            font_size: 37,
+        });
 
-        // kats[2] = new Katex2(s, {
-        //     text: scn === 7 ? "\\bar{x}" : "\\bar{y}",
-        //     x: 77,
-        //     y: plot.getYbar() - 57,
-        //     fadeIn: true, start: scn === 10 ? getT(time.yLine_start) : getT(time.dottedlineY),
-        //     fadeOut: true, end: getT(time.yLine_fade),
-        //     font_size: 37,
-        // });
+        kats[3] = new KatexTxt(s, {
+            text: "x_1 - \\bar{x}",
+            x: 375,
+            y: scn === 7 ? 47 : 90,  // fixme
+            color: s.color(247, 137, 27),
+            start: getT(time.xMinusXbar),
+            fadeIn: true,
+        });
 
-        // kats[3] = new Katex3(s, {
-        //     text: "x_1 - \\bar{x}",
-        //     x: 375,
-        //     y: scn === 7 ? 47 : 90,  // fixme
-        //     color: s.color(247, 137, 27),
-        //     start: getT(time.xMinusXbar),
-        //     fadeIn: true,
-        // });
+        kats[4] = new KatexTxt(s, {
+            text: "y_1 - \\bar{y}",
+            x: 531,
+            y: 187,
+            color: s.color(247, 137, 27),
+            start: getT(time.yMinusYbar),
+            fadeIn: true,
+        });
 
-        // kats[4] = new Katex4(s, {
-        //     text: "y_1 - \\bar{y}",
-        //     x: 531,
-        //     y: 187,
-        //     color: s.color(247, 137, 27),
-        //     start: getT(time.yMinusYbar),
-        //     fadeIn: true,
-        // });
+        kats[6] = new KatexTxt(s, {
+            text: scn === 9 || 10 ? "\\hat{\\beta_0}=\\bar{y}-\\hat{\\beta}\\bar{x}" : "\\hat{\\beta_0}",
+            x: 124, y: scn === 9 || 10 ? 7 : 457,
+            color: s.color(247, 117, 117),
+            start: getT(time.showIntercept),
+            fadeIn: true,
+            font_size: scn === 9 || 10 ? 40 : 42
+        });
 
-        // kats[6] = new Katex6(s, {
-        //     text: scn === 9 || 10 ? "\\hat{\\beta_0}=\\bar{y}-\\hat{\\beta}\\bar{x}" : "\\hat{\\beta_0}",
-        //     x: 124, y: scn === 9 || 10 ? 7 : 457,
-        //     color: s.color(247, 117, 117),
-        //     start: getT(time.showIntercept),
-        //     fadeIn: true,
-        //     font_size: scn === 9 || 10 ? 40 : 42
-        // });
+        kats[7] = new KatexTxt(s, {
+            text: "\\hat{\\beta}",
+            x: 417, y: 237,
+            color: s.color(247, 117, 117),
+            start: getT(time.showSlope),
+            fadeIn: true,
+            font_size: 42
+        });
 
-        // kats[7] = new Katex7(s, {
-        //     text: "\\hat{\\beta}",
-        //     x: 417, y: 237,
-        //     color: s.color(247, 117, 117),
-        //     start: getT(time.showSlope),
-        //     fadeIn: true,
-        //     font_size: 42
-        // });
+        kats[8] = new KatexTxt(s, {
+            text: "Area = (x_1 - \\bar{x})(y_1 - \\bar{y})",
+            x: 650, y: 77,
+            color: s.color(255, 255, 17),
+            fadeIn: true, start: getT(time.areaEq),
+            font_size: 42,
+            fadeOut: true, end: getT(time.areaEqFadeOut)
+        });
 
-        // kats[8] = new Katex8(s, {
-        //     text: "Area = (x_1 - \\bar{x})(y_1 - \\bar{y})",
-        //     x: 650, y: 77,
-        //     color: s.color(255, 255, 17),
-        //     fadeIn: true, start: getT(time.areaEq),
-        //     font_size: 42,
-        //     fadeOut: true, end: getT(time.areaEqFadeOut)
-        // });
+        kats[9] = new KatexTxt(s, {
+            text: scn === 7 ? "(x_i, x_i)" : "(x_1, y_1)",
+            x: 520, y: scn === 7 ? 100 : 90,
+            color: s.color(247, 137, 27),
+            fadeIn: true, start: getT(time.showCoord),
+            fadeOut: true, end: getT(time.showCoordFade),
+            font_size: 37
+        });
 
-        // kats[9] = new Katex9(s, {
-        //     text: scn === 7 ? "(x_i, x_i)" : "(x_1, y_1)",
-        //     x: 520, y: scn === 7 ? 100 : 90,
-        //     color: s.color(247, 137, 27),
-        //     fadeIn: true, start: getT(time.showCoord),
-        //     fadeOut: true, end: getT(time.showCoordFade),
-        //     font_size: 37
-        // });
-
-        // kats[10] = new Katex10(s, {
-        //     text: scn === 7 ? "(\\bar{x}, \\bar{x})" : "(\\bar{x}, \\bar{y})",
-        //     x: plot.getXbar() + 17, y: plot.getYbar() - (scn >= 9 ? 87 : 27),
-        //     fadeIn: true, start: getT(time.centroid)
-        // });
+        kats[10] = new KatexTxt(s, {
+            text: scn === 7 ? "(\\bar{x}, \\bar{x})" : "(\\bar{x}, \\bar{y})",
+            x: plot.getXbar() + 17, y: plot.getYbar() - (scn >= 9 ? 87 : 27),
+            fadeIn: true, start: getT(time.centroid)
+        });
 
         if (scn === 8) {
-            // kats[11] = new Katex11(s, {
-            //     text: "∈(0, 1)",
-            //     x: 637, y: 337, font_size: 37, color: s.color(247, 137, 27),
-            //     fadeIn: true, start: getT(time.bw_0_and_1),
-            //     fadeOut: true, end: getT(time.bw_0_and_1_end),
-            // });
-            //
-            // kats[12] = new Katex12(s, {
-            //     text: ">1",
-            //     x: 657, y: 337, font_size: 37, color: s.color(247, 137, 27),
-            //     fadeIn: true, start: getT(time.greater_than_1),
-            // });
-            //
-            // kats[13] = new Katex13(s, {
-            //     text: "\\bigwedge",
-            //     x: 857, y: 47, font_size: 167,
-            //     color: s.color(47, 177, 247),
-            //     fadeIn: true, start: getT(time.bigA),
-            //     fadeOut: true, end: getT(time.bw_0_and_1)
-            // });
-            //
-            // kats[14] = new Katex14(s, {
-            //     text: "\\bigvee",
-            //     x: 857, y: 47, font_size: 167,
-            //     color: s.color(47, 177, 247),
-            //     fadeIn: true, start: getT(time.bigV),
-            //     fadeOut: true, end: getT(time.greater_than_1)
-            // });
+            kats[11] = new KatexTxt(s, {
+                text: "∈(0, 1)",
+                x: 637, y: 337, font_size: 37, color: s.color(247, 137, 27),
+                fadeIn: true, start: getT(time.bw_0_and_1),
+                fadeOut: true, end: getT(time.bw_0_and_1_end),
+            });
+
+            kats[12] = new KatexTxt(s, {
+                text: ">1",
+                x: 657, y: 337, font_size: 37, color: s.color(247, 137, 27),
+                fadeIn: true, start: getT(time.greater_than_1),
+            });
+
+            kats[13] = new KatexTxt(s, {
+                text: "\\bigwedge",
+                x: 857, y: 47, font_size: 167,
+                color: s.color(47, 177, 247),
+                fadeIn: true, start: getT(time.bigA),
+                fadeOut: true, end: getT(time.bw_0_and_1)
+            });
+
+            kats[14] = new KatexTxt(s, {
+                text: "\\bigvee",
+                x: 857, y: 47, font_size: 167,
+                color: s.color(47, 177, 247),
+                fadeIn: true, start: getT(time.bigV),
+                fadeOut: true, end: getT(time.greater_than_1)
+            });
 
         }
         if (scn === 9) {
-            // kats[11] = new Katex11(s, {
-            //     text: ">0",
-            //     x: 1047, y: 367, font_size: 37, color: s.color(247, 137, 27),
-            //     fadeIn: true, start: getT(time.greater_than_0),
-            // });
-            // kats[12] = new Katex12(s, {
-            //     text: "<0",
-            //     x: 657, y: 337, font_size: 37, color: s.color(247, 137, 27),
-            //     fadeIn: true, start: getT(time.is_negative),
-            // });
+            kats[11] = new KatexTxt(s, {
+                text: ">0",
+                x: 1047, y: 367, font_size: 37, color: s.color(247, 137, 27),
+                fadeIn: true, start: getT(time.greater_than_0),
+            });
+            kats[12] = new KatexTxt(s, {
+                text: "<0",
+                x: 657, y: 337, font_size: 37, color: s.color(247, 137, 27),
+                fadeIn: true, start: getT(time.is_negative),
+            });
         }
         if (scn === 11) {
-            // kats[11] = new Katex11(s, {
-            //     text: "Cov(X, Y)=",
-            //     color: s.color(37, 236, 97),
-            //     fadeIn: true, start: getT(time.cov),
-            //     x: 817, y: 34
-            // });
-            // kats[12] = new Katex12(s, {
-            //     text: "Var(X)=",
-            //     color: s.color(37, 236, 97),
-            //     fadeIn: true, start: getT(time.var),
-            //     x: 841, y: 395
-            // });
+            kats[11] = new KatexTxt(s, {
+                text: "Cov(X, Y)=",
+                color: s.color(37, 236, 97),
+                fadeIn: true, start: getT(time.cov),
+                x: 817, y: 34
+            });
+            kats[12] = new KatexTxt(s, {
+                text: "Var(X)=",
+                color: s.color(37, 236, 97),
+                fadeIn: true, start: getT(time.var),
+                x: 841, y: 395
+            });
             lines[0] = new Line(s, {
                 x1: 727, x2: 1127,
                 y1: 174, y2: 174,

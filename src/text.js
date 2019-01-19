@@ -12,6 +12,7 @@
  * @optional (number) mode, size, start [if want to show init animation];
  *           (color) color [should be an array]
  */
+
 class Text {
     constructor(ctx, args) {
         this.s = ctx;
@@ -116,7 +117,16 @@ class TextWriteIn extends Text {
  *           (number) font_size, x, y, (string) color--note it's passed as a string;
  *           (bool) fadeOut, end--if display fade out animation, the frame to start animation;
  */
-class KatexBase {
+
+// sample instantiation:
+// kat1 = new KatexTxt({
+//     str: "\\frac {\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} {\\sum_{i=1}^n(x_i-\\bar{x})^2}",
+//     x: 720,
+//     y: 200,
+//     fadeIn: true,
+//     fontsize: 80
+// });
+class KatexTxt {
     constructor(ctx, args) {
         this.s = ctx;
         this.text = args.text;
@@ -124,11 +134,13 @@ class KatexBase {
         this.x = args.x || 0;
         this.y = args.y || 0;
         this.color = args.color || '#fff';
+        this.domId = args.id || 'KATEX-' + parseInt(Math.random().toString().substr(2)); // Rand ID
 
         this.k = this.s.createP('');
         this.k.position(this.x, this.y);
         this.k.style('color', this.color);
         this.k.style('font-size', this.size + 'px');
+        this.k.id(this.domId);
 
         this.fadeIn = args.fadeIn || false;
         if (this.fadeIn) {
@@ -159,216 +171,7 @@ class KatexBase {
     }
 
     show() {
-    }
-}
-
-// sample instantiation:
-// kat1 = new Katex1({
-//     str: "\\frac {\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} {\\sum_{i=1}^n(x_i-\\bar{x})^2}",
-//     x: 720,
-//     y: 200,
-//     fadeIn: true,
-//     fontsize: 80
-// });
-
-class Katex0 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt0');
-    }
-
-    show() {
         this.showInit();
-        katex.render(this.text, kt0);
-    }
-}
-
-class Katex1 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt1');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt1);
-    }
-}
-
-class Katex2 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt2');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt2);
-    }
-}
-
-class Katex3 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt3');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt3);
-    }
-}
-
-class Katex4 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt4);
-    }
-}
-
-class Katex5 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt5');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt5);
-    }
-}
-class Katex6 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt6');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt6);
-    }
-}
-
-class Katex7 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt7');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt7);
-    }
-}
-
-class Katex8 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt8');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt8);
-    }
-}
-
-class Katex9 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt9');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt9);
-    }
-}
-
-class Katex10 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt10');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt10);
-    }
-}
-
-class Katex11 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt11');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt11);
-    }
-}
-
-class Katex12 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt12');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt12);
-    }
-}
-
-class Katex13 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt13');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt13);
-    }
-}
-
-class Katex14 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('kt14');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt14);
-    }
-}
-
-class KatexAxis1 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('ktaxis1');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, ktaxis1);
-    }
-}
-
-class KatexAxis2 extends KatexBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.k.id('ktaxis2');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, ktaxis2);
+        katex.render(this.text, window[this.domId]);
     }
 }
