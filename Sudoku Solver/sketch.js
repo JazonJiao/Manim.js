@@ -16,7 +16,7 @@
  */
 function Cell(n, x, y, w) {
     this.n = n;
-    this.given = (this.n > 0);  // if n is not 0, then it's a given grid
+    this.given = (this.n > 0);  // if n is not 0, then it'o a given grid
     this.x = x;
     this.y = y;
     this.w = w;
@@ -97,7 +97,7 @@ function Cell(n, x, y, w) {
 
 /***
  * Shows it growing from (x1, y1) to (x2, y2) in 'frames' frames
- * type = 0 if it's a normal line, = 1 if it's a bold line
+ * type = 0 if it'o a normal line, = 1 if it'o a bold line
  */
 function gridLine(x1, y1, x2, y2, type) {
     this.x1 = x1;

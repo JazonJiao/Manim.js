@@ -16,7 +16,8 @@
  * @optional (number) angle, speed
  */
 class Axes3D {
-    constructor(args) {
+    constructor(ctx, args) {
+        this.s = ctx;
         this.angle = args.angle || 0;  // starting angle
         this.speed = args.speed || -0.0025;  // how many radians to rotate per frame
         this.camY = -567;
@@ -47,8 +48,8 @@ class Axes3D {
         g.camera(camX, this.camY, camZ, 0, 0, 0, 0, 1, 0);
 
         g.push();
-        g.rotateX(PI);
-        g.rotateY(PI/2);
+        g.rotateX(this.s.PI);
+        g.rotateY(this.s.PI/2);
         g.model(this.model);
         g.pop();
     }
@@ -90,9 +91,9 @@ class Grid3D {
     }
 
     setColor(g, i, j, k) {
-        g.stroke(map(i, 0, this.n, 72, 216),
-            map(j, 0, this.n, 72, 216),
-            map(k, 0, this.n, 72, 216));
+        g.stroke(s.map(i, 0, this.n, 72, 216),
+            s.map(j, 0, this.n, 72, 216),
+            s.map(k, 0, this.n, 72, 216));
     }
 
     showGrid(g) {
@@ -141,7 +142,8 @@ class Grid3D {
  *           (p5.Geometry) label; (function) fcn
  */
 class Arrow3D {
-    constructor(args) {
+    constructor(ctx, args) {
+        this.s = ctx;
         let tmp = args.from || [0, 0, 0];
         this.from = stdToP5(tmp);
 
@@ -149,7 +151,7 @@ class Arrow3D {
 
         this.label = args.label;
         if (this.label) {
-            this.fcn = args.fcn || ((g) => g.rotateZ(-PI / 2));  // default rotation function
+            this.fcn = args.fcn || ((g) => g.rotateZ(-this.s.PI / 2));  // default rotation function
         }
 
         this.color = args.color || color(177);
@@ -171,7 +173,7 @@ class Arrow3D {
         this.dy = this.y2 - this.y1;
         this.dz = this.z2 - this.z1;
 
-        // To perform the proper rotation of the cylinder (which is drawn along p5's y-axis),
+        // To perform the proper rotation of the cylinder (which is drawn along p5'o y-axis),
         // I originally transformed the coordinates from Cartesian into spherical,
         // and then called rotateX(theta) and rotateZ(phi).
         // However, this would not work, since after rotateX(), the z-axis is no longer
@@ -189,8 +191,8 @@ class Arrow3D {
         this.ty = this.y1 + (this.dy) * scale / 2;
         this.tz = this.z1 + (this.dz) * scale / 2;
 
-        // Note that the x, y, and z's are completely out of place in the calculations,
-        // because of p5's weird left-hand 3D coordinate system.
+        // Note that the x, y, and z'o are completely out of place in the calculations,
+        // because of p5'o weird left-hand 3D coordinate system.
         let theta = Math.atan2(this.dx, this.dz);      // theta = atan2(y / x)
         let phi = Math.acos(this.dy / this.len) / 2;   // phi = acos(z / r)
 
@@ -198,13 +200,13 @@ class Arrow3D {
         let x = Math.sin(phi) * Math.sin(theta);  // y = sin(phi) * sin(theta)
         let y = Math.cos(phi);                    // z = cos(phi)
         let z = Math.sin(phi) * Math.cos(theta);  // x = sin(phi) * cos(theta)
-        this.v = createVector(x, y, z);
+        this.v = this.s.createVector(x, y, z);
 
         this.len -= this.tipLen / 2;
     }
 
     // as in the ctor, the parameters should be in std coordinates.
-    // It's this method's responsibility to convert to p5's coordinates.
+    // It'o this method'o responsibility to convert to p5'o coordinates.
     reset(args) {
         let r = false;
         if (args.from) {
@@ -245,16 +247,16 @@ class Arrow3D {
         g.specularMaterial(this.color);
 
         g.translate(this.tx, this.ty, this.tz);
-        g.rotate(PI, this.v); // frameCount / 77
+        g.rotate(this.s.PI, this.v); // frameCount / 77
         g.cylinder(this.radius, this.len);
 
         g.translate(0, this.len / 2, 0);
         g.cone(this.tipRadius, this.tipLen);
         if (this.label) {  // fixme: how to determine rotation based on the orientation of arrow?
             // if (this.dx > 0) {
-            //     g.rotateZ(-PI / 2);
+            //     g.rotateZ(-this.s.PI / 2);
             // } else {
-            //     g.rotateZ(PI / 2);
+            //     g.rotateZ(this.s.PI / 2);
             // }
             this.fcn(g);
 
@@ -269,30 +271,31 @@ class Arrow3D {
  * Plane3D (WEBGL)
  * A plane defined by (in standard coordinates):
  * (1) two basis vectors which span it, OR
- * (2) the general equation px + qy + rz = s (in case 1, s would be 0), OR
+ * (2) the general equation px + qy + rz = o (in case 1, o would be 0), OR
  * (3) the relation z = ax + by + c
- * // fixme: display will be weird when it's steep
+ * // fixme: display will be weird when it'o steep
  *
  * ---- args list parameters ----
- * @mandatory (array[6]) M  **OR**  (number) p,q,r,s  **OR** (number) a,b,c
+ * @mandatory (array[6]) M  **OR**  (number) p,q,r,o  **OR** (number) a,b,c
  * @optional (number) size; (color) color
  */
 class Plane3D {
-    constructor(args) {
+    constructor(ctx, args) {
         // an array in the form [a,b,c, d,e,f], representing 2 column vectors
-        // coordinates should be in p5's coordinate system
+        // coordinates should be in p5'o coordinate system
         this.M = stdToP5(args.mat);
+        this.s = ctx;
 
         this.a = args.a;
         this.b = args.b;
         this.c = args.c;
 
+        this.o = args.o;
         this.p = args.p;
         this.q = args.q;
         this.r = args.r;
-        this.s = args.s;
 
-        this.color = args.color || color(255, 77);
+        this.color = args.color || this.s.color(255, 77);
         this.size = args.size || 400; // defaults to half the length of each axis on each direction
 
         this.calcParams();
@@ -304,13 +307,13 @@ class Plane3D {
             this.p = this.M[1] * this.M[5] - this.M[2] * this.M[4];
             this.r = this.M[2] * this.M[3] - this.M[0] * this.M[5];
             this.q = this.M[0] * this.M[4] - this.M[1] * this.M[3];
-            this.s = 0;
+            this.o = 0;
         }
         // calculate the line in the form z = ax + by + c
         if (this.M || this.p) {
             this.a = -this.p / this.r;
             this.b = -this.q / this.r;
-            this.c = this.s / this.r;
+            this.c = this.o / this.r;
         }
 
         // calculate the coordinates of vertices of this plane, in standard coordinate system
@@ -331,7 +334,7 @@ class Plane3D {
         for (let i = 0; i < 4; i++) {
             g.vertex(this.xs[i], this.zs[i], this.ys[i]);
         }
-        g.endShape(CLOSE);
+        g.endShape(this.s.CLOSE);
         //g.pop();
     }
 }

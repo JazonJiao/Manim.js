@@ -2,7 +2,7 @@
  * the Timer class
  * Used to animate object initialization with acceleration and/or deceleration
  * in a given number of frames.
- * this.t is used to indicate progress; it's 0 at the start and gradually steps to 1 at the end.
+ * this.t is used to indicate progress; it'o 0 at the start and gradually steps to 1 at the end.
  * advance() advances a time step and returns the "progress", this.t.
  *
  * Calculus is used to determine the "velocity".

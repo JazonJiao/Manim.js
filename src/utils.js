@@ -77,14 +77,14 @@ class Axes {
         this.s = ctx;
         //this.showLabel = args.showLabel || false;  // show numerical labels
 
-        // the following parameters define the scope of the plot's grid lines on the canvas
+        // the following parameters define the scope of the plot'o grid lines on the canvas
         // NOTE: top and left must be a multiple of 50
         this.top = args.top || 0;
         this.left = args.left || 0;
         this.bottom = args.bottom || ctx.height || height;
         this.right = args.right || ctx.width || width;
 
-        // define the origin's x and y coordinates on the canvas
+        // define the origin'o x and y coordinates on the canvas
         this.centerX = args.centerX || ctx.width / 2 || width / 2;
         this.centerY = args.centerY || ctx.height / 2 || height / 2;
 
@@ -133,7 +133,7 @@ class Axes {
 /** 2018-12-21
  * Grid
  * A grid similar to what 3b1b used throughout the EOLA series
- * in the derived class's show(), need to call showGrid()
+ * in the derived class'o show(), need to call showGrid()
  *
  *  * ---- args list parameters ----
  * @optional (number) top, bottom, left, right, centerX, centerY, stepX, stepY
@@ -614,7 +614,7 @@ class Arrow extends Line {
     // so I use another strategy: first scale the original line, then apply the rotation matrix.
     setArrow() {
 
-        let dx = this.x1 - this.x2;    // note it's x1 - x2
+        let dx = this.x1 - this.x2;    // note it'o x1 - x2
         let dy = this.y1 - this.y2;
 
         let len = Math.sqrt(dx * dx + dy * dy);

@@ -20,7 +20,7 @@ let target = [-2, -1, 3];
 
 /*** Refactored on 2019-01-17
  *
- * Transforms from standard coordinates into p5's coordinates,
+ * Transforms from standard coordinates into p5'o coordinates,
  * so that the display of vectors, etc. is correct upon the x-y-z axes model.
  *
  */
@@ -37,7 +37,7 @@ function stdToP5(a, b, c) {
 
 /**
  * All animations are controlled by the number of frames passed.
- * since we might want to change the frame rate (the variable fr), it's good to encapsulate this
+ * since we might want to change the frame rate (the variable fr), it'o good to encapsulate this
  * into a new method, to be used each time we need to control the time.
  *
  * In case we want to slow down the animation play speed, we can modify this method to, say,
@@ -71,7 +71,7 @@ function getT(t) {
  * https://github.com/processing/p5.js/wiki/Optimizing-p5.js-Code-for-Performance
  *
  * If width is normal 1200, display FPS at upper-left position.
- * If width is monitor mode (1250), display FPS at upper-right where it's not captured by camera.
+ * If width is monitor mode (1250), display FPS at upper-right where it'o not captured by camera.
  *
  * For usual 2D scenes, don't pass in parameters.
  * For 3D scenes, declare an off-screen canvas g2 = createGraphics(100, 10);
@@ -92,6 +92,6 @@ function showFR(s, g) {
         g.textSize(10);
         g.noStroke();
         g.text("FPS: " + fps.toFixed(1), 0, 10);
-        image(g, pos, 0);
+        s.image(g, pos, 0);
     }
 }

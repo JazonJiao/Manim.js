@@ -114,7 +114,7 @@ class TextWriteIn extends Text {
  * ----args list parameters----
  * @mandatory (string) str--the string to display;
  * @optional (bool) fadeIn, start--if display fade in animation, the frame to start animation;
- *           (number) font_size, x, y, (string) color--note it's passed as a string;
+ *           (number) font_size, x, y, (string) color--note it'o passed as a string;
  *           (bool) fadeOut, end--if display fade out animation, the frame to start animation;
  */
 

@@ -9,7 +9,7 @@ class Grid_Projection extends Grid3D {
     constructor(args) {
         super(args);
         // an array in the form [a,b,c, d,e,f], representing 2 column vectors
-        // coordinates should be in p5's coordinate system
+        // coordinates should be in p5'o coordinate system
         this.U = args.mat;
 
         this.start = args.start || frames(2);
