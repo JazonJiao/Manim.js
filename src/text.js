@@ -1,9 +1,51 @@
+// refactored on 01-20-2019
+class TextBase {
+    constructor(ctx, args) {
+      
+        this.s = ctx;
+        // I originally used the usual syntax of args.x || width / 2,
+        // but this would not work if 0 is passed in as x
+        this.x = args.x;
+        this.y = args.y;
+    }
+
+    reset(args) {
+        this.str = args.str || this.str;
+        this.x = args.x || this.x;
+        this.y = args.y || this.y;
+    }
+
+    // enable move animations
+    // in draw(), use: if (frameCount == getT(time.xxxx)) text[i].move(x, y)
+    // note that duration is in seconds
+    move(x, y, duration) {
+        this.xo = this.x;
+        this.yo = this.y;
+        this.xd = x || this.x;    // destination x
+        this.yd = y || this.y;
+        this.moved = true;
+        let t = frames(duration) || frames(2);
+
+        this.move_timer = new Timer2(t);
+    }
+
+    moving() {
+        let t = this.move_timer.advance();
+        this.reset({
+            x: this.xo + t * (this.xd - this.xo),
+            y: this.yo + t * (this.yd - this.yo)
+        })
+    }
+}
+
+
 /*** 2019-01-04
  * Text
  * Needs to declare a font variable and set font = loadFont('../lib/font/times.ttf') in preload()
  * There should not be a global variable named text.
  * For mode 0 (default), the x and y define the coordinates for the upper-left corner of the text.
  * For mode 1, the x and y define the center for the text.
+ * For mode 2, the x and y define the upper-right corner for the text.
  * For the base class, no init animation is displayed.
  * If want init animation, use a derived class, TextFadeIn, or TextWriteIn
  *
@@ -13,25 +55,21 @@
  *           (color) color [should be an array]
  */
 
-class Text {
+
+class Text extends TextBase {
     constructor(ctx, args) {
-        this.s = ctx;
+       
+
+
+
+        super(ctx, args);
+
         this.font = args.font;
         this.str = args.str;
         this.mode = args.mode || 0;
         this.color = args.color || [255, 255, 255];
 
-        // I originally used the usual syntax of args.x || width / 2,
-        // but this would not work if 0 is passed in as x
-        this.x = args.x;
-        this.y = args.y;
         this.size = args.size || 37;
-    }
-
-    reset(args) {
-        this.str = args.str || this.str;
-        this.x = args.x || this.x;
-        this.y = args.y || this.y;
     }
 
     showSetup() {
@@ -41,11 +79,21 @@ class Text {
         if (this.mode === 0) {
             this.s.textAlign(this.s.LEFT, this.s.TOP);
         } else if (this.mode === 1) {
+
             this.s.textAlign(this.s.CENTER, this.s.CENTER);
+
+            textAlign(CENTER, CENTER);
+        } else if (this.mode === 2) {
+            this.s.textAlign(RIGHT, TOP);
+
         }
         this.s.textSize(this.size);
 
+
         this.s.noStroke();
+        if (this.moved) {
+            this.moving();
+        }
     }
 
     show() {
@@ -126,19 +174,18 @@ class TextWriteIn extends Text {
 //     fadeIn: true,
 //     fontsize: 80
 // });
-class KatexTxt {
+class KatexTxt extends TextBase {
     constructor(ctx, args) {
-        this.s = ctx;
+
+        super(ctx, args);
+
         this.text = args.text;
         this.size = args.font_size || 37;
-        this.x = args.x || 0;
-        this.y = args.y || 0;
         this.color = args.color || '#fff';
         this.domId = args.id || 'KATEX-' + parseInt(Math.random().toString().substr(2)); // Rand ID
         this.canvasPos = ctx.canvas.getBoundingClientRect();
 
         this.k = this.s.createP('');
-        this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y); // Based on the canvas position in the DOM
         this.k.style('color', this.color);
         this.k.style('font-size', this.size + 'px');
         this.k.id(this.domId);
@@ -156,14 +203,16 @@ class KatexTxt {
         }
     }
 
-    reset(args) {
-        this.x = args.x || this.x;
-        this.y = args.y || this.y;
-        this.size = args.size || this.size;
-    }
-
     showInit() {
-        if (this.fadeIn && this.s.frameCount > this.start) {
+        if (this.moved) {
+            this.moving();
+        }
+      
+        this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y); // Based on the canvas position in the DOM
+
+
+        if (this.fadeIn && frameCount > this.start) {
+
             this.k.style('opacity', this.timer.advance());
         }
         if (this.fadeOut && this.s.frameCount > this.end) {
@@ -176,3 +225,4 @@ class KatexTxt {
         katex.render(this.text, window[this.domId]);
     }
 }
+

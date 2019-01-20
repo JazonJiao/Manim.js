@@ -12,23 +12,31 @@ let cvh = 675;
 
 let scn = 11;  // scene number
 
-// used for chapter 2
-let matrix = [1, 1, 1, -3, 2, 2];
+// used for chapter 2, 3
+let matrix = [1, 1, 1, -3, 1, 2];
 let target = [-2, -1, 3];
 
 
-
-/*** Refactored on 2019-01-17
+/*** Refactored 3D scenes on 2019-01-17
  *
+
  * Transforms from standard coordinates into p5'o coordinates,
+
+ * Used for 3D scenes.
+ * Transforms from standard coordinates into p5's coordinates (in the form of array),
+
  * so that the display of vectors, etc. is correct upon the x-y-z axes model.
+ * Take care in using it, since sometimes (especially in classes),
+ * the coordinates to convert is already converted to p5's system.
+ * fixme: I wish JavaScript could have pass by reference so I could directly modify those values,
+ * fixme: otherwise I have to return an array...
  *
  */
 function stdToP5(a, b, c) {
     //if (a.length === undefined)
 
     if (a.length === 3) {
-        return [a[1], -a[2], a[0]];
+        return [a[1], -a[2], a[0]];   // x = y, y = -z, z = x
     } else if (a.length === 6) {
         return [a[1], -a[2], a[0], a[4], -a[5], a[3]];
     }
@@ -95,3 +103,4 @@ function showFR(s, g) {
         s.image(g, pos, 0);
     }
 }
+
