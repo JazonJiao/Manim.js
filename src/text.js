@@ -1,6 +1,8 @@
 // refactored on 01-20-2019
 class TextBase {
-    constructor(args) {
+    constructor(ctx, args) {
+      
+        this.s = ctx;
         // I originally used the usual syntax of args.x || width / 2,
         // but this would not work if 0 is passed in as x
         this.x = args.x;
@@ -52,9 +54,16 @@ class TextBase {
  * @optional (number) mode, size, start [if want to show init animation];
  *           (color) color [should be an array]
  */
+
+
 class Text extends TextBase {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+       
+
+
+
+        super(ctx, args);
+
         this.font = args.font;
         this.str = args.str;
         this.mode = args.mode || 0;
@@ -65,18 +74,23 @@ class Text extends TextBase {
 
     showSetup() {
         if (this.font) {
-            textFont(this.font);
+            this.s.textFont(this.font);
         }
         if (this.mode === 0) {
-            textAlign(LEFT, TOP);
+            this.s.textAlign(this.s.LEFT, this.s.TOP);
         } else if (this.mode === 1) {
+
+            this.s.textAlign(this.s.CENTER, this.s.CENTER);
+
             textAlign(CENTER, CENTER);
         } else if (this.mode === 2) {
-            textAlign(RIGHT, TOP);
-        }
-        textSize(this.size);
+            this.s.textAlign(RIGHT, TOP);
 
-        noStroke();
+        }
+        this.s.textSize(this.size);
+
+
+        this.s.noStroke();
         if (this.moved) {
             this.moving();
         }
@@ -84,16 +98,16 @@ class Text extends TextBase {
 
     show() {
         this.showSetup();
-        fill(this.color);
+        this.s.fill(this.color);
         //fill(this.color[0], this.color[1], this.color[2]);
-        text(this.str, this.x, this.y);
+        this.s.text(this.str, this.x, this.y);
     }
 }
 
 // needs to pass in extra parameters in frames, start and/or duration
 class TextFadeIn extends Text {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
         this.start = args.start || frames(1);
         this.duration = args.duration || frames(0.7);
         this.timer = new Timer0(this.duration);
@@ -101,9 +115,9 @@ class TextFadeIn extends Text {
 
     show() {
         this.showSetup();
-        if (frameCount > this.start) {
-            fill(this.color[0], this.color[1], this.color[2], 255 * this.timer.advance());
-            text(this.str, this.x, this.y);
+        if (this.s.frameCount > this.start) {
+            this.s.fill(this.color[0], this.color[1], this.color[2], 255 * this.timer.advance());
+            this.s.text(this.str, this.x, this.y);
         }
     }
 
@@ -111,21 +125,21 @@ class TextFadeIn extends Text {
 
 // needs to pass in an extra parameter in frames, start
 class TextWriteIn extends Text {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
         this.start = args.start || frames(1);
         this.frCount = 0;
         this.len = this.str.length;
-        this.s = "";
+        this.txt = "";
     }
     show() {
         this.showSetup();
-        fill(this.color);
-        if (frameCount > this.start && this.frCount < this.len) {
-            this.s += this.str[this.frCount];
+        this.s.fill(this.color);
+        if (this.s.frameCount > this.start && this.frCount < this.len) {
+            this.txt += this.str[this.frCount];
             this.frCount++;
         }
-        text(this.s, this.x, this.y);
+        this.s.text(this.txt, this.x, this.y);
     }
 }
 
@@ -148,20 +162,33 @@ class TextWriteIn extends Text {
  * ----args list parameters----
  * @mandatory (string) str--the string to display;
  * @optional (bool) fadeIn, start--if display fade in animation, the frame to start animation;
- *           (number) font_size, x, y, (string) color--note it's passed as a string;
+ *           (number) font_size, x, y, (string) color--note it'o passed as a string;
  *           (bool) fadeOut, end--if display fade out animation, the frame to start animation;
  */
-class KatexBase extends TextBase {
-    constructor(args) {
-        super(args);
+
+// sample instantiation:
+// kat1 = new KatexTxt({
+//     str: "\\frac {\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} {\\sum_{i=1}^n(x_i-\\bar{x})^2}",
+//     x: 720,
+//     y: 200,
+//     fadeIn: true,
+//     fontsize: 80
+// });
+class KatexTxt extends TextBase {
+    constructor(ctx, args) {
+
+        super(ctx, args);
+
         this.text = args.text;
         this.size = args.font_size || 37;
         this.color = args.color || '#fff';
+        this.domId = args.id || 'KATEX-' + parseInt(Math.random().toString().substr(2)); // Rand ID
+        this.canvasPos = ctx.canvas.getBoundingClientRect();
 
-        this.k = createP('');
-        this.k.position(this.x, this.y);
+        this.k = this.s.createP('');
         this.k.style('color', this.color);
         this.k.style('font-size', this.size + 'px');
+        this.k.id(this.domId);
 
         this.fadeIn = args.fadeIn || false;
         if (this.fadeIn) {
@@ -180,243 +207,22 @@ class KatexBase extends TextBase {
         if (this.moved) {
             this.moving();
         }
-        // moved this from ctor to here to enable move animations
-        this.k.position(this.x, this.y);
+      
+        this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y); // Based on the canvas position in the DOM
+
 
         if (this.fadeIn && frameCount > this.start) {
+
             this.k.style('opacity', this.timer.advance());
         }
-        if (this.fadeOut && frameCount > this.end) {
+        if (this.fadeOut && this.s.frameCount > this.end) {
             this.k.style('opacity', 1 - this.timer2.advance());
         }
     }
 
     show() {
-    }
-}
-
-// sample instantiation:
-// kat1 = new Katex1({
-//     str: "\\frac {\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} {\\sum_{i=1}^n(x_i-\\bar{x})^2}",
-//     x: 720,
-//     y: 200,
-//     fadeIn: true,
-//     fontsize: 80
-// });
-
-class Katex0 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt0');
-    }
-
-    show() {
         this.showInit();
-        katex.render(this.text, kt0);
+        katex.render(this.text, window[this.domId]);
     }
 }
 
-class Katex1 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt1');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt1);
-    }
-}
-
-class Katex2 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt2');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt2);
-    }
-}
-
-class Katex3 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt3');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt3);
-    }
-}
-
-class Katex4 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt4');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt4);
-    }
-}
-
-class Katex5 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt5');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt5);
-    }
-}
-class Katex6 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt6');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt6);
-    }
-}
-
-class Katex7 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt7');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt7);
-    }
-}
-
-class Katex8 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt8');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt8);
-    }
-}
-
-class Katex9 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt9');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt9);
-    }
-}
-
-class Katex10 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt10');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt10);
-    }
-}
-
-class Katex11 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt11');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt11);
-    }
-}
-
-class Katex12 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt12');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt12);
-    }
-}
-
-class Katex13 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt13');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt13);
-    }
-}
-
-class Katex14 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt14');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt14);
-    }
-}
-
-
-class Katex15 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('kt15');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, kt15);
-    }
-}
-
-
-class KatexAxis1 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('ktaxis1');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, ktaxis1);
-    }
-}
-
-class KatexAxis2 extends KatexBase {
-    constructor(args) {
-        super(args);
-        this.k.id('ktaxis2');
-    }
-
-    show() {
-        this.showInit();
-        katex.render(this.text, ktaxis2);
-    }
-}

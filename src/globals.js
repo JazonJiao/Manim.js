@@ -10,7 +10,7 @@ let cvw = 1200;
 // canvas height. Ensure 16:9 ratio
 let cvh = 675;
 
-let sn = 11;  // scene number
+let scn = 11;  // scene number
 
 // used for chapter 2, 3
 let matrix = [1, 1, 1, -3, 1, 2];
@@ -19,8 +19,12 @@ let target = [-2, -1, 3];
 
 /*** Refactored 3D scenes on 2019-01-17
  *
+
+ * Transforms from standard coordinates into p5'o coordinates,
+
  * Used for 3D scenes.
  * Transforms from standard coordinates into p5's coordinates (in the form of array),
+
  * so that the display of vectors, etc. is correct upon the x-y-z axes model.
  * Take care in using it, since sometimes (especially in classes),
  * the coordinates to convert is already converted to p5's system.
@@ -41,7 +45,7 @@ function stdToP5(a, b, c) {
 
 /**
  * All animations are controlled by the number of frames passed.
- * since we might want to change the frame rate (the variable fr), it's good to encapsulate this
+ * since we might want to change the frame rate (the variable fr), it'o good to encapsulate this
  * into a new method, to be used each time we need to control the time.
  *
  * In case we want to slow down the animation play speed, we can modify this method to, say,
@@ -75,27 +79,28 @@ function getT(t) {
  * https://github.com/processing/p5.js/wiki/Optimizing-p5.js-Code-for-Performance
  *
  * If width is normal 1200, display FPS at upper-left position.
- * If width is monitor mode (1250), display FPS at upper-right where it's not captured by camera.
+ * If width is monitor mode (1250), display FPS at upper-right where it'o not captured by camera.
  *
  * For usual 2D scenes, don't pass in parameters.
  * For 3D scenes, declare an off-screen canvas g2 = createGraphics(100, 10);
  * and pass in that as the parameter.
  */
-function showFR(g) {
-    let fps = frameRate();
+function showFR(s, g) {
+    const fps = s.frameRate();
     let pos = (cvw === 1200) ? 0 : 1200;
+
     if (g === undefined) {
-        fill(255);
-        textSize(10);
-        noStroke();
-        text("FPS: " + fps.toFixed(1), pos, 10);
+        s.fill(255);
+        s.textSize(10);
+        s.noStroke();
+        s.text("FPS: " + fps.toFixed(1), pos, 10);
     } else {
         g.background(0);
         g.fill(255);
         g.textSize(10);
         g.noStroke();
         g.text("FPS: " + fps.toFixed(1), 0, 10);
-        image(g, pos, 0);
+        s.image(g, pos, 0);
     }
 }
 

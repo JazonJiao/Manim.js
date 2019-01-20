@@ -23,40 +23,41 @@
  * It is removed when the movie is actually rendered.
  */
 class HelperGrid {
-    constructor(args) {
-        this.w = width;
-        this.h = height;
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.w = ctx.width || width;
+        this.h = ctx.height || height;
     }
 
     show() {
-        strokeWeight(1);
+        this.s.strokeWeight(1);
 
         // draw horizontal helper lines
-        stroke(137);
+        this.s.stroke(137);
         for (let i = 100; i < this.w; i += 200) {
-            line(i, 0, i, this.h);
+            this.s.line(i, 0, i, this.h);
         }
-        stroke(255);
+        this.s.stroke(255);
         for (let i = 200; i < this.w; i += 200) {
-            line(i, 0, i, this.h);
+            this.s.line(i, 0, i, this.h);
         }
-        stroke(57);
+        this.s.stroke(57);
         for (let i = 50; i < this.w; i += 100) {
-            line(i, 0, i, this.h);
+            this.s.line(i, 0, i, this.h);
         }
 
         // draw vertical lines
-        stroke(137);
+        this.s.stroke(137);
         for (let i = 100; i < this.w; i += 200) {
-            line(0, i, this.w, i);
+            this.s.line(0, i, this.w, i);
         }
-        stroke(255);
+        this.s.stroke(255);
         for (let i = 200; i < this.w; i += 200) {
-            line(0, i, this.w, i);
+            this.s.line(0, i, this.w, i);
         }
-        stroke(57);
+        this.s.stroke(57);
         for (let i = 50; i < this.w; i += 100) {
-            line(0, i, this.w, i);
+            this.s.line(0, i, this.w, i);
         }
     }
 }
@@ -72,19 +73,20 @@ class HelperGrid {
  *           (string) labelX, labelY, (number) offsetX, offsetY
  */
 class Axes {
-    constructor(args) {
+    constructor(ctx, args) {
+        this.s = ctx;
         //this.showLabel = args.showLabel || false;  // show numerical labels
 
-        // the following parameters define the scope of the plot's grid lines on the canvas
+        // the following parameters define the scope of the plot'o grid lines on the canvas
         // NOTE: top and left must be a multiple of 50
         this.top = args.top || 0;
         this.left = args.left || 0;
-        this.bottom = args.bottom || height;
-        this.right = args.right || width;
+        this.bottom = args.bottom || ctx.height || height;
+        this.right = args.right || ctx.width || width;
 
-        // define the origin's x and y coordinates on the canvas
-        this.centerX = args.centerX || width / 2;
-        this.centerY = args.centerY || height / 2;
+        // define the origin'o x and y coordinates on the canvas
+        this.centerX = args.centerX || ctx.width / 2 || width / 2;
+        this.centerY = args.centerY || ctx.height / 2 || height / 2;
 
         // define how many pixels correspond to 1 on each axis
         this.stepX = args.stepX || 1;
@@ -94,27 +96,27 @@ class Axes {
 
         if (args.labelX) {
             this.offsetX = args.offsetX || -17;  // default offset value based on displaying x
-            this.label1 = new KatexAxis1({
+            this.label1 = new KatexTxt(this.s, {
                 text: args.labelX,
-                x: this.right + this.offsetX, y: this.centerY - 87,
+                x: this.right + this.offsetX, y: this.centerY - 95,
                 fadeIn: true, start: this.start,
             });
         }
         if (args.labelY) {
             this.offsetY = args.offsetY || -44;  // default offset value based on displaying y
-            this.label2 = new KatexAxis2({
+            this.label2 = new KatexTxt(this.s, {
                 text: args.labelY,
                 x: this.centerX + 21, y: this.top + this.offsetY,
                 fadeIn: true, start: this.start,
             })
         }
 
-        this.xAxis = new Arrow({
+        this.xAxis = new Arrow(this.s, {
             x1: this.left, x2: this.right, y1: this.centerY, y2: this.centerY,
             frames: frames(6), start: this.start
         });
 
-        this.yAxis = new Arrow({
+        this.yAxis = new Arrow(this.s, {
             x1: this.centerX, x2: this.centerX, y1: this.bottom, y2: this.top,
             frames: frames(6), start: this.start
         });
@@ -131,14 +133,14 @@ class Axes {
 /** 2018-12-21
  * Grid
  * A grid similar to what 3b1b used throughout the EOLA series
- * in the derived class's show(), need to call showGrid()
+ * in the derived class'o show(), need to call showGrid()
  *
  *  * ---- args list parameters ----
  * @optional (number) top, bottom, left, right, centerX, centerY, stepX, stepY
  */
 class Grid extends Axes {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
 
         this.spacing = args.spacing || 50;
 
@@ -179,12 +181,12 @@ class Grid extends Axes {
     showGrid() {
         this.showAxes();
         for (let i = 0; i < this.maxNumLines; ++i) {
-            strokeWeight(2);
-            if (frameCount - this.start - frames(1) > i * 2) {
+            this.s.strokeWeight(2);
+            if (this.s.frameCount - this.start - frames(1) > i * 2) {
                 if (i % 2 === 1) {  // major grid line
-                    stroke(27, 177, 247);
+                    this.s.stroke(27, 177, 247);
                 } else {    // minor grid line
-                    stroke(17, 67, 77);
+                    this.s.stroke(17, 67, 77);
                 }
                 //stroke(27, 177, 247);
 
@@ -194,19 +196,19 @@ class Grid extends Axes {
 
                 if (i < this.gridlineup.length) {
                     let y = this.gridlineup[i];
-                    line(this.left, y, right, y);
+                    this.s.line(this.left, y, right, y);
                 }
                 if (i < this.gridlinedown.length) {
                     let y = this.gridlinedown[i];
-                    line(this.left, y, right, y);
+                    this.s.line(this.left, y, right, y);
                 }
                 if (i < this.gridlineleft.length) {
                     let x = this.gridlineleft[i];
-                    line(x, this.bottom, x, top);
+                    this.s.line(x, this.bottom, x, top);
                 }
                 if (i < this.gridlineright.length) {
                     let x = this.gridlineright[i];
-                    line(x, this.bottom, x, top);
+                    this.s.line(x, this.bottom, x, top);
                 }
             }
         }
@@ -223,8 +225,8 @@ class Grid extends Axes {
  */
 class Plot extends Axes {
     // 2019-01-07: after refactoring, don't need to load a csv file, data is passed in as two arrays
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
         //this.showLabel = args.showLabel || false;  // show numerical labels
 
         // the x- and y- coordinates of all the points are stored in two separate arrays
@@ -243,7 +245,7 @@ class Plot extends Axes {
         this.calcCoords();
         this.points = [];
         for (let i = 0; i < this.numPts; i++) {
-            this.points[i] = new PlotPoint({
+            this.points[i] = new PlotPoint(this.s, {
                 x: this.ptXs[i],
                 y: this.ptYs[i],
                 radius: 10,
@@ -255,12 +257,12 @@ class Plot extends Axes {
         // calculate the parameters for displaying the least squares line on the canvas
         this.calcParams();
 
-        this.LSLine = new Line({
+        this.LSLine = new Line(this.s, {
             x1: this.left,
             x2: this.right,
             y1: this.y_intercept + this.beta * (this.centerX - this.left),
             y2: this.y_intercept - this.beta * (this.right - this.centerX),
-            color: color(77, 177, 77),
+            color: this.s.color(77, 177, 77),
             strokeweight: 3,
             start: this.startLSLine
         });
@@ -291,7 +293,7 @@ class Plot extends Axes {
 
 
     // calculate the parameters, and the coordinates of least squares line
-    // formula: beta = (sum of xi * yi - n * xbar * ybar) / (sum of xi^2 - n * xbar^2)
+    // formula: beta = (sum of xi * yi - n * coordX * coordY) / (sum of xi^2 - n * coordX^2)
     calcParams() {
         this.avgX = this.avgxs();
         this.avgY = this.avgys();
@@ -307,8 +309,8 @@ class Plot extends Axes {
         this.beta_0 = this.avgY - this.beta * this.avgX;
 
         this.y_intercept = this.centerY - this.beta_0 * this.stepY;
-        this.xbar = this.centerX + this.avgX * this.stepX;
-        this.ybar = this.centerY - this.avgY * this.stepY;
+        this.coordX = this.centerX + this.avgX * this.stepX;
+        this.coordY = this.centerY - this.avgY * this.stepY;
     }
 
 
@@ -328,7 +330,8 @@ class Plot extends Axes {
  * @optional (number) radius, start; (array) color
  */
 class Point {
-    constructor(args) {
+    constructor(ctx, args) {
+        this.s = ctx;
         this.x = args.x;
         this.y = args.y;
         this.radius = args.radius || 10;
@@ -345,26 +348,26 @@ class Point {
     }
 
     show() {
-        if (frameCount > this.start) {
+        if (this.s.frameCount > this.start) {
             this.t = this.timer.advance();
 
             // draw the contour
-            noFill();
-            stroke(255, 0, 0);
-            strokeWeight((1 - this.t) * this.radius / 3);
-            arc(this.x, this.y, this.radius, this.radius, 0, this.t * TWO_PI);
+            this.s.noFill();
+            this.s.stroke(255, 0, 0);
+            this.s.strokeWeight((1 - this.t) * this.radius / 3);
+            this.s.arc(this.x, this.y, this.radius, this.radius, 0, this.t * this.s.TWO_PI);
 
             // draw the ellipse
-            noStroke();
-            fill(this.color[0], this.color[1], this.color[2], 255 * this.t);
-            ellipse(this.x, this.y, this.radius, this.radius);
+            this.s.noStroke();
+            this.s.fill(this.color[0], this.color[1], this.color[2], 255 * this.t);
+            this.s.ellipse(this.x, this.y, this.radius, this.radius);
         }
     }
 }
 
 class PlotPoint extends Point {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
     }
 
 }
@@ -409,11 +412,12 @@ class Rect {
  * @optional (number) start, end; (color) color
  */
 class Emphasis extends Rect {
-    constructor(args) {
+    constructor(ctx, args) {
         super(args);
+        this.s = ctx;
 
         this.end = args.end || 10000;
-        this.color = args.color || color(107, 107, 17);
+        this.color = args.color || this.s.color(107, 107, 17);
 
         // timer for displaying start and end animations, respectively
         this.timer = new Timer1(frames(0.5));
@@ -422,15 +426,15 @@ class Emphasis extends Rect {
     }
 
     show() {
-        noStroke();
-        fill(this.color);
-        if (frameCount > this.start) {
+        this.s.noStroke();
+        this.s.fill(this.color);
+        if (this.s.frameCount > this.start) {
             this.t = this.timer.advance();
         }
-        if (frameCount > this.end) {
+        if (this.s.frameCount > this.end) {
             this.t = 1 - this.timer2.advance();
         }
-        rect(this.x, this.y, this.w * this.t, this.h);
+        this.s.rect(this.x, this.y, this.w * this.t, this.h);
     }
 }
 
@@ -444,7 +448,8 @@ class Emphasis extends Rect {
  * @optional (color) color; (number) start, strokeweight, mode [defines which timer to use]
  */
 class Line {
-    constructor(args) {
+    constructor(ctx, args) {
+        this.s = ctx;
         this.x1 = args.x1;
         this.y1 = args.y1;
         this.x2 = args.x2;
@@ -455,7 +460,7 @@ class Line {
         // starting frame for initialization animation
         this.start = args.start || frames(1);
         this.strokeweight = args.strokeweight || 3;
-        this.color = args.color || color(255);
+        this.color = args.color || this.s.color(255);
 
         if (args.mode === 0) {
             this.timer = new Timer0(this.duration);
@@ -476,15 +481,15 @@ class Line {
     }
 
     showSetup() {
-        stroke(this.color);
-        strokeWeight(this.strokeweight);
+        this.s.stroke(this.color);
+        this.s.strokeWeight(this.strokeweight);
     }
 
     show() {
-        if (frameCount > this.start) {
+        if (this.s.frameCount > this.start) {
             this.showSetup();
             let t = this.timer.advance();
-            line(this.x1, this.y1,
+            this.s.line(this.x1, this.y1,
                 this.x1 + (this.x2 - this.x1) * t, this.y1 + (this.y2 - this.y1) * t);
         }
     }
@@ -496,17 +501,17 @@ class Line {
  * Note that this class uses Timer1
  */
 class LineCenter extends Line {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
         this.xm = this.x1 + (this.x2 - this.x1) / 2;
         this.ym = this.y1 + (this.y2 - this.y1) / 2;
     }
 
     show() {
-        if (frameCount > this.start) {
+        if (this.s.frameCount > this.start) {
             this.showSetup();
             let t = this.timer.advance();
-            line(this.xm + (this.x1 - this.xm) * t, this.ym + (this.y1 - this.ym) * t,
+            this.s.line(this.xm + (this.x1 - this.xm) * t, this.ym + (this.y1 - this.ym) * t,
                 this.xm + (this.x2 - this.xm) * t, this.ym + (this.y2 - this.ym) * t);
         }
     }
@@ -531,8 +536,8 @@ class LineStd extends Line {
  * @optional (color) color; (number) start, spacing, strokeweight
  */
 class DottedLine extends Line {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
         this.spacing = args.spacing || 17;
 
         this.w = this.x2 - this.x1;
@@ -545,7 +550,7 @@ class DottedLine extends Line {
     show() {
         let x = this.x1;
         let y = this.y1;
-        if (frameCount > this.start) {
+        if (this.s.frameCount > this.start) {
             let t = this.timer.advance();
             let xEnd = this.x1 + this.w * t;
             let yEnd = this.y1 + this.h * t;
@@ -560,7 +565,7 @@ class DottedLine extends Line {
                     y0 = yEnd;
                 }
                 this.showSetup();
-                line(x, y, x0, y0);
+                this.s.line(x, y, x0, y0);
                 x += 2 * this.dx;  // this 2 is arbitrary
                 y += 2 * this.dy;
             }
@@ -577,8 +582,8 @@ class DottedLine extends Line {
  * @optional (color) colors; (number) strokeweight, tipLen, tipAngle, frames
  */
 class Arrow extends Line {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
         this.duration = args.duration || frames(6);
         this.timer = new Timer2(this.duration);
 
@@ -609,7 +614,7 @@ class Arrow extends Line {
     // so I use another strategy: first scale the original line, then apply the rotation matrix.
     setArrow() {
 
-        let dx = this.x1 - this.x2;    // note it's x1 - x2
+        let dx = this.x1 - this.x2;    // note it'o x1 - x2
         let dy = this.y1 - this.y2;
 
         let len = Math.sqrt(dx * dx + dy * dy);
@@ -629,26 +634,26 @@ class Arrow extends Line {
     }
 
     show() {
-        if (frameCount > this.start) {
+        if (this.s.frameCount > this.start) {
 
             // show the main line
             let dx2 = this.x2 - this.x1;
             let dy2 = this.y2 - this.y1;
 
             this.showSetup();
-            line(this.x1, this.y1,
+            this.s.line(this.x1, this.y1,
                 this.x1 + this.timer.advance() * dx2, this.y1 + this.timer.advance() * dy2);
 
             // show the two line segments at the tip
             // strokeWeight(this.strokeweight);
             let dx3 = this.x3 - this.x2;
             let dy3 = this.y3 - this.y2;
-            line(this.x2, this.y2,
+            this.s.line(this.x2, this.y2,
                 this.x2 + this.timer.advance() * dx3, this.y2 + this.timer.advance() * dy3);
 
             let dx4 = this.x4 - this.x2;
             let dy4 = this.y4 - this.y2;
-            line(this.x2, this.y2,
+            this.s.line(this.x2, this.y2,
                 this.x2 + this.timer.advance() * dx4, this.y2 + this.timer.advance() * dy4);
         }
     }
@@ -668,7 +673,8 @@ class Arrow extends Line {
  * @optional (number) x, y, start, size,  (string) label1, label2
  */
 class Table {
-    constructor(args) {
+    constructor(ctx, args) {
+        this.s = ctx;
         this.x = args.x;
         this.y = args.y;
         this.xs = args.xs;
@@ -680,14 +686,14 @@ class Table {
 
         this.numPts = this.xs.length;
         this.sizeY = args.size || 37;   // size of the text
-        textFont(this.font);
-        textSize(this.sizeY);
-        this.sizeX = Math.max(textWidth("" + this.xs[this.numPts - 1]),
-            textWidth("" + this.ys[this.numPts - 1]));
+        this.s.textFont(this.font);
+        this.s.textSize(this.sizeY);
+        this.sizeX = Math.max(this.s.textWidth("" + this.xs[this.numPts - 1]),
+            this.s.textWidth("" + this.ys[this.numPts - 1]));
 
         this.duration = args.duration || frames(1);
         this.timer = new Timer0(this.duration);
-        this.textX = [new TextFadeIn({
+        this.textX = [new TextFadeIn(this.s, {
             duration: frames(0.5),
             size: this.sizeY,
             str: this.label1,
@@ -696,7 +702,7 @@ class Table {
             y: this.y + this.sizeY * 0.6,
             mode: 1,
         })];
-        this.textY = [new TextFadeIn({
+        this.textY = [new TextFadeIn(this.s, {
             duration: frames(0.5),
             size: this.sizeY,
             str: this.label2,
@@ -706,7 +712,7 @@ class Table {
             mode: 1,
         })];
         for (let i = 1; i < this.numPts + 1; i++) {
-            this.textX[i] = new TextFadeIn({
+            this.textX[i] = new TextFadeIn(this.s, {
                 duration: frames(0.5),
                 size: this.sizeY,
                 str: "" + this.ys[i - 1],
@@ -715,7 +721,7 @@ class Table {
                 y: this.y + this.sizeY * 0.6,
                 mode: 1
             });
-            this.textY[i] = new TextFadeIn({
+            this.textY[i] = new TextFadeIn(this.s, {
                 duration: frames(0.5),
                 size: this.sizeY,
                 str: "" + this.xs[i - 1],
@@ -726,7 +732,7 @@ class Table {
             });
         }
 
-        this.horizLine = new Line({
+        this.horizLine = new Line(this.s, {
             strokeweight: 2,
             x1: this.x,
             y1: this.y + this.sizeY * 1.32,
@@ -736,7 +742,7 @@ class Table {
         });
         this.vertLines = [];
         for (let i = 1; i < this.numPts + 1; i++) {
-            this.vertLines[i - 1] = new LineCenter({
+            this.vertLines[i - 1] = new LineCenter(this.s, {
                 strokeweight: 2,
                 duration: frames(0.5),
                 x1: this.x + this.sizeX * (i * 1.4 - 0.1),
@@ -749,7 +755,7 @@ class Table {
     }
 
     show() {
-        if (frameCount > this.start) {
+        if (this.s.frameCount > this.start) {
             this.horizLine.show();
             let t = Math.round(this.timer.advance() * (this.numPts + 1));
             for (let i = 0; i < this.numPts + 1; i++) {

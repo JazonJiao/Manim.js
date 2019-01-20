@@ -92,9 +92,6 @@ function make2DArray(rows, cols) {
     return arr;
 }
 
-
-
-
 var img;
 function preload() {
     img = loadImage('queen.png');
@@ -146,8 +143,6 @@ function setup() {
 }
 
 var frameOffset = 0;
-
-
 
 function draw() {
     background(0);

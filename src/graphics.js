@@ -29,10 +29,11 @@
  * @reference https://www.youtube.com/watch?v=pNDc8KXWp9E&t=529s
  */
 class Graphics {         // the master of all classes
-    constructor(args) {
+    constructor(ctx, args) {
+        this.s = ctx;
         this.w = args.w || 1200;
         this.h = args.h || 675;
-        this.g = createGraphics(this.w * 2, this.h * 2);
+        this.g = this.s.createGraphics(this.w * 2, this.h * 2);
     }
 
     // this is to be overridden by 2nd/3rd level to show the animation
@@ -42,7 +43,7 @@ class Graphics {         // the master of all classes
 
     // this may be overridden by 4th level to do operations on the canvas and display the image
     render() {
-        image(this.g, 0, 0, this.w, this.h);
+        this.s.image(this.g, 0, 0, this.w, this.h);
     }
 }
 
