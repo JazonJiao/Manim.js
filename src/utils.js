@@ -96,7 +96,7 @@ class Axes {
 
         if (args.labelX) {
             this.offsetX = args.offsetX || -17;  // default offset value based on displaying x
-            this.label1 = new KatexAxis1({
+            this.label1 = new KatexTxt(this.s, {
                 text: args.labelX,
                 x: this.right + this.offsetX, y: this.centerY - 87,
                 fadeIn: true, start: this.start,
@@ -104,7 +104,7 @@ class Axes {
         }
         if (args.labelY) {
             this.offsetY = args.offsetY || -44;  // default offset value based on displaying y
-            this.label2 = new KatexAxis2({
+            this.label2 = new KatexTxt(this.s, {
                 text: args.labelY,
                 x: this.centerX + 21, y: this.top + this.offsetY,
                 fadeIn: true, start: this.start,

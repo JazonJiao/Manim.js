@@ -1,4 +1,3 @@
-
 let xs = [1, 2, 3];
 let ys = [1, 2, 2];
 
@@ -13,18 +12,18 @@ let time = {
  * Uses the global variables, xs and ys, directly.
  */
 class Grid_Three_Lines extends Grid {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
         this.numPts = xs.length;
         this.lines = [];
         for (let i = 0; i < this.numPts; i++) {
             let arr = this.calcLineParams(1, xs[i], ys[i]);
-            this.lines[i] = new Line({
+            this.lines[i] = new Line(this.s, {
                 x1: arr[0], y1: arr[1],
                 x2: arr[2], y2: arr[3],
                 start: getT(time.lines),
-                color: i === 0 ? color(237, 47, 47) :
-                    (i === 1 ? color(37, 147, 37) : color(247, 217, 47))
+                color: i === 0 ? this.s.color(237, 47, 47) :
+                    (i === 1 ? this.s.color(37, 147, 37) : this.s.color(247, 217, 47))
             });
         }
 
@@ -71,13 +70,13 @@ class Grid_Three_Lines extends Grid {
         let x = beta_0_hat * this.stepX + this.centerX;
         let y = this.centerY - beta_hat * this.stepY;
 
-        this.closestPoint = new PlotPoint({
+        this.closestPoint = new PlotPoint(this.s, {
             x: x, y: y,
             start: getT(time.lines),  // fixme
             radius: 24,
             color: [247, 177, 47]
         });
-        this.kat = new Katex14({
+        this.kat = new KatexTxt(this.s, {
             text: "(\\hat{\\beta_0}, \\hat{\\beta})",
             x: x + 17,
             y: y - 97,
@@ -94,39 +93,40 @@ class Grid_Three_Lines extends Grid {
     }
 }
 
-let grid;
-let kats = [];
-let comic;
-let brain;
+const Chap2Part2 = function (s) {
+    let grid;
+    let comic;
+    let brain;
 
-function preload() {
-    comic = loadFont('../lib/font/comic.ttf');
-}
+    s.preload = function () {
+        comic = s.loadFont('../lib/font/comic.ttf');
+    };
 
-function setup() {
-    frameRate(fr);
-    createCanvas(cvw, cvh);
-    grid = new Grid_Three_Lines({
-        labelX: "\\beta_0",
-        offsetX: -37,
-        labelY: "\\beta",
-        offsetY: -30,
-        stepX: 100,
-        stepY: 100,
-        start: getT(time.grid)
-    });
-    //kats[0] =
-    brain = new ThoughtBrain({
-        x: 67, y: 517,
-        size: 277,
-        font: comic,
-        str: "\"closest solution\""
-    })
+    s.setup = function () {
+        s.frameRate(fr);
+        s.createCanvas(cvw, cvh);
+        grid = new Grid_Three_Lines(s, {
+            labelX: "\\beta_0",
+            offsetX: -37,
+            labelY: "\\beta",
+            offsetY: -30,
+            stepX: 100,
+            stepY: 100,
+            start: getT(time.grid)
+        });
+        brain = new ThoughtBrain(s, {
+            x: 67, y: 517,
+            size: 277,
+            font: comic,
+            str: "\"closest solution\""
+        })
+    };
 
-}
+    s.draw = function () {
+        s.background(0);
+        grid.show();
+        brain.show();
+    }
+};
 
-function draw() {
-    background(0);
-    grid.show();
-    brain.show();
-}
+new p5(Chap2Part2);
