@@ -174,7 +174,6 @@ class Bubble {
  * @mandatory (number) x, y; (font) font; (string) str
  * @optional (number) start, duration, bubbleStart, size, font_size
  */
-
 class ThoughtBrain extends BrainBase {
     constructor(args) {
         super(args);

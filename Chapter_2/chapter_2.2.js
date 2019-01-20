@@ -32,7 +32,7 @@ class Grid_Three_Lines extends Grid {
     }
 
     // Takes in the ax + by = c representation of the line.
-    // calculate its representation in y = mx + d
+    // calculate its representation in y = mx + d, and
     // Returns an array for the starting point and end point of the line, [x1, y1, x2, y2]
     // p5's coordinate system is a nightmare for math animations......
     calcLineParams(a, b, c) {

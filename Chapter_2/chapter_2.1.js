@@ -87,25 +87,21 @@ class Plane_LinComb extends Plane3D {
         this.arrow1.show(g);
         this.arrow2.show(g);
         this.arrow3.show(g);
-        let a = map(mouseX, 0, width, this.lb * this.step, this.ub * this.step);
-        let b = map(mouseY, 0, height, this.ub * this.step, this.lb * this.step);
-        let x = a * matrix[0] + b * matrix[3];
-        let y = a * matrix[1] + b * matrix[4];
-        let z = a * matrix[2] + b * matrix[5];
-        this.arrow4.reset({
-            to: [x, y, z]
-        });
+        let b0_coeff = map(mouseX, 0, width, this.lb * this.step, this.ub * this.step);
+        let b_coeff = map(mouseY, 0, height, this.ub * this.step, this.lb * this.step);
+        let x = b0_coeff * matrix[0] + b_coeff * matrix[3];
+        let y = b0_coeff * matrix[1] + b_coeff * matrix[4];
+        let z = b0_coeff * matrix[2] + b_coeff * matrix[5];
+        this.arrow4.reset({ to: [x, y, z] });
         this.arrow4.show(g);
 
-        this.arrow5.reset({
-            from: [x, y, z]
-        });
+        this.arrow5.reset({ from: [x, y, z] });
         this.arrow5.show(g);
         this.kat.show();
 
-        this.text1.reset({ str: "" + (a / this.step).toFixed(2) });
+        this.text1.reset({ str: "" + (b0_coeff / this.step).toFixed(2) });
         this.text1.show();
-        this.text2.reset({ str: "" + (b / this.step).toFixed(2) });
+        this.text2.reset({ str: "" + (b_coeff / this.step).toFixed(2) });
         this.text2.show();
     }
 }
@@ -168,14 +164,9 @@ function setup() {
 function draw() {
     background(0);
     axes.show(g3);
-    // g3.pointLight(147, 147, 147, 0, 1, 0);
-    // g3.ambientLight(27, 27, 27);
 
     arrows.show(g3);
     //hg.show();
-
-
-
 
     image(g3, 0, 0, cvh, cvh);
 
