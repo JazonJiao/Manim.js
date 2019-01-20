@@ -1,6 +1,5 @@
 // S is the p5.js sketh variable
 const Chap1Part1 = function (s) {
-    var self = this;
     //let orange = s.color(247, 137, 27);  // fixme: why doesn't it work?
 
     // define the time for init animations
@@ -238,7 +237,7 @@ const Chap1Part1 = function (s) {
             super(ctx, args);
 
             // the two dotted lines displaying x-line and y-line
-            this.xBarLine = new DottedLine(s,{
+            this.xBarLine = new DottedLine(s, {
                 x1: this.coordX, x2: this.coordX,
                 y1: this.top, y2: this.bottom,
                 color: s.color(77, 177, 247),
@@ -501,7 +500,7 @@ const Chap1Part1 = function (s) {
     let table;
     let comic;
 
-    s.preload = function() {
+    s.preload = function () {
         comic = s.loadFont('../lib/font/comic.ttf');
     };
 
