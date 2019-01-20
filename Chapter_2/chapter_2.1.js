@@ -1,5 +1,3 @@
-let time = {};
-
 // 2019-01-06
 // this class is quite similar to the Plane_Projection class in chapter 3.2;
 // I could have used inheritance to reduce duplicate code.
