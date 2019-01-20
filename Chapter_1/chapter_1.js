@@ -614,8 +614,8 @@ const Chap1Part1 = function (s) {
         kats[0] = new KatexTxt(s, {
             text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} " +
                 "{\\sum_{i=1}^n(x_i-\\bar{x})^2}",
-            x: 670,
-            y: 240,
+            x: 662,
+            y: 232,
             start: getT(time.formulabeta),
             fadeIn: true,
             font_size: 54
@@ -623,7 +623,7 @@ const Chap1Part1 = function (s) {
 
         kats[5] = new KatexTxt(s, {
             text: "\\hat{y}=\\hat{\\beta}x+\\hat{\\beta_0}",
-            x: 797, y: 107,
+            x: 789, y: 99,
             start: getT(time.formula),
             fadeIn: true,
             font_size: 47,
@@ -633,8 +633,8 @@ const Chap1Part1 = function (s) {
         //
         kats[1] = new KatexTxt(s, {
             text: "\\bar{x}",
-            x: plot.getXbar() - 7,
-            y: s.height - 160,
+            x: plot.getXbar() - 30,
+            y: s.height - 152,
             start: getT(time.dottedlineX),
             fadeIn: true,
             font_size: 37
@@ -642,8 +642,8 @@ const Chap1Part1 = function (s) {
 
         kats[2] = new KatexTxt(s, {
             text: scn === 7 ? "\\bar{x}" : "\\bar{y}",
-            x: 77,
-            y: plot.getYbar() - 57,
+            x: 70,
+            y: plot.getYbar() - 73,
             fadeIn: true, start: scn === 10 ? getT(time.yLine_start) : getT(time.dottedlineY),
             fadeOut: true, end: getT(time.yLine_fade),
             font_size: 37,
@@ -651,8 +651,8 @@ const Chap1Part1 = function (s) {
 
         kats[3] = new KatexTxt(s, {
             text: "x_1 - \\bar{x}",
-            x: 375,
-            y: scn === 7 ? 47 : 90,  // fixme
+            x: 367,
+            y: scn === 7 ? 40 : 82,  // fixme
             color: s.color(247, 137, 27),
             start: getT(time.xMinusXbar),
             fadeIn: true,
@@ -660,8 +660,8 @@ const Chap1Part1 = function (s) {
 
         kats[4] = new KatexTxt(s, {
             text: "y_1 - \\bar{y}",
-            x: 531,
-            y: 187,
+            x: 523,
+            y: 179,
             color: s.color(247, 137, 27),
             start: getT(time.yMinusYbar),
             fadeIn: true,
@@ -669,7 +669,7 @@ const Chap1Part1 = function (s) {
 
         kats[6] = new KatexTxt(s, {
             text: scn === 9 || 10 ? "\\hat{\\beta_0}=\\bar{y}-\\hat{\\beta}\\bar{x}" : "\\hat{\\beta_0}",
-            x: 124, y: scn === 9 || 10 ? 7 : 457,
+            x: 115, y: scn === 9 || 2 ? 0 : 140,
             color: s.color(247, 117, 117),
             start: getT(time.showIntercept),
             fadeIn: true,
@@ -678,8 +678,8 @@ const Chap1Part1 = function (s) {
 
         kats[7] = new KatexTxt(s, {
             text: "\\hat{\\beta}",
-            x: 417, y: 237,
-            color: s.color(247, 117, 117),
+            x: 410, y: 230,
+            color: s.color(240, 110, 110),
             start: getT(time.showSlope),
             fadeIn: true,
             font_size: 42
@@ -687,7 +687,7 @@ const Chap1Part1 = function (s) {
 
         kats[8] = new KatexTxt(s, {
             text: "Area = (x_1 - \\bar{x})(y_1 - \\bar{y})",
-            x: 650, y: 77,
+            x: 650, y: 70,
             color: s.color(255, 255, 17),
             fadeIn: true, start: getT(time.areaEq),
             font_size: 42,
