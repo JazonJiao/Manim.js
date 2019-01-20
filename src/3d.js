@@ -64,7 +64,8 @@ class Axes3D {
  * @optional (number) lineLen, numLines, strokeweight
  */
 class Grid3D {
-    constructor(args) {
+    constructor(ctx, args) {
+        this.s = ctx;
         this.lineLen = args.lineLen || 32;
         this.n = args.numLines + 1 || 4;
         this.strokeweight = args.strokeweight || 2;
@@ -91,9 +92,9 @@ class Grid3D {
     }
 
     setColor(g, i, j, k) {
-        g.stroke(s.map(i, 0, this.n, 72, 216),
-            s.map(j, 0, this.n, 72, 216),
-            s.map(k, 0, this.n, 72, 216));
+        g.stroke(this.s.map(i, 0, this.n, 72, 216),
+            this.s.map(j, 0, this.n, 72, 216),
+            this.s.map(k, 0, this.n, 72, 216));
     }
 
     showGrid(g) {
