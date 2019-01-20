@@ -98,7 +98,7 @@ class Axes {
             this.offsetX = args.offsetX || -17;  // default offset value based on displaying x
             this.label1 = new KatexTxt(this.s, {
                 text: args.labelX,
-                x: this.right + this.offsetX, y: this.centerY - 87,
+                x: this.right + this.offsetX, y: this.centerY - 95,
                 fadeIn: true, start: this.start,
             });
         }

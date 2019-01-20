@@ -74,8 +74,8 @@ class Grid_Three_Lines extends Grid {
         });
         this.kat = new KatexTxt(this.s, {
             text: "(\\hat{\\beta_0}, \\hat{\\beta})",
-            x: x + 17,
-            y: y - 97,
+            x: x + 9,
+            y: y - 105,
             start: getT(this.time.lines)
         })
 
@@ -108,16 +108,16 @@ const Chap2Part2 = function (s) {
         s.createCanvas(cvw, cvh);
         grid = new Grid_Three_Lines(s, {
             labelX: "\\beta_0",
-            offsetX: -37,
+            offsetX: -45,
             labelY: "\\beta",
-            offsetY: -30,
+            offsetY: -38,
             stepX: 100,
             stepY: 100,
             start: getT(time.grid),
             time: time
         });
         brain = new ThoughtBrain(s, {
-            x: 67, y: 517,
+            x: 75, y: 517,
             size: 277,
             font: comic,
             str: "\"closest solution\""
