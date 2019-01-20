@@ -1,8 +1,5 @@
 // 3d scene
 
-let time = {
-    transform: frames(2)
-};
 
 // 2019-01-02, 03
 class Grid_Projection extends Grid3D {
@@ -138,7 +135,7 @@ class Plane_Projection extends Plane3D {
     }
 }
 
-function Chapter3Part2(s) {
+function Chap3Part2(s) {
     let g3;
     let g2;
 
@@ -146,6 +143,9 @@ function Chapter3Part2(s) {
     let grid;
     let plane1;  // this must not be named plane, otherwise plane() function would not work
     let ax;
+    let time = {
+        transform: frames(2)
+    };
 
     s.preload = function (){
         ax = s.loadModel('../lib/obj/axes.obj');
@@ -192,4 +192,4 @@ function Chapter3Part2(s) {
     }
 }
 
-new p5(Chapter3Part2);
+new p5(Chap3Part2);

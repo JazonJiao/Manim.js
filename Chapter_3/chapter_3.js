@@ -1,15 +1,14 @@
-
-let time = {
-    grid: frames(1),
-    i_hat: frames(3),
-    j_hat: frames(4.2),
-    u_hat: frames(5.6),
-    transform: frames(7)
-};
-
 class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear transformations
-    constructor() {
-        super({
+    constructor(ctx) {
+        let time = {
+            grid: frames(1),
+            i_hat: frames(3),
+            j_hat: frames(4.2),
+            u_hat: frames(5.6),
+            transform: frames(7)
+        };
+
+        super(ctx, {
             spacing: 70,
             centerX: 200,
             centerY: 500,
@@ -23,18 +22,18 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
         this.arrows = [];
 
         // i-hat
-        this.arrows[1] = new Arrow({
+        this.arrows[1] = new Arrow(this.s, {
             x1: this.centerX, x2: this.centerX + this.step,
             y1: this.centerY, y2: this.centerY,
-            color: color('#57c757'), strokeweight: 7, tipLen: 27,
+            color: this.s.color('#57c757'), strokeweight: 7, tipLen: 27,
             start: time.i_hat
         });
 
         // j-hat
-        this.arrows[2] = new Arrow({
+        this.arrows[2] = new Arrow(this.s, {
             x1: this.centerX, x2: this.centerX,
             y1: this.centerY, y2: this.centerY - this.step,
-            color: color('#f76767'), strokeweight: 7, tipLen: 27,
+            color: this.s.color('#f76767'), strokeweight: 7, tipLen: 27,
             start: time.j_hat
         });
 
@@ -42,10 +41,10 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
         this.u_y = 0.6;
 
         // u-hat
-        this.arrows[0] = new Arrow({
+        this.arrows[0] = new Arrow(this.s, {
             x1: this.centerX, x2: this.centerX + this.u_x * this.step,
             y1: this.centerY, y2: this.centerY - this.u_y * this.step,
-            color: color('#f7f717'), strokeweight: 7, tipLen: 27,
+            color: this.s.color('#f7f717'), strokeweight: 7, tipLen: 27,
             start: time.u_hat
         });
 
@@ -147,10 +146,10 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
 
     showTransform() {
         let t = this.timer2.advance();
-        strokeWeight(2);
-        stroke(27, 177, 247);
+        this.s.strokeWeight(2);
+        this.s.stroke(27, 177, 247);
         for (let i = 0; i < this.totalNumLines; i++) {
-            line(this.x1s[i] + (this.x3s[i] - this.x1s[i]) * t,
+            this.s.line(this.x1s[i] + (this.x3s[i] - this.x1s[i]) * t,
                 this.y1s[i] + (this.y3s[i] - this.y1s[i]) * t,
                 this.x2s[i] + (this.x4s[i] - this.x2s[i]) * t,
                 this.y2s[i] + (this.y4s[i] - this.y2s[i]) * t);
@@ -166,7 +165,7 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
     }
 
     show() {
-        if (frameCount < this.startTransform) {
+        if (this.s.frameCount < this.startTransform) {
             this.showGrid();
         } else {
             this.showAxes();
@@ -181,34 +180,36 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
 
 }
 
-var grid;
+function Chap3(s) {
+    let grid;
 
-var kats = [];
+    let kats = [];
+    s.setup = function (){
+        s.frameRate(fr);
+        s.createCanvas(1200, 675);
+        grid = new LT_Grid(s);
 
-function setup() {
-    frameRate(fr);
-    createCanvas(1200, 675);
-    grid = new LT_Grid();
+        kats[0] = new KatexTxt(s, {
+            text: "\\begin{bmatrix}" +
+                "   \\textcolor{#57c757}{u_x} \\\\" +
+                "   \\textcolor{#f76767}{u_y}" +
+                "\\end{bmatrix}" +
+                "\\begin{bmatrix}" +
+                "   \\textcolor{#57c757}{u_x} & \\textcolor{#f76767}{u_y} \\\\" +
+                "\\end{bmatrix}",
+            font_size: 47,
+            x: 800,
+            y: 100
+        });
+    };
 
-    kats[0] = new Katex0({
-        text: "\\begin{bmatrix}" +
-            "   \\textcolor{#57c757}{u_x} \\\\" +
-            "   \\textcolor{#f76767}{u_y}" +
-            "\\end{bmatrix}" +
-            "\\begin{bmatrix}" +
-            "   \\textcolor{#57c757}{u_x} & \\textcolor{#f76767}{u_y} \\\\" +
-            "\\end{bmatrix}",
-        font_size: 47,
-        x: 800,
-        y: 100
-    });
+    s.draw = function (){
+        s.background(0);
+        grid.show();
+        for (let k of kats) {
+            k.show();
+        }
+    };
 }
 
-function draw() {
-    background(0);
-    grid.show();
-    for (let k of kats) {
-        k.show();
-    }
-    //showFR();
-}
+new p5(Chap3);
