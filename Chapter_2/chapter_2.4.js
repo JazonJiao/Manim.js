@@ -1,7 +1,4 @@
 
-
-// fixme: somehow the Katex object is not showing up
-
 class Sys_3Eqs {
     constructor(ctx, args) {
         this.s = ctx;
@@ -35,7 +32,7 @@ class Sys_3Eqs {
             });
             this.kats[i] = new Katex(this.s, {
                 text: "\\beta", fadeIn: true, start: this.start,
-                x: this.x + 187, y: this.y + i * 57 - 27
+                x: this.x + 189, y: this.y + (i - 3) * 57 - 27
             });
         }
 
@@ -97,7 +94,6 @@ function Chap2Part4(s) {
     let eqs;
     let tnr;
     let hg;
-    let br;
 
     s.setup = function() {
         s.background(0);
@@ -120,7 +116,11 @@ function Chap2Part4(s) {
         if (s.frameCount === 100) eqs.move();
 
         eqs.show();
+
+        if (s.frameCount === 100) console.log(eqs);  // fixme: is this the only way to debug?
     }
+
+
 }
 
 let p = new p5(Chap2Part4);

@@ -8,10 +8,9 @@ class TextBase {
         this.y = args.y;
     }
 
-    reset(args) {
-        this.str = args.str || this.str;
-        this.x = args.x || this.x;
-        this.y = args.y || this.y;
+    reset(x, y) {
+        this.x = x || this.x;
+        this.y = y || this.y;
     }
 
     // enable move animations
@@ -30,10 +29,10 @@ class TextBase {
 
     moving() {
         let t = this.move_timer.advance();
-        this.reset({
-            x: this.xo + t * (this.xd - this.xo),
-            y: this.yo + t * (this.yd - this.yo)
-        })
+        this.reset(
+            this.xo + t * (this.xd - this.xo),
+            this.yo + t * (this.yd - this.yo)
+        );
     }
 }
 
@@ -66,6 +65,7 @@ class Text extends TextBase {
 
         this.size = args.size || 37;
     }
+
 
     showSetup() {
         if (this.font) {
@@ -150,7 +150,7 @@ class TextWriteIn extends Text {
  * ----args list parameters----
  * @mandatory (string) str--the string to display;
  * @optional (bool) fadeIn, start--if display fade in animation, the frame to start animation;
- *           (number) font_size, x, y, (string) color--note it'o passed as a string;
+ *           (number) font_size, x, y, id; (string) color--note it'o passed as a string;
  *           (bool) fadeOut, end--if display fade out animation, the frame to start animation;
  */
 
@@ -195,12 +195,12 @@ class Katex extends TextBase {
         if (this.moved) {
             this.moving();
         }
-      
-        this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y); // Based on the canvas position in the DOM
 
+        // Based on the canvas position in the DOM
+        // Note that this absolute value has an offset of 9. Otherwise previous code would break
+        this.k.position(this.x + this.canvasPos.x - 9, this.y + this.canvasPos.y - 9);
 
-        if (this.fadeIn && this.k.frameCount > this.start) {
-
+        if (this.fadeIn && this.s.frameCount > this.start) {
             this.k.style('opacity', this.timer.advance());
         }
         if (this.fadeOut && this.s.frameCount > this.end) {
