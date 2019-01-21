@@ -96,7 +96,7 @@ class Axes {
 
         if (args.labelX) {
             this.offsetX = args.offsetX || -17;  // default offset value based on displaying x
-            this.label1 = new KatexTxt(this.s, {
+            this.label1 = new Katex(this.s, {
                 text: args.labelX,
                 x: this.right + this.offsetX, y: this.centerY - 95,
                 fadeIn: true, start: this.start,
@@ -104,7 +104,7 @@ class Axes {
         }
         if (args.labelY) {
             this.offsetY = args.offsetY || -44;  // default offset value based on displaying y
-            this.label2 = new KatexTxt(this.s, {
+            this.label2 = new Katex(this.s, {
                 text: args.labelY,
                 x: this.centerX + 21, y: this.top + this.offsetY,
                 fadeIn: true, start: this.start,
@@ -768,5 +768,60 @@ class Table {
                 }
             }
         }
+    }
+}
+
+
+
+/*** 2019-01-20
+ * Bracket, '['
+ * To create a ']', draw a line from bottom to top
+ *
+ // * (DISCARDED) x and y define the CENTER of the Bracket.
+ // * Default is a left bracket, '['. To use a right bracket, pass in angle = PI.
+ *
+ * ---- args list parameters ----
+ * @mandatory (number) x1, x2, y1, y2
+ * @optional (number) tipLen, start, duration, strokeweight
+ */
+class Bracket {
+    constructor(ctx, args) {
+        this.s = ctx;
+        // this.x = args.x;
+        // this.y = args.y;
+        // this.l = args.length;
+        // this.angle = args.angle || 0;
+
+        // let dx = args.x2 - args.x1;
+        // let dy = args.y2 - args.y1;
+        // let len = Math.sqrt(dx * dx + dy * dy);
+
+        this.tipLen = args.tipLen || 17;
+
+        this.start = args.start || 100;
+        this.duration = args.duration || frames(1);
+        this.strokeweight = args.strokeweight || 4;
+
+        let angle = Math.atan2(args.y2 - args.y1, args.x2 - args.x1);
+
+        this.lines = [];
+        this.lines[0] = new LineCenter(this.s, {
+            x1: args.x1, y1: args.y1, x2: args.x2, y2: args.y2,
+            start: this.start, duration: this.duration, strokeweight: this.strokeweight
+        });
+        this.lines[1] = new Line(this.s, {
+            x1: args.x1 + this.tipLen * Math.sin(angle), x2: args.x1,
+            y1: args.y1 - this.tipLen * Math.cos(angle), y2: args.y1,
+            start: this.start, duration: this.duration, strokeweight: this.strokeweight
+        });
+        this.lines[2] = new Line(this.s, {
+            x1: args.x2 + this.tipLen * Math.sin(angle), x2: args.x2,
+            y1: args.y2 - this.tipLen * Math.cos(angle), y2: args.y2,
+            start: this.start, duration: this.duration, strokeweight: this.strokeweight
+        });
+    }
+
+    show() {
+        for (let l of this.lines) l.show();
     }
 }

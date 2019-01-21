@@ -69,6 +69,7 @@ function Chap2(s) {
     let axes;
     let obj;
     let kat;
+    let g2, g3;
 
     s.preload = function () {
         obj = s.loadModel('../lib/obj/axes.obj');
@@ -86,7 +87,7 @@ function Chap2(s) {
             model: obj,
             angle: 1.7
         });
-        kat = new KatexTxt(s, {
+        kat = new Katex(s, {
             text: "\\hat{y} = \\hat{\\beta_0} + \\hat{\\beta_1}x_1 + \\hat{\\beta_2}x_2",
             x: 50,
             y: 20

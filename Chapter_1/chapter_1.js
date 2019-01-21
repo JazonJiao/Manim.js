@@ -611,7 +611,7 @@ const Chap1Part1 = function (s) {
             start: getT(time.estimates)
         });
 
-        kats[0] = new KatexTxt(s, {
+        kats[0] = new Katex(s, {
             text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} " +
                 "{\\sum_{i=1}^n(x_i-\\bar{x})^2}",
             x: 662,
@@ -621,7 +621,7 @@ const Chap1Part1 = function (s) {
             font_size: 54
         });
 
-        kats[5] = new KatexTxt(s, {
+        kats[5] = new Katex(s, {
             text: "\\hat{y}=\\hat{\\beta}x+\\hat{\\beta_0}",
             x: 789, y: 99,
             start: getT(time.formula),
@@ -631,7 +631,7 @@ const Chap1Part1 = function (s) {
             end: getT(time.formulaFadeOut)
         });
         //
-        kats[1] = new KatexTxt(s, {
+        kats[1] = new Katex(s, {
             text: "\\bar{x}",
             x: plot.getXbar() - 30,
             y: s.height - 152,
@@ -640,7 +640,7 @@ const Chap1Part1 = function (s) {
             font_size: 37
         });
 
-        kats[2] = new KatexTxt(s, {
+        kats[2] = new Katex(s, {
             text: scn === 7 ? "\\bar{x}" : "\\bar{y}",
             x: 70,
             y: plot.getYbar() - 73,
@@ -649,7 +649,7 @@ const Chap1Part1 = function (s) {
             font_size: 37,
         });
 
-        kats[3] = new KatexTxt(s, {
+        kats[3] = new Katex(s, {
             text: "x_1 - \\bar{x}",
             x: 367,
             y: scn === 7 ? 40 : 82,  // fixme
@@ -658,7 +658,7 @@ const Chap1Part1 = function (s) {
             fadeIn: true,
         });
 
-        kats[4] = new KatexTxt(s, {
+        kats[4] = new Katex(s, {
             text: "y_1 - \\bar{y}",
             x: 523,
             y: 179,
@@ -667,7 +667,7 @@ const Chap1Part1 = function (s) {
             fadeIn: true,
         });
 
-        kats[6] = new KatexTxt(s, {
+        kats[6] = new Katex(s, {
             text: scn === 9 || 10 ? "\\hat{\\beta_0}=\\bar{y}-\\hat{\\beta}\\bar{x}" : "\\hat{\\beta_0}",
             x: 115, y: scn === 9 || 2 ? 0 : 140,
             color: s.color(247, 117, 117),
@@ -676,7 +676,7 @@ const Chap1Part1 = function (s) {
             font_size: scn === 9 || 10 ? 40 : 42
         });
 
-        kats[7] = new KatexTxt(s, {
+        kats[7] = new Katex(s, {
             text: "\\hat{\\beta}",
             x: 410, y: 230,
             color: s.color(240, 110, 110),
@@ -685,7 +685,7 @@ const Chap1Part1 = function (s) {
             font_size: 42
         });
 
-        kats[8] = new KatexTxt(s, {
+        kats[8] = new Katex(s, {
             text: "Area = (x_1 - \\bar{x})(y_1 - \\bar{y})",
             x: 650, y: 70,
             color: s.color(255, 255, 17),
@@ -694,7 +694,7 @@ const Chap1Part1 = function (s) {
             fadeOut: true, end: getT(time.areaEqFadeOut)
         });
 
-        kats[9] = new KatexTxt(s, {
+        kats[9] = new Katex(s, {
             text: scn === 7 ? "(x_i, x_i)" : "(x_1, y_1)",
             x: 520, y: scn === 7 ? 100 : 90,
             color: s.color(247, 137, 27),
@@ -703,27 +703,27 @@ const Chap1Part1 = function (s) {
             font_size: 37
         });
 
-        kats[10] = new KatexTxt(s, {
+        kats[10] = new Katex(s, {
             text: scn === 7 ? "(\\bar{x}, \\bar{x})" : "(\\bar{x}, \\bar{y})",
             x: plot.getXbar() + 17, y: plot.getYbar() - (scn >= 9 ? 87 : 27),
             fadeIn: true, start: getT(time.centroid)
         });
 
         if (scn === 8) {
-            kats[11] = new KatexTxt(s, {
+            kats[11] = new Katex(s, {
                 text: "∈(0, 1)",
                 x: 637, y: 337, font_size: 37, color: s.color(247, 137, 27),
                 fadeIn: true, start: getT(time.bw_0_and_1),
                 fadeOut: true, end: getT(time.bw_0_and_1_end),
             });
 
-            kats[12] = new KatexTxt(s, {
+            kats[12] = new Katex(s, {
                 text: ">1",
                 x: 657, y: 337, font_size: 37, color: s.color(247, 137, 27),
                 fadeIn: true, start: getT(time.greater_than_1),
             });
 
-            kats[13] = new KatexTxt(s, {
+            kats[13] = new Katex(s, {
                 text: "\\bigwedge",
                 x: 857, y: 47, font_size: 167,
                 color: s.color(47, 177, 247),
@@ -731,7 +731,7 @@ const Chap1Part1 = function (s) {
                 fadeOut: true, end: getT(time.bw_0_and_1)
             });
 
-            kats[14] = new KatexTxt(s, {
+            kats[14] = new Katex(s, {
                 text: "\\bigvee",
                 x: 857, y: 47, font_size: 167,
                 color: s.color(47, 177, 247),
@@ -741,25 +741,25 @@ const Chap1Part1 = function (s) {
 
         }
         if (scn === 9) {
-            kats[11] = new KatexTxt(s, {
+            kats[11] = new Katex(s, {
                 text: ">0",
                 x: 1047, y: 367, font_size: 37, color: s.color(247, 137, 27),
                 fadeIn: true, start: getT(time.greater_than_0),
             });
-            kats[12] = new KatexTxt(s, {
+            kats[12] = new Katex(s, {
                 text: "<0",
                 x: 657, y: 337, font_size: 37, color: s.color(247, 137, 27),
                 fadeIn: true, start: getT(time.is_negative),
             });
         }
         if (scn === 11) {
-            kats[11] = new KatexTxt(s, {
+            kats[11] = new Katex(s, {
                 text: "Cov(X, Y)=",
                 color: s.color(37, 236, 97),
                 fadeIn: true, start: getT(time.cov),
                 x: 817, y: 34
             });
-            kats[12] = new KatexTxt(s, {
+            kats[12] = new Katex(s, {
                 text: "Var(X)=",
                 color: s.color(37, 236, 97),
                 fadeIn: true, start: getT(time.var),

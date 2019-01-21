@@ -56,7 +56,7 @@ class Plane_LinComb extends Plane3D {
         this.textY = 200;
         this.textsize = 40;
 
-        this.kat = new KatexTxt(this.s, {
+        this.kat = new Katex(this.s, {
             text: "\\textcolor{#f7e717}{\\vec{v}} = " +
                 "~~~~~~~~\\textcolor{f76767}{x_1} + ~~~~~~~~\\textcolor{47f747}{x_2}",
             x: this.textX,
@@ -155,13 +155,13 @@ const Chap2Part1 = function (s) {
             // r_o: obj[4],
             size: 300
         });
-        kats[0] = new KatexTxt(s, {
+        kats[0] = new Katex(s, {
             text: "\\beta_0\\newline\\downarrow",
             x: 820, y: 87,
 
 
         });
-        kats[1] = new KatexTxt(s, {
+        kats[1] = new Katex(s, {
             text: "\\beta_1\\newline\\downarrow",
             x: 1020, y: 87,
         })

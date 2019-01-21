@@ -72,7 +72,7 @@ class Grid_Three_Lines extends Grid {
             radius: 24,
             color: [247, 177, 47]
         });
-        this.kat = new KatexTxt(this.s, {
+        this.kat = new Katex(this.s, {
             text: "(\\hat{\\beta_0}, \\hat{\\beta})",
             x: x + 9,
             y: y - 105,

@@ -189,7 +189,7 @@ function Chap3(s) {
         s.createCanvas(1200, 675);
         grid = new LT_Grid(s);
 
-        kats[0] = new KatexTxt(s, {
+        kats[0] = new Katex(s, {
             text: "\\begin{bmatrix}" +
                 "   \\textcolor{#57c757}{u_x} \\\\" +
                 "   \\textcolor{#f76767}{u_y}" +

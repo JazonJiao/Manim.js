@@ -2,8 +2,8 @@
  * Capable of displaying the squared error of each point
  */
 class LS_Plot extends Plot {
-    constructor(args) {
-        super(args);
+    constructor(ctx, args) {
+        super(ctx, args);
         this.sqs = [];
         this.b_new = 0;
         this.b0_new = 0;
@@ -11,8 +11,8 @@ class LS_Plot extends Plot {
         for (let i = 0; i < this.numPts; i++) {
             let y_hat = this.getY(this.Xs[i]);
             let dy = y_hat - this.Ys[i];
-            this.sqs[i] = new Emphasis({
-                color: color(207, 207, 27, 87),
+            this.sqs[i] = new Emphasis(this.s, {
+                color: this.s.color(207, 207, 27, 87),
                 x: this.ptXs[i],
                 y: y_hat,
                 w: dy, h: dy    // we're constructing a square
@@ -29,7 +29,7 @@ class LS_Plot extends Plot {
             let dy = y_hat - this.ptYs[i];
             this.sqs[i].reset({
                 x: this.ptXs[i],
-                y: this.ptYs,
+                y: this.ptYs[i],
                 w: dy, h: -dy    // we're constructing a square
             })
         }
@@ -49,8 +49,10 @@ class LS_Plot extends Plot {
         // these will later be merged into 2.2; notice that variable names are different
         this.lb = -1;
         this.ub = 1;
-        let b0_coeff = map(mouseX, 0, width, this.lb * this.stepX, this.ub * this.stepX);
-        let b_coeff = map(mouseY, 0, height, this.ub * this.stepY, this.lb * this.stepY);
+        let b0_coeff = this.s.map(
+            this.s.mouseX, 0, this.s.width, this.lb * this.stepX, this.ub * this.stepX);
+        let b_coeff = this.s.map(
+            this.s.mouseY, 0, this.s.height, this.ub * this.stepY, this.lb * this.stepY);
         this.reset({
             b0_new: b0_coeff,
             b_new: b_coeff
@@ -61,20 +63,24 @@ class LS_Plot extends Plot {
     }
 }
 
+function Chap2Part3(s) {
+    let plot;
 
-let plot;
-function setup() {
-    frameRate(fr);
-    createCanvas(cvw, cvh);
-    plot = new LS_Plot({
-        xs: [matrix[3], matrix[4], matrix[5]],
-        ys: target,
-        stepX: 100,
-        stepY: 100
-    });
+    s.setup = function() {
+        s.frameRate(fr);
+        s.createCanvas(cvw, cvh);
+        plot = new LS_Plot(s, {
+            xs: [matrix[3], matrix[4], matrix[5]],
+            ys: target,
+            stepX: 100,
+            stepY: 100
+        });
+    };
+
+    s.draw = function() {
+        s.background(0);
+        plot.show();
+    };
 }
 
-function draw() {
-    background(0);
-    plot.show();
-}
+new p5(Chap2Part3);

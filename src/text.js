@@ -1,7 +1,6 @@
 // refactored on 01-20-2019
 class TextBase {
     constructor(ctx, args) {
-      
         this.s = ctx;
         // I originally used the usual syntax of args.x || width / 2,
         // but this would not work if 0 is passed in as x
@@ -58,10 +57,6 @@ class TextBase {
 
 class Text extends TextBase {
     constructor(ctx, args) {
-       
-
-
-
         super(ctx, args);
 
         this.font = args.font;
@@ -82,9 +77,9 @@ class Text extends TextBase {
 
             this.s.textAlign(this.s.CENTER, this.s.CENTER);
 
-            textAlign(CENTER, CENTER);
+            this.s.textAlign(this.s.CENTER, this.s.CENTER);
         } else if (this.mode === 2) {
-            this.s.textAlign(RIGHT, TOP);
+            this.s.textAlign(this.s.RIGHT, this.s.TOP);
 
         }
         this.s.textSize(this.size);
@@ -145,17 +140,10 @@ class TextWriteIn extends Text {
 
 
 /*** 2018-12-23
- * KatexBase
+ * Katex
  * Base class for all math text objects. These are displayed directly as texts on the browser,
  * so I cannot do any animations on them except moving the position, changing the opacity, etc.
- *
  * Requires the p5.dom.js and katex.js libraries.
- * This structure is pretty ugly and dumb, as each new Katex text object needs a new class,
- * but as of now this is the only way I can get around the weirdness of using katex.js
- *
- * To avoid naming conflicts, classes that require Katex displays will have a new class of
- * Katex object exclusively for them (KatexAxis1, 2),
- * but if used, then these classes will have to be singletons.
  *
  * The color of the text defaults to white. To change color, use \\textcolor{}{...} inside args.text
  *
@@ -167,14 +155,14 @@ class TextWriteIn extends Text {
  */
 
 // sample instantiation:
-// kat1 = new KatexTxt({
+// kat1 = new Katex({
 //     str: "\\frac {\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} {\\sum_{i=1}^n(x_i-\\bar{x})^2}",
 //     x: 720,
 //     y: 200,
 //     fadeIn: true,
 //     fontsize: 80
 // });
-class KatexTxt extends TextBase {
+class Katex extends TextBase {
     constructor(ctx, args) {
 
         super(ctx, args);
@@ -211,7 +199,7 @@ class KatexTxt extends TextBase {
         this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y); // Based on the canvas position in the DOM
 
 
-        if (this.fadeIn && frameCount > this.start) {
+        if (this.fadeIn && this.k.frameCount > this.start) {
 
             this.k.style('opacity', this.timer.advance());
         }
