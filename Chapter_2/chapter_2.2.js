@@ -7,8 +7,8 @@ class Grid_Three_Lines extends Grid {
     constructor(ctx, args) {
         super(ctx, args);
 
-        this.xs = [1, 2, 3];
-        this.ys = [1, 2, 2];
+        this.xs = [matrix[3], matrix[4], matrix[5]];
+        this.ys = target;
         this.numPts = this.xs.length;
         this.lines = [];
         this.time = args.time;
@@ -62,7 +62,6 @@ class Grid_Three_Lines extends Grid {
 
         let beta_hat = (sumXY - this.numPts * avgX * avgY) / (sumXsq - this.numPts * avgX * avgX);
         let beta_0_hat = avgY - beta_hat * avgX;
-
         let x = beta_0_hat * this.stepX + this.centerX;
         let y = this.centerY - beta_hat * this.stepY;
 
@@ -111,8 +110,8 @@ const Chap2Part2 = function (s) {
             offsetX: -45,
             labelY: "\\beta",
             offsetY: -38,
-            stepX: 100,
-            stepY: 100,
+            stepX: 50,
+            stepY: 50,
             start: getT(time.grid),
             time: time
         });
@@ -128,6 +127,8 @@ const Chap2Part2 = function (s) {
         s.background(0);
         grid.show();
         brain.show();
+
+        if (s.frameCount === 1) console.log(grid);
     }
 };
 

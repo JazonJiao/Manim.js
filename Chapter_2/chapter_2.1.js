@@ -67,16 +67,16 @@ class Plane_LinComb extends Plane3D {
         this.text1 = new Text(this.s, {
             str: "",
             font: args.font,
-            x: this.textX + 79,
-            y: this.textY + 34,
+            x: this.textX + 87,
+            y: this.textY + 42,
             size: this.textsize + 7
         });
 
         this.text2 = new Text(this.s, {
             str: "",
             font: args.font,
-            x: this.textX + 282,
-            y: this.textY + 34,
+            x: this.textX + 291,
+            y: this.textY + 42,
             size: this.textsize + 7
         });
     }
@@ -87,8 +87,10 @@ class Plane_LinComb extends Plane3D {
         this.arrow2.show(g);
         this.arrow3.show(g);
 
-        let b0_coeff = this.s.map(this.s.mouseX, 0, this.s.width, this.lb * this.step, this.ub * this.step);
-        let b_coeff = this.s.map(this.s.mouseY, 0, this.s.height, this.ub * this.step, this.lb * this.step);
+        let b0_coeff = this.s.map(
+            this.s.mouseX, 0, this.s.width, this.lb * this.step, this.ub * this.step);
+        let b_coeff = this.s.map(
+            this.s.mouseY, 0, this.s.height, this.ub * this.step, this.lb * this.step);
 
         let x = b0_coeff * matrix[0] + b_coeff * matrix[3];
         let y = b0_coeff * matrix[1] + b_coeff * matrix[4];

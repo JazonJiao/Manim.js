@@ -106,7 +106,7 @@ class Axes {
             this.offsetY = args.offsetY || -44;  // default offset value based on displaying y
             this.label2 = new Katex(this.s, {
                 text: args.labelY,
-                x: this.centerX + 21, y: this.top + this.offsetY,
+                x: this.centerX + 14, y: this.top + this.offsetY,
                 fadeIn: true, start: this.start,
             })
         }
@@ -450,10 +450,10 @@ class Emphasis extends Rect {
 class Line {
     constructor(ctx, args) {
         this.s = ctx;
-        this.x1 = args.x1;
-        this.y1 = args.y1;
-        this.x2 = args.x2;
-        this.y2 = args.y2;
+        this.x1 = args.x1 || 0;
+        this.y1 = args.y1 || 0;
+        this.x2 = args.x2 || 0;
+        this.y2 = args.y2 || 0;
         this.duration = args.duration || frames(1);
         //this.mode = args.mode || 2;
 
@@ -503,6 +503,12 @@ class Line {
 class LineCenter extends Line {
     constructor(ctx, args) {
         super(ctx, args);
+        this.xm = this.x1 + (this.x2 - this.x1) / 2;
+        this.ym = this.y1 + (this.y2 - this.y1) / 2;
+    }
+
+    reset(args) {
+        super.reset(args);
         this.xm = this.x1 + (this.x2 - this.x1) / 2;
         this.ym = this.y1 + (this.y2 - this.y1) / 2;
     }
@@ -802,26 +808,71 @@ class Bracket {
         this.duration = args.duration || frames(1);
         this.strokeweight = args.strokeweight || 4;
 
-        let angle = Math.atan2(args.y2 - args.y1, args.x2 - args.x1);
-
         this.lines = [];
         this.lines[0] = new LineCenter(this.s, {
-            x1: args.x1, y1: args.y1, x2: args.x2, y2: args.y2,
             start: this.start, duration: this.duration, strokeweight: this.strokeweight
         });
         this.lines[1] = new Line(this.s, {
-            x1: args.x1 + this.tipLen * Math.sin(angle), x2: args.x1,
-            y1: args.y1 - this.tipLen * Math.cos(angle), y2: args.y1,
             start: this.start, duration: this.duration, strokeweight: this.strokeweight
         });
         this.lines[2] = new Line(this.s, {
-            x1: args.x2 + this.tipLen * Math.sin(angle), x2: args.x2,
-            y1: args.y2 - this.tipLen * Math.cos(angle), y2: args.y2,
             start: this.start, duration: this.duration, strokeweight: this.strokeweight
+        });
+        this.reset(args);
+    }
+
+    // ----args list----
+    // x1, x2, y1, y2
+    reset(args) {
+        this.x1 = args.x1;
+        this.x2 = args.x2;
+        this.y1 = args.y1;
+        this.y2 = args.y2;
+        let angle = Math.atan2(args.y2 - args.y1, args.x2 - args.x1);
+        let sin = Math.sin(angle), cos = Math.cos(angle);
+
+        this.lines[0].reset({
+            x1: args.x1, x2: args.x2, y1: args.y1, y2: args.y2
+        });
+        this.lines[1].reset({
+            x1: args.x1 + this.tipLen * sin, x2: args.x1,
+            y1: args.y1 - this.tipLen * cos, y2: args.y1,
+        });
+        this.lines[2].reset({
+            x1: args.x2 + this.tipLen * sin, x2: args.x2,
+            y1: args.y2 - this.tipLen * cos, y2: args.y2,
         });
     }
 
+    // ----args list----
+    // x1, x2, y1, y2, duration
+    // in draw(), use: if (s.frameCount === getT(time.xxx)) s.variable.move();
+    move(args) {
+        this.x1o = this.x1;
+        this.x2o = this.x2;
+        this.y1o = this.y1;
+        this.y2o = this.y2;
+        this.x1d = args.x1 || this.x1;
+        this.x2d = args.x2 || this.x2;
+        this.y1d = args.y1 || this.y1;
+        this.y2d = args.y2 || this.y2;
+        this.moved = true;
+        let t = args.duration || 2;
+
+        this.move_timer = new Timer2(frames(t));
+    }
+
+    moving() {
+        let t = this.move_timer.advance();
+        this.reset({
+            x1: this.x1o + t * (this.x1d - this.x1o), x2: this.x2o + t * (this.x2d - this.x2o),
+            y1: this.y1o + t * (this.y1d - this.y1o), y2: this.y2o + t * (this.y2d - this.y2o),
+        })
+    }
+
     show() {
+        if (this.moved)
+            this.moving();
         for (let l of this.lines) l.show();
     }
 }

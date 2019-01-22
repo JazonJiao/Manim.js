@@ -8,9 +8,9 @@ class TextBase {
         this.y = args.y;
     }
 
-    reset(x, y) {
-        this.x = x || this.x;
-        this.y = y || this.y;
+    reset(args) {
+        this.x = args.x || this.x;
+        this.y = args.y || this.y;
     }
 
     // enable move animations
@@ -22,17 +22,14 @@ class TextBase {
         this.xd = x || this.x;    // destination x
         this.yd = y || this.y;
         this.moved = true;
-        let t = frames(duration) || frames(2);
+        let t = duration || 2;
 
-        this.move_timer = new Timer2(t);
+        this.move_timer = new Timer2(frames(t));
     }
 
     moving() {
         let t = this.move_timer.advance();
-        this.reset(
-            this.xo + t * (this.xd - this.xo),
-            this.yo + t * (this.yd - this.yo)
-        );
+        this.reset({ x: this.xo + t * (this.xd - this.xo), y: this.yo + t * (this.yd - this.yo) });
     }
 }
 
@@ -45,15 +42,13 @@ class TextBase {
  * For mode 1, the x and y define the center for the text.
  * For mode 2, the x and y define the upper-right corner for the text.
  * For the base class, no init animation is displayed.
- * If want init animation, use a derived class, TextFadeIn, or TextWriteIn
+ * If want init animation, use a derived class, TextFadeIn, or TextWriteIn // todo: fade out anim
  *
  * ---- args list parameters ----
  * @mandatory (string) str; (number) x, y; (p5.Font) font
  * @optional (number) mode, size, start [if want to show init animation];
- *           (color) color [should be an array]
+ *           (array) color [should be an array]
  */
-
-
 class Text extends TextBase {
     constructor(ctx, args) {
         super(ctx, args);
@@ -66,6 +61,11 @@ class Text extends TextBase {
         this.size = args.size || 37;
     }
 
+    reset(args) {
+        this.x = args.x || this.x;
+        this.y = args.y || this.y;
+        this.str = args.str || this.str;
+    }
 
     showSetup() {
         if (this.font) {
@@ -83,7 +83,6 @@ class Text extends TextBase {
 
         }
         this.s.textSize(this.size);
-
 
         this.s.noStroke();
         if (this.moved) {
@@ -198,7 +197,7 @@ class Katex extends TextBase {
 
         // Based on the canvas position in the DOM
         // Note that this absolute value has an offset of 9. Otherwise previous code would break
-        this.k.position(this.x + this.canvasPos.x - 9, this.y + this.canvasPos.y - 9);
+        this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y);
 
         if (this.fadeIn && this.s.frameCount > this.start) {
             this.k.style('opacity', this.timer.advance());

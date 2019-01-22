@@ -855,4 +855,4 @@ const Chap1Part1 = function (s) {
     };
 };
 
-new p5(Chap1Part1);
+let p = new p5(Chap1Part1);
