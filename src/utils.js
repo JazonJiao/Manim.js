@@ -95,7 +95,7 @@ class Axes {
         this.start = args.start || 0;
 
         if (args.labelX) {
-            this.offsetX = args.offsetX || -17;  // default offset value based on displaying x
+            this.offsetX = args.offsetX || -27;  // default offset value based on displaying x
             this.label1 = new Katex(this.s, {
                 text: args.labelX,
                 x: this.right + this.offsetX, y: this.centerY - 95,
@@ -103,7 +103,7 @@ class Axes {
             });
         }
         if (args.labelY) {
-            this.offsetY = args.offsetY || -44;  // default offset value based on displaying y
+            this.offsetY = args.offsetY || -47;  // default offset value based on displaying y
             this.label2 = new Katex(this.s, {
                 text: args.labelY,
                 x: this.centerX + 14, y: this.top + this.offsetY,
@@ -248,7 +248,7 @@ class Plot extends Axes {
             this.points[i] = new PlotPoint(this.s, {
                 x: this.ptXs[i],
                 y: this.ptYs[i],
-                radius: 10,
+                radius: 17,
                 // display all points in 1 second
                 start: this.startPt + i * frames(1) / this.numPts
             })

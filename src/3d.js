@@ -282,10 +282,13 @@ class Arrow3D {
  */
 class Plane3D {
     constructor(ctx, args) {
+        this.s = ctx;
+
         // an array in the form [a,b,c, d,e,f], representing 2 column vectors
         // coordinates should be in p5'o coordinate system
-        this.M = stdToP5(args.mat);
-        this.s = ctx;
+        if (args.mat) {
+            this.M = stdToP5(args.mat);
+        }
 
         this.a = args.a;
         this.b = args.b;

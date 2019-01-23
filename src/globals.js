@@ -13,8 +13,8 @@ let cvh = 675;
 let scn = 2;  // scene number
 
 // used for chapter 2, 3
-let matrix = [1, 1, 1, -3, 1, 2];
-let target = [-2, -1, 3];
+let matrix = [1, 1, 1, -1, 1, 2];
+let target = [-2, 0, 3];
 
 
 /*** Refactored 3D scenes on 2019-01-17

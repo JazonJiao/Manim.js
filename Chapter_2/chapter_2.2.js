@@ -104,7 +104,7 @@ const Chap2Part2 = function (s) {
 
     s.setup = function () {
         s.frameRate(fr);
-        s.createCanvas(cvw, cvh);
+        s.createCanvas(600, cvh);
         grid = new Grid_Three_Lines(s, {
             labelX: "\\beta_0",
             offsetX: -45,
@@ -116,8 +116,8 @@ const Chap2Part2 = function (s) {
             time: time
         });
         brain = new ThoughtBrain(s, {
-            x: 75, y: 517,
-            size: 277,
+            x: 27, y: 537,
+            size: 257,
             font: comic,
             str: "\"closest solution\""
         })

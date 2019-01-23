@@ -170,8 +170,6 @@ function Chap2Part4(s) {
         if (s.frameCount === getT(time.move2)) s.eqs.move2();
 
         s.eqs.show();
-
-        //if (s.frameCount === 100) console.log(eqs);  // fixme: is this the only way to debug?
     }
 }
 

@@ -32,6 +32,7 @@ class Plane_LinComb extends Plane3D {
             label: args.y_o,
             fcn: ((g) => {
                 g.rotateZ(-this.s.PI / 2);
+                g.rotateX(this.s.PI);
             })
         });
 
@@ -50,8 +51,8 @@ class Plane_LinComb extends Plane3D {
         });
 
 
-        this.lb = -1;  // lower bound for a, b
-        this.ub = 1;   // upper bound for a, b
+        this.lb = -2;  // lower bound for a, b
+        this.ub = 2;   // upper bound for a, b
         this.textX = 700;
         this.textY = 200;
         this.textsize = 40;

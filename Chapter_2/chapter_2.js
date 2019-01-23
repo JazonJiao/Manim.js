@@ -27,7 +27,7 @@ class MR_Plane extends Axes3D {
         //console.log(ax1, ax2, ay, ssx1, ssx2, spx1y, spx2y, spx1x2, b1, b2, b0, denom);
 
         this.plane = new Plane3D(this.s, {
-            mat: [1, 1, 1, b1, b2, b0 * this.step],
+            a: b1, b: b2, c: b0 * this.step,
             color: this.s.color(27, 157, 237, 167)
         })
     }

@@ -6,6 +6,7 @@ function Chap2Part3(s) {
     class LS_Plot extends Plot {
         constructor(ctx, args) {
             super(ctx, args);
+
             this.sqs = [];
             this.b_new = 0;
             this.b0_new = 0;
@@ -54,7 +55,7 @@ function Chap2Part3(s) {
             this.lb = -2;
             this.ub = 2;
             let b0_coeff = this.s.map(
-                this.s.mouseX, 0, this.s.width, this.lb, this.ub);
+                this.s.mouseX, 0, this.s.width, this.lb, this.ub);  // fixme: width is now 600
             let b_coeff = this.s.map(
                 this.s.mouseY, 0, this.s.height, this.ub, this.lb);
             this.reset({
@@ -70,10 +71,15 @@ function Chap2Part3(s) {
 
     s.setup = function() {
         s.frameRate(fr);
-        s.createCanvas(cvw, cvh);
+        s.createCanvas(600, cvh);
         s.plot = new LS_Plot(s, {
             xs: [matrix[3], matrix[4], matrix[5]],
             ys: target,
+            left: 0,
+            centerX: 300,
+            right: 597,
+            labelX: "x",
+            labelY: "y",
             stepX: 100,
             stepY: 100
         });
