@@ -458,7 +458,7 @@ class Line {
         //this.mode = args.mode || 2;
 
         // starting frame for initialization animation
-        this.start = args.start || frames(1);
+        this.start = args.start || 1;
         this.strokeweight = args.strokeweight || 3;
         this.color = args.color || this.s.color(255);
 
@@ -699,7 +699,7 @@ class Table {
 
         this.duration = args.duration || frames(1);
         this.timer = new Timer0(this.duration);
-        this.textX = [new TextFadeIn(this.s, {
+        this.textX = [new TextFade(this.s, {
             duration: frames(0.5),
             size: this.sizeY,
             str: this.label1,
@@ -708,7 +708,7 @@ class Table {
             y: this.y + this.sizeY * 0.6,
             mode: 1,
         })];
-        this.textY = [new TextFadeIn(this.s, {
+        this.textY = [new TextFade(this.s, {
             duration: frames(0.5),
             size: this.sizeY,
             str: this.label2,
@@ -718,7 +718,7 @@ class Table {
             mode: 1,
         })];
         for (let i = 1; i < this.numPts + 1; i++) {
-            this.textX[i] = new TextFadeIn(this.s, {
+            this.textX[i] = new TextFade(this.s, {
                 duration: frames(0.5),
                 size: this.sizeY,
                 str: "" + this.ys[i - 1],
@@ -727,7 +727,7 @@ class Table {
                 y: this.y + this.sizeY * 0.6,
                 mode: 1
             });
-            this.textY[i] = new TextFadeIn(this.s, {
+            this.textY[i] = new TextFade(this.s, {
                 duration: frames(0.5),
                 size: this.sizeY,
                 str: "" + this.xs[i - 1],
@@ -845,7 +845,7 @@ class Bracket {
     }
 
     // ----args list----
-    // x1, x2, y1, y2, duration
+    // x1, x2, y1, y2, duration (in frames)
     // in draw(), use: if (s.frameCount === getT(time.xxx)) s.variable.move();
     move(args) {
         this.x1o = this.x1;
@@ -857,9 +857,9 @@ class Bracket {
         this.y1d = args.y1 || this.y1;
         this.y2d = args.y2 || this.y2;
         this.moved = true;
-        let t = args.duration || 2;
+        let t = args.duration || frames(2);
 
-        this.move_timer = new Timer2(frames(t));
+        this.move_timer = new Timer2(t);
     }
 
     moving() {

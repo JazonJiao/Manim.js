@@ -333,7 +333,7 @@ const Chap1Part1 = function (s) {
                 });
 
                 this.plusMinus = [];
-                this.plusMinus[0] = new TextFadeIn(s, {
+                this.plusMinus[0] = new TextFade(s, {
                     str: "+",
                     mode: 1, font: comic,
                     x: this.coordX + (this.right - this.coordX) / 2,
@@ -341,7 +341,7 @@ const Chap1Part1 = function (s) {
                     size: 147, color: [247, 77, 97],
                     start: getT(time.pluses)
                 });
-                this.plusMinus[1] = new TextFadeIn(s, {
+                this.plusMinus[1] = new TextFade(s, {
                     str: "-",
                     mode: 1, font: comic,
                     x: this.coordX / 2,
@@ -349,7 +349,7 @@ const Chap1Part1 = function (s) {
                     size: 147, color: [27, 147, 247],
                     start: getT(time.minuses)
                 });
-                this.plusMinus[2] = new TextFadeIn(s, {
+                this.plusMinus[2] = new TextFade(s, {
                     str: "+",
                     mode: 1, font: comic,
                     x: this.coordX / 2,
@@ -357,7 +357,7 @@ const Chap1Part1 = function (s) {
                     size: 147, color: [247, 77, 97],
                     start: getT(time.pluses)
                 });
-                this.plusMinus[3] = new TextFadeIn(s, {
+                this.plusMinus[3] = new TextFade(s, {
                     str: "-",
                     mode: 1, font: comic,
                     x: this.coordX + (this.right - this.coordX) / 2,
@@ -559,7 +559,7 @@ const Chap1Part1 = function (s) {
             color: s.color(247, 77, 247)
         });
 
-        txts[2] = new TextFadeIn(s, {
+        txts[2] = new TextFade(s, {
             str: "\"Simple\"\nLinear Regression",
             mode: 1,
             x: 950, y: 500,
@@ -777,13 +777,13 @@ const Chap1Part1 = function (s) {
                 color: s.color(255, 255, 17),
                 start: getT(time.division_line2)
             });
-            txts[7] = new TextFadeIn(s, {
+            txts[7] = new TextFade(s, {
                 str: "n - 1",
                 x: 897, y: 174,
                 font: comic, color: [255, 255, 17],
                 start: getT(time.n_1)
             });
-            txts[8] = new TextFadeIn(s, {
+            txts[8] = new TextFade(s, {
                 str: "n - 1",
                 x: 897, y: 534,
                 font: comic, color: [255, 255, 17],

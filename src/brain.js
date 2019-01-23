@@ -129,7 +129,7 @@ class Bubble {
 
         this.strokeweight = args.strokeweight || 2;
 
-        this.text = new TextFadeIn(this.s, {   // a center-mode text object
+        this.text = new TextFade(this.s, {   // a center-mode text object
             mode: 1,
             size: args.size,
             x: this.x + this.w / 2,

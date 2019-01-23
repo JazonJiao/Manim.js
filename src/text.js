@@ -42,12 +42,13 @@ class TextBase {
  * For mode 1, the x and y define the center for the text.
  * For mode 2, the x and y define the upper-right corner for the text.
  * For the base class, no init animation is displayed.
- * If want init animation, use a derived class, TextFadeIn, or TextWriteIn // todo: fade out anim
+ *
+ * If want init animation, use a derived class, TextFade, or TextWriteIn.
+ * If want sudden appearance/disappearance, use this class and pass in start and/or end.
  *
  * ---- args list parameters ----
  * @mandatory (string) str; (number) x, y; (p5.Font) font
- * @optional (number) mode, size, start [if want to show init animation];
- *           (array) color [should be an array]
+ * @optional (number) mode, size, start, end; (array) color [should be an array]
  */
 class Text extends TextBase {
     constructor(ctx, args) {
@@ -59,6 +60,9 @@ class Text extends TextBase {
         this.color = args.color || [255, 255, 255];
 
         this.size = args.size || 37;
+
+        this.start = args.start || 1;
+        this.end = args.end || frames(300);
     }
 
     reset(args) {
@@ -91,28 +95,49 @@ class Text extends TextBase {
     }
 
     show() {
-        this.showSetup();
-        this.s.fill(this.color);
-        //fill(this.color[0], this.color[1], this.color[2]);
-        this.s.text(this.str, this.x, this.y);
+        if (this.s.frameCount >= this.start && this.s.frameCount < this.end) {
+            this.showSetup();
+            this.s.fill(this.color);
+            //fill(this.color[0], this.color[1], this.color[2]);
+
+            this.s.text(this.str, this.x, this.y);
+        }
     }
 }
 
 // needs to pass in extra parameters in frames, start and/or duration
-class TextFadeIn extends Text {
+/**
+ * TextFade
+ *
+ * Capable of displaying Fade-In and/or Fade-Out animations
+ *
+ * ---- args list parameters ----
+ * @mandatory (string) str; (number) x, y; (p5.Font) font
+ * @optional (number) mode, size, start [in frames, not seconds], duration [in frames];
+ *           (array) color [should be an array]
+ */
+class TextFade extends Text {
     constructor(ctx, args) {
         super(ctx, args);
         this.start = args.start || frames(1);
         this.duration = args.duration || frames(0.7);
         this.timer = new Timer0(this.duration);
+        this.timer2 = new Timer0(this.duration);
     }
 
     show() {
-        this.showSetup();
-        if (this.s.frameCount > this.start) {
-            this.s.fill(this.color[0], this.color[1], this.color[2], 255 * this.timer.advance());
+        if (this.s.frameCount >= this.start) {
+            this.showSetup();
+            if (this.s.frameCount >= this.end) {
+                this.s.fill(
+                    this.color[0], this.color[1], this.color[2], 255 * (1 - this.timer2.advance()));
+            } else {
+                this.s.fill(
+                    this.color[0], this.color[1], this.color[2], 255 * this.timer.advance());
+            }
             this.s.text(this.str, this.x, this.y);
         }
+
     }
 
 }
@@ -121,19 +146,20 @@ class TextFadeIn extends Text {
 class TextWriteIn extends Text {
     constructor(ctx, args) {
         super(ctx, args);
-        this.start = args.start || frames(1);
         this.frCount = 0;
         this.len = this.str.length;
         this.txt = "";
     }
     show() {
-        this.showSetup();
-        this.s.fill(this.color);
-        if (this.s.frameCount > this.start && this.frCount < this.len) {
-            this.txt += this.str[this.frCount];
-            this.frCount++;
+        if (this.s.frameCount >= this.start) {
+            this.showSetup();
+            this.s.fill(this.color);
+            if (this.frCount < this.len) {
+                this.txt += this.str[this.frCount];
+                this.frCount++;
+            }
+            this.s.text(this.txt, this.x, this.y);
         }
-        this.s.text(this.txt, this.x, this.y);
     }
 }
 

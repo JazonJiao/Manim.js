@@ -10,7 +10,7 @@ let cvw = 1200;
 // canvas height. Ensure 16:9 ratio
 let cvh = 675;
 
-let scn = 11;  // scene number
+let scn = 2;  // scene number
 
 // used for chapter 2, 3
 let matrix = [1, 1, 1, -3, 1, 2];
