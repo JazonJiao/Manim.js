@@ -240,10 +240,11 @@ class Arrow3D {
     // from [in std coords], to [in std coords], duration [in frames]
     // in draw(), use: if (s.frameCount === getT(time.xxx)) s.variable.move();
     move(args) {
-        this.from_o = this.from;
+        // this is to fix the issue of not being able to move multiple times
+        this.from_o = this.from_d || this.from;
         this.from_d = args.from ? stdToP5(args.from) : this.from;
 
-        this.to_o = this.to;
+        this.to_o = this.to_d || this.to;
         this.to_d = args.to ? stdToP5(args.to) : this.to;
         this.moved = true;
         let t = args.duration || frames(2);

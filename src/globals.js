@@ -42,6 +42,12 @@ function stdToP5(a, b, c) {
     }
 }
 
+function p5ToStd(a) {
+    if (a.length === 3) {
+        return [a[2], a[0], -a[1]];   // x = z, y = x, z = -y
+    }
+}
+
 
 /**
  * All animations are controlled by the number of frames passed.
