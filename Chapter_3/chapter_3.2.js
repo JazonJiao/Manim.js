@@ -6,7 +6,7 @@ class Grid_Projection extends Grid3D {
     constructor(ctx, args) {
         super(ctx, args);
         // an array in the form [a,b,c, d,e,f], representing 2 column vectors
-        // coordinates should be in p5'o coordinate system
+        // coordinates should be in p5's coordinate system
         this.U = args.mat;
 
         this.start = args.start || frames(2);
@@ -94,12 +94,12 @@ class Plane_Projection extends Plane3D {
         // x1
         this.arrow1 = new Arrow3D(this.s, {
             to: [matrix[0] * this.step, matrix[1] * this.step, matrix[2] * this.step],
-            color: this.s.color([37, 147, 37])
+            color: this.s.color([237, 47, 47])
         });
         // x2
         this.arrow2 = new Arrow3D(this.s, {
             to: [matrix[3] * this.step, matrix[4] * this.step, matrix[5] * this.step],
-            color: this.s.color([237, 47, 47])
+            color: this.s.color([37, 147, 37])
         });
 
         // y

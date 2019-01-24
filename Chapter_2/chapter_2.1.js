@@ -189,4 +189,4 @@ const Chap2Part1 = function (s) {
     };
 };
 
-new p5(Chap2Part1);
+let p21 = new p5(Chap2Part1);

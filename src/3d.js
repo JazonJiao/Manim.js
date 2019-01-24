@@ -31,6 +31,7 @@ class Axes3D {
         // g.background(0, 0, 0, 0);
 
         g.background(0);
+        g.noStroke();
 
         // @see Arrow3D class
         //g.fill(177);
@@ -206,8 +207,10 @@ class Arrow3D {
         this.len -= this.tipLen / 2;
     }
 
+    // ----args list----
+    // from, to
     // as in the ctor, the parameters should be in std coordinates.
-    // It'o this method'o responsibility to convert to p5'o coordinates.
+    // It's this method's responsibility to convert to p5's coordinates.
     reset(args) {
         let r = false;
         if (args.from) {
@@ -223,19 +226,52 @@ class Arrow3D {
         }
     }
 
-    // resetP5(args) {
-    //     this.from = args.from || this.from;
-    //     this.to = args.to || this.to;
-    //     this.calcParam();
-    // }
+    resetP5(args) {    // the args are in P5 coordinates
+        if (args.from) {
+            this.from = args.from;
+        }
+        if (args.to) {
+            this.to = args.to;
+        }
+        this.calcParam();
+    }
+
+    // ----args list----
+    // from [in std coords], to [in std coords], duration [in frames]
+    // in draw(), use: if (s.frameCount === getT(time.xxx)) s.variable.move();
+    move(args) {
+        this.from_o = this.from;
+        this.from_d = args.from ? stdToP5(args.from) : this.from;
+
+        this.to_o = this.to;
+        this.to_d = args.to ? stdToP5(args.to) : this.to;
+        this.moved = true;
+        let t = args.duration || frames(2);
+
+        this.timer = new Timer2(t);
+    }
+
+    moving() {
+        let t = this.timer.advance();
+        this.resetP5({
+            from: [
+                this.from_o[0] + t * (this.from_d[0] - this.from_o[0]),
+                this.from_o[1] + t * (this.from_d[1] - this.from_o[1]),
+                this.from_o[2] + t * (this.from_d[2] - this.from_o[2]),],
+            to: [
+                this.to_o[0] + t * (this.to_d[0] - this.to_o[0]),
+                this.to_o[1] + t * (this.to_d[1] - this.to_o[1]),
+                this.to_o[2] + t * (this.to_d[2] - this.to_o[2]),]
+        });
+    }
 
     show(g) {
-        g.push();
-        //g.fill(this.color);
-        //g.noStroke();
+        if (this.moved) {
+            this.moving();
+        }
 
-        // fixme: why do I have to call directionalLight() again?
-        // fixme: And why doesn't the color values matter?
+        g.push();
+
         // fixme: why would this line slow down the rendering significantly? (190116)
         //g.directionalLight(1, 1, 1, 0, 1, 0);
 
