@@ -2,6 +2,7 @@
 
 let lb = -2;
 let ub = 2;
+let y_new = [-1, 1, 2];   // 3 points fit on the straight line
 
 /**
  * Capable of displaying the squared error of each point; if want to show it, pass in showSq: true
@@ -27,6 +28,18 @@ class LS_Plot extends Plot {
             })
         }
     }
+
+    // // used for paragraph 17
+    // movePts() {
+    //     this.yo = [-2, 0, 3];
+    //     this.yd = y_new;
+    //     this.moved = true;
+    //     this.timer = new Timer2(frames(1.4));
+    // }
+    //
+    // moving() {
+    //
+    // }
 
     reset(args) {
         this.b_new = args.b_new;
@@ -73,6 +86,8 @@ class LS_Plot extends Plot {
     }
 }
 
+
+
 class Grid_b0b extends Grid {
     constructor(ctx, args) {
         super(ctx, args);
@@ -89,8 +104,8 @@ class Grid_b0b extends Grid {
 
         this.pt = new PlotPoint(this.s, {
             x: 0, y: 0,
-            start: getT(this.time.pt),  // fixme
-            radius: 24,
+            start: getT(this.time.pt),
+            radius: 12,
             color: [247, 177, 47]
         });
 
@@ -98,7 +113,8 @@ class Grid_b0b extends Grid {
             x1: this.centerX, x2: 0,
             y1: this.centerY, y2: 0,
             start: getT(this.time.vec),
-            fadeIn: true, colorArr: [255, 255, 0]
+            strokeweight: 4,
+            fadeIn: true, colorArr: [248, 147, 227]
         });
     }
 
@@ -327,12 +343,14 @@ class Sys_3Eqs {
     }
 }
 
-/*** 2019-01-12
+
+
+/*** 2019-01-12, 01-27
  * We are displaying three lines with general equations ax + by = c (1 * beta_0 + x * beta = y).
  * Also displays the least squares solution (β_0, β) as a point on β_0-β space.
  * Uses the global variables, xs and ys, directly.
  */
-class Grid_Three_Lines extends Grid {
+class Grid_3Lines extends Grid {
     constructor(ctx, args) {
         super(ctx, args);
 
@@ -340,7 +358,7 @@ class Grid_Three_Lines extends Grid {
         this.ys = target;
         this.numPts = this.xs.length;
         this.lines = [];
-        this.time = args.time;    // 1-26: ??????????????
+        this.time = args.time;
         for (let i = 0; i < this.numPts; i++) {
             let arr = this.calcLineParams(1, this.xs[i], this.ys[i]);
             this.lines[i] = new Line(this.s, {
@@ -351,9 +369,8 @@ class Grid_Three_Lines extends Grid {
                     (i === 1 ? this.s.color(37, 147, 37) : this.s.color(247, 217, 47))
             });
         }
-
-        this.calcClosestPoint();
     }
+
 
     // Takes in the ax + by = c representation of the line.
     // calculate its representation in y = mx + d, and
@@ -370,6 +387,48 @@ class Grid_Three_Lines extends Grid {
 
         return [this.left, y1, this.right, y2];
     }
+}
+
+class Grid_3Lines_Transform extends Grid_3Lines {
+    constructor(ctx, args) {
+        super(ctx, args);
+    }
+
+    move() {
+        this.yo = this.ys;
+        this.yd = y_new;
+        this.timer2 = new Timer2(frames(1.4));
+        this.moved = true;
+    }
+
+    moving() {
+        let t = this.timer2.advance();
+        for (let i = 0; i < this.numPts; i++) {
+            this.ys[i] = this.yo[i] + t * (this.yd[i] - this.yo[i]);
+            let arr = this.calcLineParams(1, this.xs[i], this.ys[i]);
+            this.lines[i].reset({
+                x1: arr[0], y1: arr[1],
+                x2: arr[2], y2: arr[3],
+            });
+        }
+    }
+
+    show() {
+        if (this.moved)
+            this.moving();
+
+        this.showGrid();
+        for (let l of this.lines) l.show();
+    }
+}
+
+
+class Grid_3Lines_With_Point extends Grid_3Lines {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.calcClosestPoint();
+    }
+
 
     // I tried to do this by refactoring the Plot class and make its calcParams() method
     // a free method, but then I broke a lot of previous code, so I have to write a lot of
@@ -414,5 +473,49 @@ class Grid_Three_Lines extends Grid {
         for (let l of this.lines) l.show();
         this.closestPoint.show();
         this.kat.show();
+    }
+}
+
+// used for scene 17, basically copied from chapter 1
+class SLR_Plot_2 extends Plot { // the plot used to illustrate simple linear regression
+    constructor(ctx, args) {
+        super(ctx, args);
+    }
+
+    // this method should be only called once, i.e. at one specific frame
+    reset() {
+        this.yo = this.Ys;
+        this.yd = y_new;
+        this.timer = new Timer2(frames(1.4));
+        this.moved = true;
+    }
+
+    // helper method
+    resetting() {
+        let t = this.timer.advance();
+        for (let i = 0; i < this.numPts; i++) {
+            // this.Xs[i] = this.xo[i] + (this.xd[i] - this.xo[i]) * t;
+            this.Ys[i] = this.yo[i] + (this.yd[i] - this.yo[i]) * t;
+        }
+        this.calcCoords();
+        for (let i = 0; i < this.numPts; i++) {
+            this.points[i].reset(this.ptXs[i], this.ptYs[i]);
+        }
+        this.calcParams();
+        this.LSLine.reset({
+            y1: this.y_intercept + this.beta * (this.centerX - this.left),
+            y2: this.y_intercept - this.beta * (this.right - this.centerX)
+        });
+    }
+
+
+    show() {
+        if (this.moved) {
+            this.resetting();
+        }
+
+        this.showAxes(); // this.showGrid()
+        this.showPoints();
+        this.LSLine.show();
     }
 }

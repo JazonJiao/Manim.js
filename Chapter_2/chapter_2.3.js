@@ -51,7 +51,7 @@ function Chap2Part3(s) {
             xs: [matrix[3], matrix[4], matrix[5]],
             ys: target,
             left: 0,
-            centerX: 300,
+            centerX: 270,
             right: 597,
             labelX: "x",
             labelY: "y",

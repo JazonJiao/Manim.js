@@ -1,5 +1,4 @@
-// para. 15, 18
-
+// scenes 15, 18
 const Chap2Part2 = function (s) {
     let time = {
         eqs: 1,
@@ -24,7 +23,7 @@ const Chap2Part2 = function (s) {
     s.setup = function () {
         s.frameRate(fr);
         s.createCanvas(cvw, cvh);
-        grid = new Grid_Three_Lines(s, {
+        grid = new Grid_3Lines_With_Point(s, {
             left: 570,
             right: 1200,
             centerX: 900,

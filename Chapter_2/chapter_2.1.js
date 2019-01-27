@@ -1,6 +1,5 @@
-// para. 16, 17
-
-const Chap2Part2 = function (s) {
+// scene 16
+const Scene16 = function (s) {
     let time = {
         grid: frames(2),
 
@@ -40,7 +39,7 @@ const Chap2Part2 = function (s) {
             xs: [matrix[3], matrix[4], matrix[5]],
             ys: target,
             left: 0,
-            centerX: 300,
+            centerX: 270,
             right: 564,
             labelX: "x",
             labelY: "y",
@@ -69,4 +68,64 @@ const Chap2Part2 = function (s) {
     }
 };
 
-let p21 = new p5(Chap2Part2);
+
+const Scene17 = function(s) {   // scene 17
+    let time = {
+        axes: 1,
+        points: 1,
+        leastSqLine: 2,
+
+        grid: frames(1),
+        lines: frames(2),
+        move: frames(3),
+    };
+
+    s.setup = function() {
+
+        s.frameRate(fr);
+        s.createCanvas(cvw, cvh);
+
+        s.plot = new SLR_Plot_2(s, {
+            left: 0,
+            centerX: 270,
+            right: 564,
+            stepX: 100,
+            stepY: 100,
+            start: getT(time.axes),
+            startPt: getT(time.points),
+            startLSLine: getT(time.leastSqLine),
+            xs: [-1, 1, 2], ys: [-2, 0, 3]
+        });
+
+        s.grid = new Grid_3Lines_Transform(s, {
+            left: 570,
+            right: 1200,
+            centerX: 900,
+            labelX: "\\beta_0",
+            offsetX: -45,
+            labelY: "\\beta",
+            offsetY: -38,
+            stepX: 100,
+            stepY: 100,
+            start: getT(time.grid),
+            time: time
+        })
+    }
+
+    s.draw = function() {
+        s.background(0);
+
+        s.plot.show();
+        s.grid.show();
+        if (s.frameCount === getT(time.move)) {
+            s.plot.reset();
+            s.grid.move();
+        }
+
+        showFR(s);
+
+    }
+
+};
+
+let p21 = new p5(Scene17);
