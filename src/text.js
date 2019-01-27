@@ -4,8 +4,8 @@ class TextBase {
         this.s = ctx;
         // I originally used the usual syntax of args.x || width / 2,
         // but this would not work if 0 is passed in as x
-        this.x = args.x;
-        this.y = args.y;
+        this.x = args.x || 0;
+        this.y = args.y || 0;
     }
 
     reset(args) {
@@ -173,7 +173,7 @@ class TextWriteIn extends Text {
  * The color of the text defaults to white. To change color, use \\textcolor{}{...} inside args.text
  *
  * ----args list parameters----
- * @mandatory (string) str--the string to display;
+ * @mandatory (string) text--the string to display;
  * @optional (bool) fadeIn, start--if display fade in animation, the frame to start animation;
  *           (number) font_size, x, y, id; (string) color--note it'o passed as a string;
  *           (bool) fadeOut, end--if display fade out animation, the frame to start animation;

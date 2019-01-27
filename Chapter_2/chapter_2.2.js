@@ -25,15 +25,15 @@ const Chap2Part2 = function (s) {
         s.frameRate(fr);
         s.createCanvas(cvw, cvh);
         grid = new Grid_Three_Lines(s, {
-            left: 600,
+            left: 570,
             right: 1200,
             centerX: 900,
             labelX: "\\beta_0",
             offsetX: -45,
             labelY: "\\beta",
             offsetY: -38,
-            stepX: 50,
-            stepY: 50,
+            stepX: 100,
+            stepY: 100,
             start: getT(time.grid),
             time: time
         });

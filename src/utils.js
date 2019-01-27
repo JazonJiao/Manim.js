@@ -581,18 +581,32 @@ class DottedLine extends Line {
 }
 
 
-/** 2018-12-20,21
+/** 2018-12-20,21; 2019-01-26
  * Arrow
+ * There are two different init animations: default, or fade in
+ * If needs fade in animation, need to pass in fadeIn: true, colorArr: [...]
+ *
+ * Since changing the opacity of the object can only be done when color is an array.
+ * At this point t's almost impossible to refactor the parent class so that Line takes in
+ * an array as argument for this.color
  *
  * ----args list parameters----
  * @mandatory (number) x1, x2, y1, y2, start
- * @optional (color) colors; (number) strokeweight, tipLen, tipAngle, frames
+ * @optional (color) colors; (number) strokeweight, tipLen, tipAngle, frames;
+ *           (bool) fadeIn, (array) colorArr
  */
 class Arrow extends Line {
     constructor(ctx, args) {
         super(ctx, args);
-        this.duration = args.duration || frames(6);
-        this.timer = new Timer2(this.duration);
+        this.duration = args.duration || frames(1);
+
+        this.fadeIn = args.fadeIn || false;
+        if (this.fadeIn) {
+            this.colorArr = args.colorArr || [255, 255, 255];
+            this.timer = new Timer0(this.duration);
+        } else {
+            this.timer = new Timer2(this.duration);
+        }
 
         // define tip length/angle for all vectors on this canvas
         this.tipLen = args.tipLen || 15;
@@ -640,28 +654,47 @@ class Arrow extends Line {
         this.y4 = this.y2 + cos_theta * y - sin_theta * x;
     }
 
+    showFade() {
+        let t = this.timer.advance() * 255;
+        this.s.stroke(this.colorArr[0], this.colorArr[1], this.colorArr[2], t);
+        this.s.strokeWeight(this.strokeweight);
+
+        this.s.line(this.x1, this.y1, this.x2, this.y2);
+        this.s.line(this.x2, this.y2, this.x3, this.y3);
+        this.s.line(this.x2, this.y2, this.x4, this.y4);
+    }
+
+    showGrow() {
+
+        // show the main line
+        let dx2 = this.x2 - this.x1;
+        let dy2 = this.y2 - this.y1;
+        this.showSetup();
+
+        // 2019-01-26 BUG FIX:
+        // no wonder why the display of arrows appears 6 times slower...
+        let t = this.timer.advance();
+
+        this.s.line(this.x1, this.y1, this.x1 + t * dx2, this.y1 + t * dy2);
+
+        // show the two line segments at the tip
+        // strokeWeight(this.strokeweight);
+        let dx3 = this.x3 - this.x2;
+        let dy3 = this.y3 - this.y2;
+        this.s.line(this.x2, this.y2, this.x2 + t * dx3, this.y2 + t * dy3);
+
+        let dx4 = this.x4 - this.x2;
+        let dy4 = this.y4 - this.y2;
+        this.s.line(this.x2, this.y2, this.x2 + t * dx4, this.y2 + t * dy4);
+    }
+
     show() {
         if (this.s.frameCount > this.start) {
-
-            // show the main line
-            let dx2 = this.x2 - this.x1;
-            let dy2 = this.y2 - this.y1;
-
-            this.showSetup();
-            this.s.line(this.x1, this.y1,
-                this.x1 + this.timer.advance() * dx2, this.y1 + this.timer.advance() * dy2);
-
-            // show the two line segments at the tip
-            // strokeWeight(this.strokeweight);
-            let dx3 = this.x3 - this.x2;
-            let dy3 = this.y3 - this.y2;
-            this.s.line(this.x2, this.y2,
-                this.x2 + this.timer.advance() * dx3, this.y2 + this.timer.advance() * dy3);
-
-            let dx4 = this.x4 - this.x2;
-            let dy4 = this.y4 - this.y2;
-            this.s.line(this.x2, this.y2,
-                this.x2 + this.timer.advance() * dx4, this.y2 + this.timer.advance() * dy4);
+            if (this.fadeIn) {
+                this.showFade();
+            } else {
+                this.showGrow();
+            }
         }
     }
 }

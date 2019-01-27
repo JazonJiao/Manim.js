@@ -1,3 +1,8 @@
+// these will later be merged into 2.2; notice that variable names are different
+
+let lb = -2;
+let ub = 2;
+
 /**
  * Capable of displaying the squared error of each point; if want to show it, pass in showSq: true
  */
@@ -51,13 +56,10 @@ class LS_Plot extends Plot {
     }
 
     show() {
-        // these will later be merged into 2.2; notice that variable names are different
-        this.lb = -2;
-        this.ub = 2;
         let b0_coeff = this.s.map(
-            this.s.mouseX, 0, 1200, this.lb, this.ub);  // fixme: width is now 600
+            this.s.mouseX, 0, 1200, lb, ub);  // fixme: width is now 600
         let b_coeff = this.s.map(
-            this.s.mouseY, 0, 675, this.ub, this.lb);
+            this.s.mouseY, 0, 675, ub, lb);
         this.reset({
             b0_new: b0_coeff,
             b_new: b_coeff
@@ -70,6 +72,58 @@ class LS_Plot extends Plot {
         }
     }
 }
+
+class Grid_b0b extends Grid {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.start = args.start;
+        this.time = args.time;
+
+        this.kat = new Katex(this.s, {
+            text: "\\begin{bmatrix}" +
+                "   \\beta_0 \\\\" +
+                "   \\beta" +
+                "\\end{bmatrix}",
+            fadeIn: true, start: getT(this.time.kat)
+        });
+
+        this.pt = new PlotPoint(this.s, {
+            x: 0, y: 0,
+            start: getT(this.time.pt),  // fixme
+            radius: 24,
+            color: [247, 177, 47]
+        });
+
+        this.arrow = new Arrow(this.s, {
+            x1: this.centerX, x2: 0,
+            y1: this.centerY, y2: 0,
+            start: getT(this.time.vec),
+            fadeIn: true, colorArr: [255, 255, 0]
+        });
+    }
+
+    show() {
+        this.showGrid();
+
+        let b0_coeff = this.s.map(this.s.mouseX, 0, 1200, lb, ub);
+        let b_coeff = this.s.map(this.s.mouseY, 0, 675, ub, lb);
+        let x = this.centerX + b0_coeff * this.stepX;
+        let y = this.centerY - b_coeff * this.stepY;
+
+        this.pt.reset(x, y);
+        this.kat.reset({ x: x + 7, y: y - 157 });
+        this.arrow.reset({ x2: x, y2: y });
+
+        this.kat.show();
+        this.pt.show();
+        this.arrow.show();
+    }
+}
+
+
+
+
+
 
 /***
  * ---- args list parameters ----
@@ -286,7 +340,7 @@ class Grid_Three_Lines extends Grid {
         this.ys = target;
         this.numPts = this.xs.length;
         this.lines = [];
-        this.time = args.time;
+        this.time = args.time;    // 1-26: ??????????????
         for (let i = 0; i < this.numPts; i++) {
             let arr = this.calcLineParams(1, this.xs[i], this.ys[i]);
             this.lines[i] = new Line(this.s, {
@@ -351,7 +405,7 @@ class Grid_Three_Lines extends Grid {
             x: x - 129,
             y: y - 107,
             fadeIn: true, start: getT(this.time.lines)
-        })
+        });
 
     }
 

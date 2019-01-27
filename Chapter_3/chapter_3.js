@@ -26,7 +26,7 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
             x1: this.centerX, x2: this.centerX + this.step,
             y1: this.centerY, y2: this.centerY,
             color: this.s.color('#57c757'), strokeweight: 7, tipLen: 27,
-            start: time.i_hat
+            start: time.i_hat, //fadeIn: true
         });
 
         // j-hat
@@ -180,7 +180,7 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
 
 }
 
-function Chap3(s) {
+const Chap3 = function(s) {
     let grid;
 
     let kats = [];
@@ -212,4 +212,4 @@ function Chap3(s) {
     };
 }
 
-new p5(Chap3);
+let p31 = new p5(Chap3);
