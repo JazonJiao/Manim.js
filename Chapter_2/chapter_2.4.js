@@ -1,3 +1,5 @@
+
+
 function Chap2Part4(s) {
 
     let time = {

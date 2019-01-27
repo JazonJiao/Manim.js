@@ -73,7 +73,7 @@ class LS_Plot extends Plot {
 
 /***
  * ---- args list parameters ----
- * (number) x, y, start, show1s, mv1, mv2
+ * (number) x, y, start, show1s, mv1, mv2; (p5.Font) font
  */
 class Sys_3Eqs {
     constructor(ctx, args) {
@@ -147,50 +147,83 @@ class Sys_3Eqs {
 
         // x1
         this.brackets[0] = new Bracket(this.s, {
-            x1: this.x - 7, x2: this.x - 7, y1: this.y, y2: this.y + 167, strokeweight: 3,
-            tipLen: 9, duration: frames(2), start: this.mv1
+            x1: this.x - 7, x2: this.x - 7, y1: this.y, y2: this.y + 167,
+            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3
         });
         this.brackets[1] = new Bracket(this.s, {
-            x1: this.x + 44, x2: this.x + 44, y1: this.y + 167, y2: this.y, strokeweight: 3,
-            tipLen: 9, duration: frames(2), start: this.mv1
+            x1: this.x + 44, x2: this.x + 44, y1: this.y + 167, y2: this.y,
+            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3
         });
 
         // x2
         this.brackets[2] = new Bracket(this.s, {
-            x1: this.x + 127, x2: this.x + 127, y1: this.y, y2: this.y + 167, strokeweight: 3,
-            tipLen: 9, duration: frames(2), start: this.mv1
+            x1: this.x + 127, x2: this.x + 127, y1: this.y, y2: this.y + 167,
+            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3,
         });
         this.brackets[3] = new Bracket(this.s, {
-            x1: this.x + 194, x2: this.x + 194, y1: this.y + 167, y2: this.y, strokeweight: 3,
-            tipLen: 9, duration: frames(2), start: this.mv1
+            x1: this.x + 194, x2: this.x + 194, y1: this.y + 167, y2: this.y,
+            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3,
         });
 
         // y
         this.brackets[4] = new Bracket(this.s, {
-            x1: this.x + 271, x2: this.x + 271, y1: this.y, y2: this.y + 167, strokeweight: 3,
-            tipLen: 9, duration: frames(2), start: this.mv1
+            x1: this.x + 271, x2: this.x + 271, y1: this.y, y2: this.y + 167,
+            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3,
         });
         this.brackets[5] = new Bracket(this.s, {
-            x1: this.x + 340, x2: this.x + 340, y1: this.y + 167, y2: this.y, strokeweight: 3,
-            tipLen: 9, duration: frames(2), start: this.mv1
+            x1: this.x + 340, x2: this.x + 340, y1: this.y + 167, y2: this.y,
+            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3,
         });
     }
 
     // move position of equations; unlike move1() and move2(),
     // this is controlled by s.draw(), not this.show().
+    // now it only apply to scenes with no brackets showing
     move(x, y) {
-        this.xo = this.xd || this.x;
+        this.xo = this.x;
         this.xd = x;
-        this.yo = this.yd || this.y;
+        this.yo = this.y;
         this.yd = y;
         this.moved = true;
         this.timer = new Timer2(frames(2));
     }
 
+    // I know, this is awkward...... but I do have to reset everything one by one
     moving() {
         let t = this.timer.advance();
         this.x = this.xo + t * (this.xd - this.xo);
         this.y = this.yo + t * (this.yd - this.yo);
+        for (let i = 0; i < 3; i++) {
+            this.txts[i].reset({
+                x: this.x + 7, y: this.y + i * 57,
+            });
+            this.kats[i].reset({
+                x: this.x + 30, y: this.y + i * 57 - 34,
+            });
+        }
+        for (let i = 3; i < 6; i++) {
+            this.txts[i].reset({
+                x: this.x + 180, y: this.y + (i - 3) * 57,
+            });
+            this.kats[i].reset({
+                x: this.x + 182, y: this.y + (i - 3) * 57 - 34
+            });
+        }
+        for (let i = 0; i < 3; i++) {
+            this.txts[i + 6].reset({
+                x: this.x + 287, y: this.y + i * 57,
+            });
+        }
+        for (let i = 0; i < 3; i++) {
+            this.txts[i + 9].reset({
+                x: this.x + 97, y: this.y + i * 57
+            });
+        }
+        for (let i = 0; i < 3; i++) {
+            this.txts[i + 12].reset({
+                x: this.x + 234, y: this.y + i * 57
+            });
+        }
     }
 
     // equations into column form
@@ -237,5 +270,95 @@ class Sys_3Eqs {
         for (let t of this.txts) t.show();
         for (let k of this.kats) k.show();
         for (let b of this.brackets) b.show();
+    }
+}
+
+/*** 2019-01-12
+ * We are displaying three lines with general equations ax + by = c (1 * beta_0 + x * beta = y).
+ * Also displays the least squares solution (β_0, β) as a point on β_0-β space.
+ * Uses the global variables, xs and ys, directly.
+ */
+class Grid_Three_Lines extends Grid {
+    constructor(ctx, args) {
+        super(ctx, args);
+
+        this.xs = [matrix[3], matrix[4], matrix[5]];
+        this.ys = target;
+        this.numPts = this.xs.length;
+        this.lines = [];
+        this.time = args.time;
+        for (let i = 0; i < this.numPts; i++) {
+            let arr = this.calcLineParams(1, this.xs[i], this.ys[i]);
+            this.lines[i] = new Line(this.s, {
+                x1: arr[0], y1: arr[1],
+                x2: arr[2], y2: arr[3],
+                start: getT(this.time.lines),
+                color: i === 0 ? this.s.color(237, 47, 47) :
+                    (i === 1 ? this.s.color(37, 147, 37) : this.s.color(247, 217, 47))
+            });
+        }
+
+        this.calcClosestPoint();
+    }
+
+    // Takes in the ax + by = c representation of the line.
+    // calculate its representation in y = mx + d, and
+    // Returns an array for the starting point and end point of the line, [x1, y1, x2, y2]
+    // p5's coordinate sthis.ystem is a nightmare for math animations......
+    calcLineParams(a, b, c) {
+        let m = -a / b * (this.stepY / this.stepX);   // slope wrt the canvas, y flipped
+        let d = c / b * this.stepY;    // y-intercept wrt this.centerY
+
+        let x1 = this.left - this.centerX;
+        let y1 = this.centerY - (m * x1 + d);
+        let x2 = this.right - this.centerX;
+        let y2 = this.centerY - (m * x2 + d);
+
+        return [this.left, y1, this.right, y2];
+    }
+
+    // I tried to do this by refactoring the Plot class and make its calcParams() method
+    // a free method, but then I broke a lot of previous code, so I have to write a lot of
+    // redundant code here... I know its bad style but whatever
+    calcClosestPoint() {
+        let avgX = 0, avgY = 0;
+        for (let i = 0; i < this.numPts; i++) {
+            avgX += this.xs[i];
+            avgY += this.ys[i];
+        }
+        avgX /= this.numPts;
+        avgY /= this.numPts;
+
+        let sumXY = 0, sumXsq = 0;
+        for (let i = 0; i < this.numPts; i++) {
+            sumXY += this.xs[i] * this.ys[i];
+            sumXsq += this.xs[i] * this.xs[i];
+        }
+
+        let beta_hat = (sumXY - this.numPts * avgX * avgY) / (sumXsq - this.numPts * avgX * avgX);
+        let beta_0_hat = avgY - beta_hat * avgX;
+        let x = beta_0_hat * this.stepX + this.centerX;
+        let y = this.centerY - beta_hat * this.stepY;
+
+        this.closestPoint = new PlotPoint(this.s, {
+            x: x, y: y,
+            start: getT(this.time.lines),  // fixme
+            radius: 24,
+            color: [247, 177, 47]
+        });
+        this.kat = new Katex(this.s, {
+            text: "(\\hat{\\beta_0}, \\hat{\\beta})",
+            x: x - 129,
+            y: y - 107,
+            fadeIn: true, start: getT(this.time.lines)
+        })
+
+    }
+
+    show() {
+        this.showGrid();
+        for (let l of this.lines) l.show();
+        this.closestPoint.show();
+        this.kat.show();
     }
 }
