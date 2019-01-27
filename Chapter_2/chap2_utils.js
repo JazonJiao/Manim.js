@@ -158,11 +158,13 @@ class Sys_3Eqs {
 
         this.mv1 = args.move1 || 10000;   // time for move1 animation
         this.mv2 = args.move2 || 10000;   // time for move2 animation
+        this.mv3 = args.move3 || 10000;
+        this.mv4 = args.move4;
 
-        // x1, b_0
+        // x0, b_0
         for (let i = 0; i < 3; i++) {
             this.txts[i] = new TextFade(this.s, {
-                str: "1", start: this.show1s, size: 47,
+                str: "1", start: this.show1s, size: 47, end: this.mv4,
                 x: this.x + 7, y: this.y + i * 57,
                 font: args.font, color: [255, 77, 97],  // RED
             });
@@ -173,10 +175,10 @@ class Sys_3Eqs {
             });
         }
 
-        // x2, b
+        // x1, b
         for (let i = 3; i < 6; i++) {
             this.txts[i] = new TextFade(this.s, {
-                str: "" + matrix[i], start: this.start, size: 47,
+                str: "" + matrix[i], start: this.start, size: 47, end: this.mv4,
                 mode: 2,
                 x: this.x + 180, y: this.y + (i - 3) * 57,
                 font: args.font, color: [77, 217, 77],  // GREEN
@@ -191,7 +193,7 @@ class Sys_3Eqs {
         // y
         for (let i = 0; i < 3; i++) {
             this.txts[i + 6] = new TextFade(this.s, {
-                str: "" + target[i], start: this.start, size: 47,
+                str: "" + target[i], start: this.start, size: 47, end: this.mv4,
                 x: this.x + 287, y: this.y + i * 57,
                 font: args.font, color: [77, 177, 255],  // BLUE
             });
@@ -205,7 +207,7 @@ class Sys_3Eqs {
             });
         }
 
-        // =
+        // =, 12~14
         for (let i = 0; i < 3; i++) {
             this.txts[i + 12] = new TextFade(this.s, {
                 str: "=", start: this.start, size: 47,
@@ -213,9 +215,55 @@ class Sys_3Eqs {
             });
         }
 
+        // X^T for LHS, 15~17
+        for (let i = 0; i < 3; i++) {
+            this.txts[i + 15] = new TextFade(this.s, {
+                str: "" + matrix[i] + "\n" + matrix[i + 3],
+                start: this.mv3, size: 47, end: this.mv4,
+                mode: 1,
+                x: this.x - 187 + i * 67, y: this.y + 77,
+                font: args.font,
+                color: i === 0 ? [255, 255, 177] : (i === 1 ? [177, 255, 255] : [255, 177, 255])
+            });
+        }
+
+        // X^T for RHS, 18~20
+        for (let i = 0; i < 3; i++) {
+            this.txts[i + 18] = new TextFade(this.s, {
+                str: "" + matrix[i] + "\n" + matrix[i + 3],
+                start: this.mv3, size: 47, end: this.mv4,
+                mode: 1,
+                x: this.x + 307 + i * 67, y: this.y + 77,
+                font: args.font,
+                color: i === 0 ? [255, 147, 147] : (i === 1 ? [147, 255, 147] : [147, 147, 255])
+            });
+        }
+
+        // results for X^T times X, 21~22
+        let tmp1 = this.dot([1, 1, 1]);
+        let tmp2 = this.dot([-1, 1, 2]);
+        this.txts[21] = new TextFade(this.s, {
+            str: "" + tmp1[0] + "\n" + tmp1[1],
+            start: this.mv4, size: 47, mode: 1,
+            x: this.x + 20, y: this.y + 77, font: args.font, color: [255, 77, 97],
+        });
+        this.txts[22] = new TextFade(this.s, {
+            str: "" + tmp2[0] + "\n" + tmp2[1],
+            start: this.mv4, size: 47, mode: 1,
+            x: this.x + 92, y: this.y + 77, font: args.font, color: [77, 217, 77],
+        });
+
+        // result for X^T times y, 23
+        let tmp3 = this.dot(target);
+        this.txts[23] = new TextFade(this.s, {
+            str: "" + tmp3[0] + "\n" + tmp3[1],
+            start: this.mv4, size: 47, mode: 1,
+            x: this.x + 302, y: this.y + 77, font: args.font, color: [77, 177, 255],
+        });
+
         this.brackets = [];
 
-        // x1
+        // x0
         this.brackets[0] = new Bracket(this.s, {
             x1: this.x - 7, x2: this.x - 7, y1: this.y, y2: this.y + 167,
             tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3
@@ -225,7 +273,7 @@ class Sys_3Eqs {
             tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3
         });
 
-        // x2
+        // x1
         this.brackets[2] = new Bracket(this.s, {
             x1: this.x + 127, x2: this.x + 127, y1: this.y, y2: this.y + 167,
             tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3,
@@ -244,6 +292,34 @@ class Sys_3Eqs {
             x1: this.x + 340, x2: this.x + 340, y1: this.y + 167, y2: this.y,
             tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3,
         });
+
+        // X^T for LHS
+        this.brackets[6] = new Bracket(this.s, {
+            x1: this.x - 222, x2: this.x - 222, y1: this.y + 24, y2: this.y + 142,
+            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3,
+        });
+        this.brackets[7] = new Bracket(this.s, {
+            x1: this.x - 22, x2: this.x - 22, y1: this.y + 142, y2: this.y + 24,
+            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3,
+        });
+
+        // X^T for RHS
+        this.brackets[8] = new Bracket(this.s, {
+            x1: this.x + 271, x2: this.x + 271, y1: this.y + 24, y2: this.y + 142,
+            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3,
+        });
+        this.brackets[9] = new Bracket(this.s, {
+            x1: this.x + 471, x2: this.x + 471, y1: this.y + 142, y2: this.y + 24,
+            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3,
+        });
+    }
+
+    // yeah, I really should have developed a matrix class....
+    dot(b) {
+        let a = matrix;
+        let x = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+        let y = a[3] * b[0] + a[4] * b[1] + a[5] * b[2];
+        return [x, y];
     }
 
     // move position of equations; unlike move1() and move2(),
@@ -314,7 +390,7 @@ class Sys_3Eqs {
 
     // equations into matrix form
     move2() {
-        for (let i = 3; i < 6; i++) {  // move x2
+        for (let i = 3; i < 6; i++) {  // move x1
             this.txts[i].move(this.x + 104, this.y + (i - 3) * 57)
         }
         this.kats[1].move(this.x + 150, this.y - 17);  // move beta_0
@@ -333,10 +409,29 @@ class Sys_3Eqs {
         })
     }
 
+    // Xb = y into normal equations
+    move3() {
+        this.brackets[4].move({
+            x1: this.x + 487, x2: this.x + 487, y1: this.y, y2: this.y + 167,
+        });
+        this.brackets[5].move({
+            x1: this.x + 559, x2: this.x + 559, y1: this.y + 167, y2: this.y,
+        });
+        for (let i = 0; i < 3; i++) {  // move y
+            this.txts[i + 6].move(this.x + 504, this.y + i * 57);
+        }
+    }
+
+    move4() {
+
+    }
+
     show() {
         if (this.moved) this.moving();
         if (this.s.frameCount === this.mv1) this.move1();
         if (this.s.frameCount === this.mv2) this.move2();
+        if (this.s.frameCount === this.mv3) this.move3();
+        if (this.s.frameCount === this.mv4) this.move4();
         for (let t of this.txts) t.show();
         for (let k of this.kats) k.show();
         for (let b of this.brackets) b.show();
@@ -476,7 +571,10 @@ class Grid_3Lines_With_Point extends Grid_3Lines {
     }
 }
 
+// 2019-01-27
 // used for scene 17, basically copied from chapter 1
+// there is a lot of duplicate code, and in the Chapter 1's class I could have used a
+// more modular approach and break some methods down into components
 class SLR_Plot_2 extends Plot { // the plot used to illustrate simple linear regression
     constructor(ctx, args) {
         super(ctx, args);
@@ -517,5 +615,38 @@ class SLR_Plot_2 extends Plot { // the plot used to illustrate simple linear reg
         this.showAxes(); // this.showGrid()
         this.showPoints();
         this.LSLine.show();
+    }
+}
+
+
+/*** 2019-01-23
+ * Used in file 2.5
+ *
+ * Capable of displaying a linear transformation from R^3 to R^2
+ * this.from = [0, 0, 0];
+ * Responsible for calculating the arrow's landing spot based on the 2x3 matrix in global.js
+ *
+ */
+class Arrow_3to2 extends Arrow3D {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.time = args.time;
+        this.land1 = this.calcLanding();  // landing position in std after 3-to-2 transformation
+    }
+
+    calcLanding() {
+        let m = matrix;
+        let to = p5ToStd(this.to);
+        // apply matrix-vector multiplication
+        let x1 = m[0] * to[0] + m[1] * to[1] + m[2] * to[2];
+        let x2 = m[3] * to[0] + m[4] * to[1] + m[5] * to[2];
+        return [x1, x2, 0];
+    }
+
+    show(g3) {
+        super.show(g3);
+        if (this.s.frameCount === getT(this.time.move1)) {
+            this.move({ to: this.land1 });
+        }
     }
 }

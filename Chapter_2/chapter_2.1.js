@@ -128,4 +128,16 @@ const Scene17 = function(s) {   // scene 17
 
 };
 
+const Scene13 = function(s) {
+
+    s.setup = function() {
+        s.frameRate(fr);
+        s.createCanvas(cvw, cvh);
+    };
+
+    s.show = function() {
+        s.background(0);
+    }
+};
+
 let p21 = new p5(Scene17);

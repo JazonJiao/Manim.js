@@ -8,34 +8,6 @@ const Chap2Part5 = function(s) {
         move2: frames(7)
     };
 
-    /*** 2019-01-23
-     * Capable of displaying a linear transformation from R^3 to R^2
-     * this.from = [0, 0, 0];
-     * Responsible for calculating the arrow's landing spot based on the 2x3 matrix in global.js
-     *
-     */
-    class Arrow_3to2 extends Arrow3D {
-        constructor(ctx, args) {
-            super(ctx, args);
-            this.land1 = this.calcLanding();  // landing position in std after 3-to-2 transformation
-        }
-
-        calcLanding() {
-            let m = matrix;
-            let to = p5ToStd(this.to);
-            // apply matrix-vector multiplication
-            let x1 = m[0] * to[0] + m[1] * to[1] + m[2] * to[2];
-            let x2 = m[3] * to[0] + m[4] * to[1] + m[5] * to[2];
-            return [x1, x2, 0];
-        }
-
-        show(g3) {
-            super.show(g3);
-            if (this.s.frameCount === getT(time.move1)) {
-                this.move({ to: this.land1 });
-            }
-        }
-    }
 
     s.scale = function(a) {  // scaling a 3-array
         let step = 100;   // used for determining the coordinates
@@ -71,36 +43,36 @@ const Chap2Part5 = function(s) {
         // i-hat
         s.arrows[0] = new Arrow_3to2(s, {
             to: s.scale([1, 0, 0]),
-            color: s.color([255, 147, 147]),
+            color: s.color([255, 147, 147]), time: time,
         });
 
         // j-hat
         s.arrows[1] = new Arrow_3to2(s, {
             to: s.scale([0, 1, 0]),
-            color: s.color([147, 255, 147]),
+            color: s.color([147, 255, 147]), time: time,
         });
 
         // k-hat
         s.arrows[2] = new Arrow_3to2(s, {
             to: s.scale([0, 0, 1]),
-            color: s.color([147, 147, 255])
+            color: s.color([147, 147, 255]), time: time,
         });
 
         // x0
         s.arrows[3] = new Arrow_3to2(s, {
             to: s.scale([matrix[0], matrix[1], matrix[2]]),
-            color: s.color([237, 47, 47])
+            color: s.color([237, 47, 47]), time: time,
         });
 
         // x1
         s.arrows[4] = new Arrow_3to2(s, {
-            to: s.scale([matrix[3], matrix[4], matrix[5]]),
+            to: s.scale([matrix[3], matrix[4], matrix[5]]), time: time,
             color: s.color([37, 147, 37]),
         });
 
         // y
         s.arrows[5] = new Arrow_3to2(s, {
-            to: s.scale(target),
+            to: s.scale(target), time: time,
             color: s.color([27, 147, 227])
         });
 
