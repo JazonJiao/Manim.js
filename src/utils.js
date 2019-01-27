@@ -221,7 +221,8 @@ class Grid extends Axes {
  * Can also derive from the Grid class
  * Capable of calculating the least square line of the points, and displaying the line
  *
- * startLSLine
+ * ---- args list parameters (in addition to axes) ----
+ * xs, ys, startLSLine, startPt, lineColor
  */
 class Plot extends Axes {
     // 2019-01-07: after refactoring, don't need to load a csv file, data is passed in as two arrays
@@ -262,7 +263,7 @@ class Plot extends Axes {
             x2: this.right,
             y1: this.y_intercept + this.beta * (this.centerX - this.left),
             y2: this.y_intercept - this.beta * (this.right - this.centerX),
-            color: this.s.color(77, 177, 77),
+            color: args.lineColor || this.s.color(77, 177, 77),
             strokeweight: 3,
             start: this.startLSLine
         });
@@ -676,7 +677,8 @@ class Arrow extends Line {
  *
  * ---- args list parameters ----
  * @mandatory (p5.Font) font; (array) xs, ys;
- * @optional (number) x, y, start, size,  (string) label1, label2
+ * @optional (number) x, y, start, size, sizeX [for controlling horizontal block size];
+ *           (string) label1, label2, (array) colorX, colorY [apply to data]
  */
 class Table {
     constructor(ctx, args) {
@@ -694,7 +696,7 @@ class Table {
         this.sizeY = args.size || 37;   // size of the text
         this.s.textFont(this.font);
         this.s.textSize(this.sizeY);
-        this.sizeX = Math.max(this.s.textWidth("" + this.xs[this.numPts - 1]),
+        this.sizeX = args.sizeX || Math.max(this.s.textWidth("" + this.xs[this.numPts - 1]),
             this.s.textWidth("" + this.ys[this.numPts - 1]));
 
         this.duration = args.duration || frames(1);
@@ -719,6 +721,7 @@ class Table {
         })];
         for (let i = 1; i < this.numPts + 1; i++) {
             this.textX[i] = new TextFade(this.s, {
+                color: args.colorX,
                 duration: frames(0.5),
                 size: this.sizeY,
                 str: "" + this.ys[i - 1],
@@ -728,6 +731,7 @@ class Table {
                 mode: 1
             });
             this.textY[i] = new TextFade(this.s, {
+                color: args.colorY,
                 duration: frames(0.5),
                 size: this.sizeY,
                 str: "" + this.xs[i - 1],

@@ -22,6 +22,13 @@ class Axes3D {
         this.speed = args.speed || -0.0025;  // how many radians to rotate per frame
         this.camY = -567;
         this.camRadius = 674;
+        this.camFcn = ((g) => {
+            let camX = this.camRadius * Math.cos(this.angle);
+            let camZ = this.camRadius * Math.sin(this.angle);
+            this.angle += this.speed;
+
+            g.camera(camX, this.camY, camZ, 0, 0, 0, 0, 1, 0);
+        });
         this.model = args.model;
     }
 
@@ -42,11 +49,7 @@ class Axes3D {
 
         g.specularMaterial(177);
 
-        let camX = this.camRadius * Math.cos(this.angle);
-        let camZ = this.camRadius * Math.sin(this.angle);
-        this.angle += this.speed;
-
-        g.camera(camX, this.camY, camZ, 0, 0, 0, 0, 1, 0);
+        this.camFcn(g);
 
         g.push();
         g.rotateX(this.s.PI);

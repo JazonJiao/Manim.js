@@ -135,13 +135,13 @@ class Plane_Projection extends Plane3D {
     }
 }
 
-function Chap3Part2(s) {
+const Chap3Part2 = function(s) {
     let g3;
     let g2;
 
     let axes;
     let grid;
-    let plane1;  // this must not be named plane, otherwise plane() function would not work
+    // let plane1;  // this must not be named plane, otherwise plane() function would not work
     let ax;
     let time = {
         transform: frames(2)
@@ -164,7 +164,7 @@ function Chap3Part2(s) {
             model: ax
         });
 
-        plane1 = new Plane_Projection(s, {
+        s.plane1 = new Plane_Projection(s, {
             mat: matrix,
             y: target,
             color: s.color(255, 255, 0, 77),
@@ -184,7 +184,7 @@ function Chap3Part2(s) {
         s.background(0);
         axes.show(g3);
         grid.show(g3);
-        plane1.show(g3);
+        s.plane1.show(g3);
 
         s.image(g3, 0, 0, 1200, 675);
 
@@ -192,4 +192,4 @@ function Chap3Part2(s) {
     }
 }
 
-new p5(Chap3Part2);
+let p32 = new p5(Chap3Part2);

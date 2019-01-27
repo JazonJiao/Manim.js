@@ -17,8 +17,7 @@ const Chap2Part5 = function(s) {
     class Arrow_3to2 extends Arrow3D {
         constructor(ctx, args) {
             super(ctx, args);
-            this.land1 = this.calcLanding();   // landing position after 3-to-2 transformation
-
+            this.land1 = this.calcLanding();  // landing position in std after 3-to-2 transformation
         }
 
         calcLanding() {
@@ -65,11 +64,11 @@ const Chap2Part5 = function(s) {
         });
 
         s.axes = new Axes3D(s, {
-            angle: 2,
+            angle: 0,
             model: obj[0]
         });
 
-        // i-het
+        // i-hat
         s.arrows[0] = new Arrow_3to2(s, {
             to: s.scale([1, 0, 0]),
             color: s.color([255, 147, 147]),
@@ -112,14 +111,16 @@ const Chap2Part5 = function(s) {
         let inv = s.calcInv(x0l, x1l);
 
         s.yto = [inv[0] * yl[0] + inv[1] * yl[1], inv[2] * yl[0] + inv[3] * yl[1], 0];
+
+        // this is guaranteed to be [1, 0 (, 0)]
         s.x0to = [inv[0] * x0l[0] + inv[1] * x0l[1], inv[2] * x0l[0] + inv[3] * x0l[1], 0];
+        // this is guaranteed to be [0, 1 (, 0)]
         s.x1to = [inv[0] * x1l[0] + inv[1] * x1l[1], inv[2] * x1l[0] + inv[3] * x1l[1], 0];
     };
 
     s.calcInv = function(u, v) {
         let a = u[0], b = u[1], c = v[0], d = v[1];
         let det = a * d - b * c;
-        console.log(u,v);
         a /= det;
         b /= det;
         c /= det;
