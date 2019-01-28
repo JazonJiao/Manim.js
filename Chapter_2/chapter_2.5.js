@@ -1,11 +1,14 @@
 // In 3D scenes, notice the difference between s and g3
-
+let mode = 1;
 
 const Chap2Part5 = function(s) {
 
     let time = {
         move1: frames(3),
-        move2: frames(7)
+        move2: frames(7),
+
+        // if only want to display X^T, this should be set to infinity
+        matrixAnim: frames(15)
     };
 
 
@@ -15,12 +18,15 @@ const Chap2Part5 = function(s) {
     };
 
     let g2;
+    let sf;
     let g3;
+    let tnr;
     let obj = [];
     s.arrows = [];
 
     s.preload = function () {
         obj[0] = s.loadModel('../lib/obj/axes.obj');
+        tnr = s.loadFont('../lib/font/times.ttf');
     };
 
     s.setup = function () {
@@ -29,7 +35,18 @@ const Chap2Part5 = function(s) {
         s.pixelDensity(1);
         s.createCanvas(cvw, cvh);
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);
-        g2 = s.createGraphics(100, 10);
+        // g2 = s.createGraphics(cvw, cvh);
+        sf = s.createGraphics(100, 10);  // 2d canvas for framerate display
+
+        s.eqs = new Sys_3Eqs(s, {
+            x: 400, y: 200,
+            move1: 1, move2: 2,
+            move3: 3, move4: getT(time.matrixAnim),
+            mode: mode,
+            font: tnr,
+            start: frames(1),
+        });
+
 
         s.pl = new Plane3D(s, {
             a: 0, b: 0, c: 0
@@ -103,6 +120,8 @@ const Chap2Part5 = function(s) {
     s.draw = function () {
         s.background(0);
         s.axes.show(g3);
+        s.eqs.show();
+
         for (let a of s.arrows)
             a.show(g3);
 
@@ -115,7 +134,7 @@ const Chap2Part5 = function(s) {
         s.pl.showPlane(g3);
 
         s.image(g3, 0, 0, cvw, cvh);
-        showFR(s, g2);
+        showFR(s, sf);
     };
 
 };

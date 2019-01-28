@@ -35,9 +35,9 @@ class Axes3D {
     show(g) {
         // this will make the background transparent; background(0) will make it opaque
         // however, it will also cause the plane to not show up, as it calls g.fill(this.color);
-        // g.background(0, 0, 0, 0);
+        g.background(0, 0, 0, 0);
 
-        g.background(0);
+        //g.background(0);
         g.noStroke();
 
         // @see Arrow3D class
@@ -339,7 +339,7 @@ class Plane3D {
         this.q = args.q;
         this.r = args.r;
 
-        this.color = args.color || this.s.color(255, 77);
+        this.color = args.color || this.s.color(255, 127);
         this.size = args.size || 400; // defaults to half the length of each axis on each direction
 
         this.calcParams();

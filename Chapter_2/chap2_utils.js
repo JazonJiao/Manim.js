@@ -143,7 +143,7 @@ class Grid_b0b extends Grid {
 
 /***
  * ---- args list parameters ----
- * (number) x, y, start, show1s, mv1, mv2; (p5.Font) font
+ * (number) x, y, start, show1s, move1, move2, move3, move4; (p5.Font) font
  */
 class Sys_3Eqs {
     constructor(ctx, args) {
@@ -160,6 +160,12 @@ class Sys_3Eqs {
         this.mv2 = args.move2 || 10000;   // time for move2 animation
         this.mv3 = args.move3 || 10000;
         this.mv4 = args.move4;
+
+        // mode 0: show entire equation
+        // mode 1: show X^T only
+        // mode 2: show lhs transform
+        // mode 3: show rhs transform
+        this.mode = args.mode || 0;
 
         // x0, b_0
         for (let i = 0; i < 3; i++) {
@@ -255,10 +261,12 @@ class Sys_3Eqs {
 
         // result for X^T times y, 23
         let tmp3 = this.dot(target);
+
         this.txts[23] = new TextFade(this.s, {
             str: "" + tmp3[0] + "\n" + tmp3[1],
             start: this.mv4, size: 47, mode: 1,
-            x: this.x + 302, y: this.y + 77, font: args.font, color: [77, 177, 255],
+            x: this.mode === 3 ? this.x + 514 : this.x + 302,
+            y: this.y + 77, font: args.font, color: [77, 177, 255],
         });
 
         this.brackets = [];
@@ -266,7 +274,7 @@ class Sys_3Eqs {
         // x0
         this.brackets[0] = new Bracket(this.s, {
             x1: this.x - 7, x2: this.x - 7, y1: this.y, y2: this.y + 167,
-            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3
+            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3, end: this.mv4
         });
         this.brackets[1] = new Bracket(this.s, {
             x1: this.x + 44, x2: this.x + 44, y1: this.y + 167, y2: this.y,
@@ -276,7 +284,7 @@ class Sys_3Eqs {
         // x1
         this.brackets[2] = new Bracket(this.s, {
             x1: this.x + 127, x2: this.x + 127, y1: this.y, y2: this.y + 167,
-            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3,
+            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3
         });
         this.brackets[3] = new Bracket(this.s, {
             x1: this.x + 194, x2: this.x + 194, y1: this.y + 167, y2: this.y,
@@ -286,11 +294,11 @@ class Sys_3Eqs {
         // y
         this.brackets[4] = new Bracket(this.s, {
             x1: this.x + 271, x2: this.x + 271, y1: this.y, y2: this.y + 167,
-            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3,
+            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3, end: this.mv4
         });
         this.brackets[5] = new Bracket(this.s, {
             x1: this.x + 340, x2: this.x + 340, y1: this.y + 167, y2: this.y,
-            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3,
+            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3
         });
 
         // X^T for LHS
@@ -300,7 +308,7 @@ class Sys_3Eqs {
         });
         this.brackets[7] = new Bracket(this.s, {
             x1: this.x - 22, x2: this.x - 22, y1: this.y + 142, y2: this.y + 24,
-            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3,
+            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3, end: this.mv4
         });
 
         // X^T for RHS
@@ -310,7 +318,7 @@ class Sys_3Eqs {
         });
         this.brackets[9] = new Bracket(this.s, {
             x1: this.x + 471, x2: this.x + 471, y1: this.y + 142, y2: this.y + 24,
-            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3,
+            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3, end: this.mv4
         });
     }
 
@@ -422,19 +430,76 @@ class Sys_3Eqs {
         }
     }
 
+    // simplify normal equations
     move4() {
-
+        this.brackets[6].move({
+            x1: this.x - 7, x2: this.x - 7, y1: this.y + 24, y2: this.y + 142,
+        });
+        // this.brackets[2].move({
+        //     x1: this.x + 134, y1: this.y + 24,
+        //     x2: this.x + 134, y2: this.y + 142
+        // });
+        this.brackets[3].move({
+            x1: this.x + 119, y1: this.y + 142,
+            x2: this.x + 119, y2: this.y + 24
+        });
+        if (this.mode !== 3) {
+            this.brackets[5].move({
+                x1: this.x + 331, y1: this.y + 142,
+                x2: this.x + 331, y2: this.y + 24
+            });
+        } else {
+            this.brackets[8].move({
+                x1: this.x + 487, y1: this.y + 24,
+                x2: this.x + 487, y2: this.y + 142
+            });
+            this.brackets[5].move({
+                x1: this.x + 541, y1: this.y + 142,
+                x2: this.x + 541, y2: this.y + 24
+            })
+        }
     }
 
     show() {
         if (this.moved) this.moving();
+
         if (this.s.frameCount === this.mv1) this.move1();
         if (this.s.frameCount === this.mv2) this.move2();
         if (this.s.frameCount === this.mv3) this.move3();
         if (this.s.frameCount === this.mv4) this.move4();
-        for (let t of this.txts) t.show();
-        for (let k of this.kats) k.show();
-        for (let b of this.brackets) b.show();
+
+        // this is so awkward...
+        // I should have used a 2d array to caregorize the objects further, e.g. into lhs and rhs
+        if (this.mode === 0) {
+            for (let t of this.txts) t.show();
+            for (let k of this.kats) k.show();
+            for (let b of this.brackets) b.show();
+        } else if (this.mode === 1) {
+            this.showXT();
+        } else if (this.mode === 2) {
+            this.showXT();
+            this.brackets[0].show();
+            this.brackets[3].show();
+            for (let i = 0; i < 6; i++) this.txts[i].show();
+            this.txts[21].show();
+            this.txts[22].show();
+        } else if (this.mode === 3) {
+            this.brackets[4].show();
+            this.brackets[5].show();
+            this.brackets[8].show();
+            this.brackets[9].show();
+            for (let i = 0; i < 3; i++) {
+                this.txts[i + 6].show();
+                this.txts[i + 18].show();
+            }
+            this.txts[23].show();
+        }
+    }
+
+    showXT() {
+        this.brackets[6].show();
+        this.brackets[7].show();
+        for (let i = 15; i < 18; i++) this.txts[i].show();
     }
 }
 

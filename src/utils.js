@@ -439,14 +439,17 @@ class Emphasis extends Rect {
     }
 }
 
-/** 2018-12-23
+/** 2018-12-23, 2019-01-27
  * A line that can show initialization animation
- * The animation shows the line going from (x1, y1) to (x2, y2);
+ * The init animation shows the line going from (x1, y1) to (x2, y2);
+ * The end animation shows the line's stroke weight decreasing to 0.
+ *
  * to show the line growing from the center point, use LineCenter
  *
  * ----args list parameters----
  * @mandatory (number) x1, y1, x2, y2;
- * @optional (color) color; (number) start, strokeweight, mode [defines which timer to use]
+ * @optional (color) color;
+ *           (number) start, duration, end, strokeweight, mode [defines which timer to use]
  */
 class Line {
     constructor(ctx, args) {
@@ -472,6 +475,9 @@ class Line {
         } else {
             this.timer = new Timer2(this.duration);
         }
+
+        this.end = args.end || 100000;
+        this.timer_end = new Timer0(this.duration);
     }
 
     reset(args) {
@@ -483,7 +489,12 @@ class Line {
 
     showSetup() {
         this.s.stroke(this.color);
-        this.s.strokeWeight(this.strokeweight);
+        if (this.s.frameCount <= this.end) {
+            this.s.strokeWeight(this.strokeweight);
+        } else {
+            // fixme: 1.00001 is used since strokeWeight(0) will produce incorrect behavior
+            this.s.strokeWeight(this.strokeweight * (1.00001 - this.timer_end.advance()));
+        }
     }
 
     show() {
@@ -825,7 +836,7 @@ class Table {
  *
  * ---- args list parameters ----
  * @mandatory (number) x1, x2, y1, y2
- * @optional (number) tipLen, start, duration, strokeweight
+ * @optional (number) tipLen, start, end, duration, strokeweight
  */
 class Bracket {
     constructor(ctx, args) {
@@ -842,18 +853,22 @@ class Bracket {
         this.tipLen = args.tipLen || 17;
 
         this.start = args.start || 100;
+        this.end = args.end || 100000;
         this.duration = args.duration || frames(1);
         this.strokeweight = args.strokeweight || 4;
 
         this.lines = [];
         this.lines[0] = new LineCenter(this.s, {
-            start: this.start, duration: this.duration, strokeweight: this.strokeweight
+            start: this.start, end: this.end,
+            duration: this.duration, strokeweight: this.strokeweight
         });
         this.lines[1] = new Line(this.s, {
-            start: this.start, duration: this.duration, strokeweight: this.strokeweight
+            start: this.start, end: this.end,
+            duration: this.duration, strokeweight: this.strokeweight
         });
         this.lines[2] = new Line(this.s, {
-            start: this.start, duration: this.duration, strokeweight: this.strokeweight
+            start: this.start, end: this.end,
+            duration: this.duration, strokeweight: this.strokeweight
         });
         this.reset(args);
     }
