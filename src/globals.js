@@ -64,22 +64,16 @@ function frames(sec) {
     return Math.round(fr * sec);
 }
 
+
 /**
- * For scenes that requires repetition of many similar scenes that will be rendered separately,
- * such as chapter_1, this function returns 10000, representing
- * "forever (actually 5 minutes) later", for animations that I don't want to show for a given scene.
- *
- *
- * @param t
- * @returns {number}
+ * All 3D scenes should call this in s.setup()
  */
-function getT(t) {
-    if (t === undefined) {
-        return 10000;
-    } else {
-        return t;
-    }
+function setup3D(s) {
+    s.frameRate(fr);
+    s.pixelDensity(1);
+    s.createCanvas(cvw, cvh);
 }
+
 
 /**
  * https://github.com/processing/p5.js/wiki/Optimizing-p5.js-Code-for-Performance
@@ -110,3 +104,15 @@ function showFR(s, g) {
     }
 }
 
+/** [DEPRECATED]
+ * For scenes that requires repetition of many similar scenes that will be rendered separately,
+ * such as chapter_1, this function returns 10000, representing
+ * "forever (actually 5 minutes) later", for animations that I don't want to show for a given scene.]
+ */
+function getT(t) {
+    if (t === undefined) {
+        return 10000;
+    } else {
+        return t;
+    }
+}

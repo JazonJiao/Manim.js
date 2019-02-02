@@ -69,19 +69,15 @@ function Chap2(s) {
     let axes;
     let obj;
     let kat;
-    let g2, g3;
+    let g3;
 
     s.preload = function () {
         obj = s.loadModel('../lib/obj/axes.obj');
     };
 
     s.setup = function () {
-        s.frameRate(fr);
-
-        s.pixelDensity(1);
-        s.createCanvas(cvw, cvh);
+        setup3D(s);
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);  // a square to be displayed to the left
-        g2 = s.createGraphics(100, 10);
 
         axes = new MR_Plane(s, {
             model: obj,
