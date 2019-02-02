@@ -65,6 +65,7 @@ class PointBase {
         this.start = args.start || 30;
     }
 
+    // duration is in seconds, not frames
     // this is controlled by s.draw(), not this.show().
     move(x, y, duration, timerNum) {
         this.xo = this.x;
@@ -76,13 +77,7 @@ class PointBase {
         if (duration) {
             d = duration;
         }
-        if (timerNum === 0) {
-            this.move_timer = new Timer0(frames(d));
-        } else if (timerNum === 1) {
-            this.move_timer = new Timer1(frames(d));
-        } else {
-            this.move_timer = new Timer2(frames(d));
-        }
+        this.move_timer = timerFactory(frames(d), timerNum);
     }
 
     moving() {

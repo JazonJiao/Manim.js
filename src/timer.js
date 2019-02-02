@@ -97,3 +97,19 @@ class Timer2 extends Timer {
         return this.t;
     }
 }
+
+/*** 2019-02-01
+ * This Factory function is responsible for constructing the appropriate timer class
+ * Default is return Timer2
+ */
+function timerFactory(frames, mode) {
+    if (mode === 0) {
+        return new Timer0(frames);
+    } else if (mode === 1) {
+        return new Timer1(frames);
+    } else if (mode === 2) {
+        return new Timer2(frames);
+    } else {
+        return new Timer2(frames);
+    }
+}

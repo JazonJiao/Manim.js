@@ -466,15 +466,7 @@ class Line {
         this.strokeweight = args.strokeweight || 3;
         this.color = args.color || this.s.color(255);
 
-        if (args.mode === 0) {
-            this.timer = new Timer0(this.duration);
-        } else if (args.mode === 1) {
-            this.timer = new Timer1(this.duration);
-        } else if (args.mode === 2) {
-            this.timer = new Timer2(this.duration);
-        } else {
-            this.timer = new Timer2(this.duration);
-        }
+        this.timer = timerFactory(this.duration, args.mode);
 
         this.end = args.end || 100000;
         this.timer_end = new Timer0(this.duration);
@@ -974,8 +966,9 @@ class ImageFly extends ImageBase {
         super(ctx, args);
 
         this.duration = args.duration || 1;
+        this.mode = args.mode || 1;
 
-        if (args.mode === 1) {  // todo
+        if (this.mode === 1) {  // todo
             this.xf = this.x;
             this.x = -this.w;
         }
@@ -988,4 +981,8 @@ class ImageFly extends ImageBase {
         }
         this.showImage();
     }
+}
+
+class ImageGrow extends ImageBase {  // grow from center
+
 }
