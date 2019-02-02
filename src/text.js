@@ -1,36 +1,16 @@
-// refactored on 01-20-2019
-class TextBase {
+// refactored on 2019-01-20, 02-01
+class TextBase extends PointBase {
     constructor(ctx, args) {
-        this.s = ctx;
+        super(ctx, args);
         // I originally used the usual syntax of args.x || width / 2,
         // but this would not work if 0 is passed in as x
-        this.x = args.x || 0;
-        this.y = args.y || 0;
     }
 
     reset(args) {
         this.x = args.x || this.x;
         this.y = args.y || this.y;
     }
-
-    // enable move animations
-    // in draw(), use: if (frameCount == getT(time.xxxx)) text[i].move(x, y)
-    // note that duration is in seconds
-    move(x, y, duration) {
-        this.xo = this.x;
-        this.yo = this.y;
-        this.xd = x || this.x;    // destination x
-        this.yd = y || this.y;
-        this.moved = true;
-        let t = duration || 2;
-
-        this.move_timer = new Timer2(frames(t));
-    }
-
-    moving() {
-        let t = this.move_timer.advance();
-        this.reset({ x: this.xo + t * (this.xd - this.xo), y: this.yo + t * (this.yd - this.yo) });
-    }
+    // move() merged into parent class
 }
 
 

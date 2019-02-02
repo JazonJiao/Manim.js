@@ -432,12 +432,13 @@ const Scene19 = function(s) {
         move1: frames(3),
         move2: frames(3) + 1,
         move3: frames(6),
-        move4: frames(9)
+        move4: frames(9),
+        fn: frames(10)
     };
 
     let times;
     let hg;
-    let txt;
+    let txt = [];
 
     s.preload = function() {
         times = s.loadFont('../lib/font/times.ttf');
@@ -450,7 +451,7 @@ const Scene19 = function(s) {
         hg = new HelperGrid(s, {});
 
         s.eqs = new Sys_3Eqs(s, {
-            x: 427, y: 300,
+            x: 427, y: 257,
             //time: time,
             start: time.eqs, show1s: time.show1s,
             move1: getT(time.move1), move2: getT(time.move2),
@@ -458,9 +459,15 @@ const Scene19 = function(s) {
             font: times,
         });
 
-        txt = new TextFade(s, {
+        txt[0] = new TextFade(s, {
             str: "Normal Equations", mode: 1, font: times, size: 57,
             x: 600, y: 100, start: time.text
+        });
+        txt[1] = new TextFade(s, {
+            str: "* The plural \"equations\" in \"normal equations\" " +
+                "\nindicates it's usually a system of many linear equations",
+            font: times, size: 27, mode: 1,
+            x: 600, y: 627, start: time.fn
         })
 
     };
@@ -469,7 +476,8 @@ const Scene19 = function(s) {
         s.background(0);
         //hg.show();
 
-        txt.show();
+        txt[0].show();
+        txt[1].show();
         s.eqs.show();
         showFR(s);
     }

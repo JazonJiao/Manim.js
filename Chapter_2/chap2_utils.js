@@ -383,16 +383,16 @@ class Sys_3Eqs {
     // equations into column form
     move1() {
         for (let i = 0; i < 3; i++) {  // move beta_0
-            this.kats[i].move(this.x - 60, this.y + 24);
+            this.kats[i].move(this.x - 60, this.y + 24, 2);
         }
         for (let i = 3; i < 6; i++) {  // move beta
-            this.kats[i].move(this.x + 89, this.y + 24);
+            this.kats[i].move(this.x + 89, this.y + 24, 2);
         }
         for (let i = 9; i < 12; i++) { // move plus sign
-            this.txts[i].move(this.x + 57, this.y + 57);
+            this.txts[i].move(this.x + 57, this.y + 57, 2);
         }
         for (let i = 12; i < 15; i++) { // move equals sign
-            this.txts[i].move(this.x + 222, this.y + 57);
+            this.txts[i].move(this.x + 222, this.y + 57, 2);
         }
     }
 
@@ -401,8 +401,8 @@ class Sys_3Eqs {
         for (let i = 3; i < 6; i++) {  // move x1
             this.txts[i].move(this.x + 104, this.y + (i - 3) * 57)
         }
-        this.kats[1].move(this.x + 150, this.y - 17);  // move beta_0
-        this.kats[4].move(this.x + 150, this.y + 50);  // move beta
+        this.kats[1].move(this.x + 150, this.y - 17, 2);  // move beta_0
+        this.kats[4].move(this.x + 150, this.y + 50, 2);  // move beta
         this.brackets[3].move({
             x1: this.x + 120, y1: this.y + 167,
             x2: this.x + 120, y2: this.y
@@ -426,7 +426,7 @@ class Sys_3Eqs {
             x1: this.x + 559, x2: this.x + 559, y1: this.y + 167, y2: this.y,
         });
         for (let i = 0; i < 3; i++) {  // move y
-            this.txts[i + 6].move(this.x + 504, this.y + i * 57);
+            this.txts[i + 6].move(this.x + 504, this.y + i * 57, 2);
         }
     }
 
@@ -503,6 +503,9 @@ class Sys_3Eqs {
     }
 }
 
+class Normal_Eqs {
+
+}
 
 
 /*** 2019-01-12, 01-27
@@ -691,7 +694,7 @@ class SLR_Plot_2 extends Plot { // the plot used to illustrate simple linear reg
 
 
 /*** 2019-01-23
- * Used in file 2.5
+ * Used in Chapter 3
  *
  * Capable of displaying a linear transformation from R^3 to R^2
  * this.from = [0, 0, 0];
@@ -716,8 +719,106 @@ class Arrow_3to2 extends Arrow3D {
 
     show(g3) {
         super.show(g3);
-        if (this.s.frameCount === getT(this.time.move1)) {
+        if (this.s.frameCount === this.time) {
             this.move({ to: this.land1 });
         }
+    }
+}
+
+
+class Arrows_Transform {
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.arrows = [];
+
+        this.showBasis = args.showBasis || false;
+        this.showY = args.showY || false;
+        this.showX = args.showX || false;
+
+        this.start = args.start;  // time: transformation 3 to 2
+        this.solve = args.solve || 10000;  // time: solve the normal equations
+
+        // i-hat
+        this.arrows[0] = new Arrow_3to2(this.s, {
+            to: this.scale([1, 0, 0]),
+            color: this.s.color([255, 147, 147]), time: this.start,
+        });
+
+        // j-hat
+        this.arrows[1] = new Arrow_3to2(this.s, {
+            to: this.scale([0, 1, 0]),
+            color: this.s.color([147, 255, 147]), time: this.start,
+        });
+
+        // k-hat
+        this.arrows[2] = new Arrow_3to2(this.s, {
+            to: this.scale([0, 0, 1]),
+            color: this.s.color([147, 147, 255]), time: this.start,
+        });
+
+        // x0
+        this.arrows[3] = new Arrow_3to2(this.s, {
+            to: this.scale([matrix[0], matrix[1], matrix[2]]),
+            color: this.s.color([237, 47, 47]), time: this.start,
+        });
+
+        // x1
+        this.arrows[4] = new Arrow_3to2(this.s, {
+            to: this.scale([matrix[3], matrix[4], matrix[5]]), time: this.start,
+            color: this.s.color([37, 147, 37]),
+        });
+
+        // y
+        this.arrows[5] = new Arrow_3to2(this.s, {
+            to: this.scale(target), time: this.start,
+            color: this.s.color([27, 147, 227])
+        });
+
+        let x0l = this.arrows[3].calcLanding();
+        let x1l = this.arrows[4].calcLanding();
+        let yl = this.arrows[5].calcLanding();
+
+        let inv = this.calcInv(x0l, x1l);
+
+        this.yto = [inv[0] * yl[0] + inv[1] * yl[1], inv[2] * yl[0] + inv[3] * yl[1], 0];
+
+        // this is guaranteed to be [1, 0 (, 0)]
+        this.x0to = [inv[0] * x0l[0] + inv[1] * x0l[1], inv[2] * x0l[0] + inv[3] * x0l[1], 0];
+        // this is guaranteed to be [0, 1 (, 0)]
+        this.x1to = [inv[0] * x1l[0] + inv[1] * x1l[1], inv[2] * x1l[0] + inv[3] * x1l[1], 0];
+    }
+
+    scale(a) {  // scaling a 3-array
+        let step = 100;   // used for determining the coordinates
+        return [a[0] * step, a[1] * step, a[2] * step];
+    };
+
+    calcInv(u, v) {
+        let a = u[0], b = u[1], c = v[0], d = v[1];
+        let det = a * d - b * c;
+        a /= det;
+        b /= det;
+        c /= det;
+        d /= det;
+        return [d, -b, -c, a];
+    };
+
+    show(g) {
+        if (this.s.frameCount === getT(this.solve)) {
+            this.arrows[3].move({ to: this.scale(this.x0to) });
+            this.arrows[4].move({ to: this.scale(this.x1to) });
+            this.arrows[5].move({ to: this.scale(this.yto) });
+        }
+       if (this.showBasis) {
+           this.arrows[0].show(g);
+           this.arrows[1].show(g);
+           this.arrows[2].show(g);
+       }
+       if (this.showY)
+           this.arrows[5].show(g);
+       if (this.showX) {
+           this.arrows[4].show(g);
+           this.arrows[3].show(g);
+       }
     }
 }
