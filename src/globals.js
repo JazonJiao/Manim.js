@@ -19,7 +19,6 @@ let target = [-2, 0, 3];
 
 /*** Refactored 3D scenes on 2019-01-17
  *
-
  * Transforms from standard coordinates into p5'o coordinates,
 
  * Used for 3D scenes.
@@ -37,14 +36,23 @@ function stdToP5(a, b, c) {
 
     if (a.length === 3) {
         return [a[1], -a[2], a[0]];   // x = y, y = -z, z = x
-    } else if (a.length === 6) {
+    } else if (a.length === 6) {      // 012 are column 1, 345 are column 2
         return [a[1], -a[2], a[0], a[4], -a[5], a[3]];
+    } else if (a.length === 9) {      // 012 are row 1, 345 are row 2, 678 are row 3
+        //return [a[1], -a[2], a[0], a[4], -a[5], a[3], a[7], -a[8], a[6]];
+        return [a[3], a[4], a[5], -a[6], -a[7], -a[8], a[0], a[1], a[2]];  // fixme
+        //return [-a[3], -a[4], -a[5], -a[6], -a[7], -a[8], a[0], a[1], a[2]];
+        //return [a[0], a[1], a[2], -a[6], -a[7], -a[8], a[3], a[4], a[5]];
     }
 }
 
 function p5ToStd(a) {
     if (a.length === 3) {
         return [a[2], a[0], -a[1]];   // x = z, y = x, z = -y
+    } else if (a.length === 6) {
+        return [a[2], a[0], -a[1], a[5], a[3], -a[4]];
+    } else if (a.length === 9) {
+        //return [a[6], a[7], a[8], a[0], a[1], a[2], -a[3], -a[4], -a[5]];
     }
 }
 

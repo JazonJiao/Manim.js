@@ -33,7 +33,15 @@ const Scene23 = function(s) {
             font: tnr,
             start: frames(1),
         });
-
+        s.grid = new Grid3D_Transform(s, {
+            mat: stdToP5(
+                //[matrix[3], matrix[4], matrix[5], matrix[0], matrix[1], matrix[2], 0, 0, 0]),
+                //[matrix[0], matrix[3], matrix[1], matrix[4], matrix[2], matrix[5], 0, 0, 0]),
+                [matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], 0, 0, 0]),
+                //[matrix[0], matrix[3], 0, matrix[1], matrix[4], 0, matrix[2], matrix[5], 0]),
+            start: time.three_to_two,
+            numLines: 2,
+        });
         s.pl = new Plane3D(s, {
             a: 0, b: 0, c: 0
         });
@@ -41,11 +49,11 @@ const Scene23 = function(s) {
             angle: 1, speed: speed,
             model: obj[0]
         });
-
         s.arrs = new Arrows_Transform(s, {
             time: time,
             start: time.three_to_two,
             showBasis: true,
+            //showX: true,
         });
 
         txt = new TextFade(s, {
@@ -59,6 +67,7 @@ const Scene23 = function(s) {
         s.background(0);
         s.axes.show(g3);
         s.eqs.show();
+        s.grid.show(g3);
         s.arrs.show(g3);
         s.pl.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
@@ -98,7 +107,7 @@ const Scene25 = function(s) {
             font: tnr,
             start: frames(1),
         });
-
+        s.grid;
         s.pl = new Plane3D(s, {
             a: 0, b: 0, c: 0
         });
@@ -124,8 +133,10 @@ const Scene25 = function(s) {
     };
 
     s.draw = function () {
-        setup3D(s);
+        s.background(0);
+        s.axes.show(g3);
         s.arrs.show(g3);
+        //s.grid.show(g3);
         s.pl.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
         kat.show();
@@ -199,7 +210,7 @@ const Scene26 = function(s) {
     };
 };
 
-// scene 26
+// scene 27
 const Scene27 = function(s) {
     let time = {
         three_to_two: frames(3),
@@ -225,7 +236,7 @@ const Scene27 = function(s) {
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);
 
         s.eqs = new Sys_3Eqs(s, {
-            x: 300, y: 67,
+            x: 340, y: 67,
             move1: 1, move2: 2,
             move3: 3, move4: time.three_to_two,
             font: tnr,
@@ -266,4 +277,4 @@ const Scene27 = function(s) {
     };
 };
 
-let p = new p5(Scene27);
+let p = new p5(Scene23);

@@ -70,7 +70,7 @@ class Axes3D {
 class Grid3D {
     constructor(ctx, args) {
         this.s = ctx;
-        this.lineLen = args.lineLen || 32;
+        this.lineLen = args.lineLen || 147;
         this.n = args.numLines + 1 || 4;
         this.strokeweight = args.strokeweight || 2;
 
@@ -126,6 +126,91 @@ class Grid3D {
                     }
                     if (i !== this.n - 1) {
                         g.line(x, y, z, this.xs[c], this.ys[c], this.zs[c]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** 2019-02-02
+ * Grid3D_Transform
+ *
+ * I decide that mat should be in p5 instead of std and that
+ * it should be user's responsibility to convert to p5 coords,
+ * since we usually need to first apply a transformation matrix before passing that matrix in
+ *
+ * ---- args list parameters---
+ * @mandatory (array[9]) mat [in p5 coordinates, left-to-right and top-to-down],
+ * @optional (number) strat, lineLen, numLines, strokeweight
+ */
+class Grid3D_Transform extends Grid3D {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.M = args.mat;
+
+        this.start = args.start || frames(2);
+        this.timer = new Timer2(frames(2));
+
+        this.xd = [];
+        this.yd = [];
+        this.zd = [];
+        // calculate the destination coordinates
+        for (let i = 0; i < this.nCb; i++) { // iterate through n^3 entries
+            let x = this.xs[i],
+                y = this.ys[i],
+                z = this.zs[i];
+            this.xd[i] = this.M[0] * x + this.M[1] * y + this.M[2] * z;
+            this.yd[i] = this.M[3] * x + this.M[4] * y + this.M[5] * z;
+            this.zd[i] = this.M[6] * x + this.M[7] * y + this.M[8] * z;
+        }
+    }
+
+    show(g) {
+        if (this.s.frameCount < this.start) {
+            this.showGrid(g);
+        } else {                           // show transformation
+            let t = this.timer.advance();
+            let a, b, c, d, x1, y1, z1, x, y, z;
+            for (let i = 0; i < this.n; i++) {
+                for (let j = 0; j < this.n; j++) {
+                    for (let k = 0; k < this.n; k++) {
+                        // the index of the starting point of lines
+                        d = i * this.nSq + j * this.n + k;
+
+                        x1 = this.xs[d];
+                        x = x1 + (this.xd[d] - x1) * t;
+                        y1 = this.ys[d];
+                        y = y1 + (this.yd[d] - y1) * t;
+                        z1 = this.zs[d];
+                        z = z1 + (this.zd[d] - z1) * t;
+
+                        // the indices of the endpoints of lines
+                        a = d + 1;
+                        b = d + this.n;
+                        c = d + this.nSq;
+
+                        // the rgb values of the lines to be drawn
+                        this.setColor(g, i, j, k);
+
+                        if (k !== this.n - 1) {
+                            g.line(x, y, z,
+                                this.xs[a] + (this.xd[a] - this.xs[a]) * t,
+                                this.ys[a] + (this.yd[a] - this.ys[a]) * t,
+                                this.zs[a] + (this.zd[a] - this.zs[a]) * t);
+                        }
+                        if (j !== this.n - 1) {
+                            g.line(x, y, z,
+                                this.xs[b] + (this.xd[b] - this.xs[b]) * t,
+                                this.ys[b] + (this.yd[b] - this.ys[b]) * t,
+                                this.zs[b] + (this.zd[b] - this.zs[b]) * t);
+                        }
+                        if (i !== this.n - 1) {
+                            g.line(x, y, z,
+                                this.xs[c] + (this.xd[c] - this.xs[c]) * t,
+                                this.ys[c] + (this.yd[c] - this.ys[c]) * t,
+                                this.zs[c] + (this.zd[c] - this.zs[c]) * t);
+                        }
                     }
                 }
             }
@@ -285,6 +370,7 @@ class Arrow3D {
         // quickly drop to about 5. If I use specularMaterial, it has the same effect
         // as fill(), but I would only need to call directionalLight() and ambientLight()
         // once, in the Axes3D class, which greatly improves performance.
+        g.noStroke();
         g.specularMaterial(this.color);
 
         g.translate(this.tx, this.ty, this.tz);

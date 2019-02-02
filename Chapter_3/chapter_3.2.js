@@ -1,85 +1,6 @@
 // 3d scene
 
 
-// 2019-01-02, 03
-class Grid_Projection extends Grid3D {
-    constructor(ctx, args) {
-        super(ctx, args);
-        // an array in the form [a,b,c, d,e,f], representing 2 column vectors
-        // coordinates should be in p5's coordinate system
-        this.U = args.mat;
-
-        this.start = args.start || frames(2);
-        this.timer = new Timer2(frames(2));
-
-        this.xd = [];
-        this.yd = [];
-        this.zd = [];
-        this.P = calcProjectionMatrix(stdToP5(this.U));
-        // calculate the destination coordinates
-        for (let i = 0; i < this.nCb; i++) { // iterate through n^3 entries
-            let x = this.xs[i],
-                y = this.ys[i],
-                z = this.zs[i];
-            this.xd[i] = this.P[0] * x + this.P[1] * y + this.P[2] * z;
-            this.yd[i] = this.P[3] * x + this.P[4] * y + this.P[5] * z;
-            this.zd[i] = this.P[6] * x + this.P[7] * y + this.P[8] * z;
-        }
-    }
-
-    show(g) {
-        if (this.s.frameCount < this.start) {
-            this.showGrid(g);
-        } else {                           // show transformation
-            let t = this.timer.advance();
-            let a, b, c, d, x1, y1, z1, x, y, z;
-            for (let i = 0; i < this.n; i++) {
-                for (let j = 0; j < this.n; j++) {
-                    for (let k = 0; k < this.n; k++) {
-                        // the index of the starting point of lines
-                        d = i * this.nSq + j * this.n + k;
-
-                        x1 = this.xs[d];
-                        x = x1 + (this.xd[d] - x1) * t;
-                        y1 = this.ys[d];
-                        y = y1 + (this.yd[d] - y1) * t;
-                        z1 = this.zs[d];
-                        z = z1 + (this.zd[d] - z1) * t;
-
-                        // the indices of the endpoints of lines
-                        a = d + 1;
-                        b = d + this.n;
-                        c = d + this.nSq;
-
-                        // the rgb values of the lines to be drawn
-                        this.setColor(g, i, j, k);
-
-                        if (k !== this.n - 1) {
-                            g.line(x, y, z,
-                                this.xs[a] + (this.xd[a] - this.xs[a]) * t,
-                                this.ys[a] + (this.yd[a] - this.ys[a]) * t,
-                                this.zs[a] + (this.zd[a] - this.zs[a]) * t);
-                        }
-                        if (j !== this.n - 1) {
-                            g.line(x, y, z,
-                                this.xs[b] + (this.xd[b] - this.xs[b]) * t,
-                                this.ys[b] + (this.yd[b] - this.ys[b]) * t,
-                                this.zs[b] + (this.zd[b] - this.zs[b]) * t);
-                        }
-                        if (i !== this.n - 1) {
-                            g.line(x, y, z,
-                                this.xs[c] + (this.xd[c] - this.xs[c]) * t,
-                                this.ys[c] + (this.yd[c] - this.ys[c]) * t,
-                                this.zs[c] + (this.zd[c] - this.zs[c]) * t);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
 /**
  * Adds three vectors to display, in addition to the plane
  */
@@ -167,14 +88,14 @@ const Chap3Part2 = function(s) {
         s.plane1 = new Plane_Projection(s, {
             mat: matrix,
             y: target,
-            color: s.color(255, 255, 0, 77),
+            color: s.color(255, 255, 0, 177),
             start: time.transform
         });
 
-        grid = new Grid_Projection(s, {
+        grid = new Grid3D_Transform(s, {
             lineLen: 147,
             numLines: 3,
-            mat: matrix,
+            mat: calcProjectionMatrix(stdToP5(matrix)),
             start: time.transform,
             strokeweight: 3
         });

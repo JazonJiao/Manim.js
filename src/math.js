@@ -35,18 +35,6 @@ function calcProjectionMatrix(M) {
     return P;
 }
 
-
-// function stdToP5(a, b, c) {
-//     if (a.length === undefined) {
-//
-//     }
-//     if (a.length === 3) {
-//         return [a[2], a[0], -a[1]];
-//     } else if (a.length === 6) {
-//         return [a[1], -a[2], a[0], a[4], -a[5], a[3]];
-//     }
-// }
-
 // todo: define a Matrix class
 
 /*** 2019-01-13 // fixme: this is not correct...

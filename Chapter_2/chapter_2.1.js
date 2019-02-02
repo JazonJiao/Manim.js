@@ -59,7 +59,7 @@ const Scene13 = function(s) {
             font: times, start: timeOffset + i * timeStep, x: xOffset, y: i * yStep + yOffset,
         });
         s.txts[i++] = new TextFade(s, {
-            str: "Chapter 5: Least Squares and Orthogonality",
+            str: "Chapter 5: Least Squares",
             font: times, start: timeOffset + i * timeStep, x: xOffset, y: i * yStep + yOffset,
         });
         s.txts[i++] = new TextFade(s, {
