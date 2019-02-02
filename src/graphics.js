@@ -54,22 +54,35 @@ class Graphics {         // the master of all classes
  * if the object's position is shown in draw(), instead of setup().
  *
  * ---- args list parameters ----
- * @optional (number) x, y
+ * @optional (number) x, y, start;
  */
 class PointBase {
     constructor(ctx, args) {
+        ///console.log(args);
         this.s = ctx;
         this.x = args.x || 0;
         this.y = args.y || 0;
+        this.start = args.start || 30;
     }
 
-    move(x, y) {
+    // this is controlled by s.draw(), not this.show().
+    move(x, y, duration, timerNum) {
         this.xo = this.x;
         this.xd = x;
         this.yo = this.y;
         this.yd = y;
         this.moved = true;
-        this.move_timer = new Timer2(frames(2));
+        let d = 1;
+        if (duration) {
+            d = duration;
+        }
+        if (timerNum === 0) {
+            this.move_timer = new Timer0(frames(d));
+        } else if (timerNum === 1) {
+            this.move_timer = new Timer1(frames(d));
+        } else {
+            this.move_timer = new Timer2(frames(d));
+        }
     }
 
     moving() {

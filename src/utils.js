@@ -931,13 +931,17 @@ class Bracket {
 
 
 /*** 2019-02-01
- * Image
+ * ImageBase (could not name it to Image since it would conflict p5.Image)
+ *
+ * This class does not support init animations.
+ * Since this.s.tint() is a very costly method and slows down the frame rate drastically,
+ * user can use the ImageFly class to display init animation of flying in from the left, etc.
  *
  * ---- args list parameters ----
  * @mandatory (p5.Image) img
- * @optional (number) x, y, w, h
+ * @optional (number) x, y, w, h, start
  */
-class Image extends PointBase {
+class ImageBase extends PointBase {
     constructor(ctx, args) {
         super(ctx, args);
         this.w = args.w;
@@ -946,12 +950,42 @@ class Image extends PointBase {
         this.img = args.img;
     }
 
-    show() {
+    showImage() {
         this.showMove();
         if (this.w) {
             this.s.image(this.img, this.x, this.y, this.w, this.h);
         } else {
             this.s.image(this.img, this.x, this.y);
         }
+    }
+}
+
+/***
+ * ImageFly
+ *
+ * mode 1: fly from left
+ *
+ * ---- args list parameters ----
+ * @mandatory (p5.Image) img, mode
+ * @optional (number) x, y, w, h, start, duration
+ */
+class ImageFly extends ImageBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+
+        this.duration = args.duration || 1;
+
+        if (args.mode === 1) {  // todo
+            this.xf = this.x;
+            this.x = -this.w;
+        }
+
+    }
+
+    show() {
+        if (this.s.frameCount === this.start) {
+            this.move(this.xf, this.y, this.duration, 1);
+        }
+        this.showImage();
     }
 }
