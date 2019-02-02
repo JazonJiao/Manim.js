@@ -47,18 +47,44 @@ class Graphics {         // the master of all classes
     }
 }
 
-/***
- * Note 2018-11-19:
- * The above class hierarchy does not apply to 3D scenes. All 3D scenes should be rendered
- * directly on the canvas created by createCanvas(), instead of the buffer graphics object.
- * It would be awkward to use different renderers for different 3D objects on the same screen.
- * 3D object classes should be created without extensively using this.g.
- * However, in a 3D scene, I can create 2D Graphics classes on top of the 3D renderer
- * to display texts, formulas, etc.
+/*** 2019-02-01 --- Major Refactoring
+ * Base class for all objects defined by (x, y) position, as opposed to x1, y1, x2, y2 in a line
+ *
+ * This class is created to centralize the operation of moving an object,
+ * if the object's position is shown in draw(), instead of setup().
+ *
+ * ---- args list parameters ----
+ * @optional (number) x, y
  */
-// class Graphics3D {
-//     constructor(w, h) {
-//         // default angleMode is radians
-//         this.g = createGraphics(w, h, WEBGL);
-//     }
-// }
+class PointBase {
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.x = args.x || 0;
+        this.y = args.y || 0;
+    }
+
+    move(x, y) {
+        this.xo = this.x;
+        this.xd = x;
+        this.yo = this.y;
+        this.yd = y;
+        this.moved = true;
+        this.move_timer = new Timer2(frames(2));
+    }
+
+    moving() {
+        let t = this.move_timer.advance();
+        this.x = this.xo + t * (this.xd - this.xo);
+        this.y = this.yo + t * (this.yd - this.yo);
+    }
+
+    // to be called at the beginning of the show() function of derived classes
+    showMove() {
+        if (this.moved)
+            this.moving();
+    }
+
+    show() {
+
+    }
+}

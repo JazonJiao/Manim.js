@@ -159,7 +159,7 @@ class Sys_3Eqs {
         this.mv1 = args.move1 || 10000;   // time for move1 animation
         this.mv2 = args.move2 || 10000;   // time for move2 animation
         this.mv3 = args.move3 || 10000;
-        this.mv4 = args.move4;
+        this.mv4 = args.move4 || 10000;
 
         // mode 0: show entire equation
         // mode 1: show X^T only
@@ -469,7 +469,7 @@ class Sys_3Eqs {
         if (this.s.frameCount === this.mv4) this.move4();
 
         // this is so awkward...
-        // I should have used a 2d array to caregorize the objects further, e.g. into lhs and rhs
+        // I should have used a 2d array to categorize the objects further, e.g. into lhs and rhs
         if (this.mode === 0) {
             for (let t of this.txts) t.show();
             for (let k of this.kats) k.show();
@@ -589,7 +589,6 @@ class Grid_3Lines_With_Point extends Grid_3Lines {
         this.calcClosestPoint();
     }
 
-
     // I tried to do this by refactoring the Plot class and make its calcParams() method
     // a free method, but then I broke a lot of previous code, so I have to write a lot of
     // redundant code here... I know its bad style but whatever
@@ -615,7 +614,7 @@ class Grid_3Lines_With_Point extends Grid_3Lines {
 
         this.closestPoint = new PlotPoint(this.s, {
             x: x, y: y,
-            start: getT(this.time.lines),  // fixme
+            start: getT(this.time.point),  // fixme
             radius: 24,
             color: [247, 177, 47]
         });
@@ -623,9 +622,15 @@ class Grid_3Lines_With_Point extends Grid_3Lines {
             text: "(\\hat{\\beta_0}, \\hat{\\beta})",
             x: x - 129,
             y: y - 107,
-            fadeIn: true, start: getT(this.time.lines)
+            fadeIn: true, start: getT(this.time.vec)
         });
-
+        this.arrow = new Arrow(this.s, {
+            x1: this.centerX, x2: x,
+            y1: this.centerY, y2: y,
+            start: getT(this.time.vec),
+            strokeweight: 4,
+            fadeIn: true, colorArr: [248, 147, 227]
+        })
     }
 
     show() {
@@ -633,6 +638,7 @@ class Grid_3Lines_With_Point extends Grid_3Lines {
         for (let l of this.lines) l.show();
         this.closestPoint.show();
         this.kat.show();
+        this.arrow.show();
     }
 }
 

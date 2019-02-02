@@ -928,3 +928,30 @@ class Bracket {
         for (let l of this.lines) l.show();
     }
 }
+
+
+/*** 2019-02-01
+ * Image
+ *
+ * ---- args list parameters ----
+ * @mandatory (p5.Image) img
+ * @optional (number) x, y, w, h
+ */
+class Image extends PointBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.w = args.w;
+        this.h = args.h;
+
+        this.img = args.img;
+    }
+
+    show() {
+        this.showMove();
+        if (this.w) {
+            this.s.image(this.img, this.x, this.y, this.w, this.h);
+        } else {
+            this.s.image(this.img, this.x, this.y);
+        }
+    }
+}

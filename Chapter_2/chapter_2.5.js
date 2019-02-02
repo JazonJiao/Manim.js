@@ -134,7 +134,7 @@ const Chap2Part5 = function(s) {
         s.pl.showPlane(g3);
 
         s.image(g3, 0, 0, cvw, cvh);
-        showFR(s, sf);
+        showFR(s);
     };
 
 };

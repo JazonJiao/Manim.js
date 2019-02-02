@@ -174,8 +174,6 @@ const Chap2Part1 = function (s) {
     s.draw = function () {
         s.background(0);
         axes.show(g3);
-        // g3.pointLight(147, 147, 147, 0, 1, 0);
-        // g3.ambientLight(27, 27, 27);
 
         arrows.show(g3);
         //hg.show();
@@ -183,8 +181,6 @@ const Chap2Part1 = function (s) {
         s.image(g3, 0, 0, cvh, cvh);
 
         for (let k of kats) k.show();
-
-
         showFR(s, g2);
     };
 };

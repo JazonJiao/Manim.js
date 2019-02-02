@@ -1,11 +1,14 @@
 // scenes 15, 18
-const Chap2Part2 = function (s) {
+const Scene15 = function (s) {
     let time = {
         eqs: 1,
         moveEqs: frames(1),
         grid: frames(2),
         lines: frames(3),
-        overdet: frames(4),
+        point: frames(4),
+        vec: frames(5),
+
+        overdet: frames(2),
         brain: frames(4),
     };
 
@@ -77,4 +80,4 @@ const Chap2Part2 = function (s) {
     }
 };
 
-let p22 = new p5(Chap2Part2);
+let p = new p5(Scene15);

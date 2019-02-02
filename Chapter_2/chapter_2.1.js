@@ -1,3 +1,4 @@
+
 // scene 16
 const Scene16 = function (s) {
     let time = {
@@ -129,15 +130,99 @@ const Scene17 = function(s) {   // scene 17
 };
 
 const Scene13 = function(s) {
+    let time = {
+        title: frames(1),
+        chaps: frames(2)
+    };
+
+    s.txts = [];
+    let times;
+    let yt;
+
+    // stores the YouTube logos
+    s.imgs = [];
+
+    s.preload = function() {
+        times = s.loadFont('../lib/font/times.ttf');
+        yt = s.loadImage('../lib/img/youtube_logo.webp');
+    };
+
+    let xOffset = 277;
+    let timeOffset = time.chaps;
+    let timeStep = 5;
+    let yOffset = 77;
+    let yStep = 57;
 
     s.setup = function() {
         s.frameRate(fr);
         s.createCanvas(cvw, cvh);
+
+        let i = 0;
+
+        for (let j = 0; j < 8; j++) {
+            s.imgs[j] = new Image(s, {
+                img: yt,
+                x: 177, y: j * yStep + yOffset + 44,
+                w: 117, h: 67
+            })
+        }
+
+        s.txts[i++] = new TextFade(s, {
+            str: "Chapter 1: Simple Linear Regression, Visualized",
+            font: times, start: timeOffset + i * timeStep,
+            x: xOffset, y: i * yStep + yOffset,
+        });
+        s.txts[i++] = new TextFade(s, {
+            str: "Chapter 2: Overdetermined System of Equations",
+            font: times, start: timeOffset + i * timeStep,
+            x: xOffset, y: i * yStep + yOffset,
+            color: [47, 247, 77]
+        });
+        s.txts[i++] = new TextFade(s, {
+            str: "Chapter 3: The Normal Equation, Visualized",
+            font: times, start: timeOffset + i * timeStep,
+            x: xOffset, y: i * yStep + yOffset,
+        });
+        s.txts[i++] = new TextFade(s, {
+            str: "Chapter 4: Multiple Regression",
+            font: times, start: timeOffset + i * timeStep,
+            x: xOffset, y: i * yStep + yOffset,
+        });s.txts[i++] = new TextFade(s, {
+            str: "Chapter 5: Least Squares and Orthogonality",
+            font: times, start: timeOffset + i * timeStep,
+            x: xOffset, y: i * yStep + yOffset,
+        });
+        s.txts[i++] = new TextFade(s, {
+            str: "Chapter 6: The Projection Matrix",
+            font: times, start: timeOffset + i * timeStep,
+            x: xOffset, y: i * yStep + yOffset,
+        });s.txts[i++] = new TextFade(s, {
+            str: "Chapter 7: Gram-Schmidt and QR Factorization",
+            font: times, start: timeOffset + i * timeStep,
+            x: xOffset, y: i * yStep + yOffset,
+        });
+        s.txts[i++] = new TextFade(s, {
+            str: "......",
+            font: times, start: timeOffset + i * timeStep,
+            x: xOffset, y: i * yStep + yOffset,
+        });
+
+        // title
+        s.txts[i++] = new TextWriteIn(s, {
+            str: "Linear Regression",
+            font: times, start: time.title,
+            x: 417, y: 47, size: 47,
+        });
     };
 
-    s.show = function() {
+    s.draw = function() {
         s.background(0);
+        for (let t of s.txts) t.show();
+
+        for (let i of s.imgs) i.show();
+
+        showFR(s);
     }
 };
 
-let p21 = new p5(Scene17);
+let p = new p5(Scene13);
