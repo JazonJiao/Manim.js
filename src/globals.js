@@ -89,27 +89,16 @@ function setup3D(s) {
  * If width is normal 1200, display FPS at upper-left position.
  * If width is monitor mode (1250), display FPS at upper-right where it'o not captured by camera.
  *
- * For usual 2D scenes, don't pass in parameters.
- * For 3D scenes, declare an off-screen canvas g2 = createGraphics(100, 10);
- * and pass in that as the parameter.
  */
-function showFR(s, g) {
+function showFR(s) {
     const fps = s.frameRate();
     let pos = (cvw === 1200) ? 0 : 1200;
 
-    if (g === undefined) {
-        s.fill(255);
-        s.textSize(10);
-        s.noStroke();
-        s.text("FPS: " + fps.toFixed(1), pos, 10);
-    } else {
-        g.background(0);
-        g.fill(255);
-        g.textSize(10);
-        g.noStroke();
-        g.text("FPS: " + fps.toFixed(1), 0, 10);
-        s.image(g, pos, 0);
-    }
+    s.fill(255);
+    s.textSize(10);
+    s.noStroke();
+    s.text("FPS: " + fps.toFixed(1), pos, 10);
+
 }
 
 /** [DEPRECATED]

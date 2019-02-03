@@ -53,16 +53,25 @@ class Plane_LinComb extends Plane3D {
 
         this.lb = -2;  // lower bound for a, b
         this.ub = 2;   // upper bound for a, b
-        this.textX = 700;
-        this.textY = 200;
+        this.textX = args.textX || 700;
+        this.textY = args.textY || 200;
         this.textsize = 40;
 
-        this.kat = new Katex(this.s, {
+        this.kats = [];
+        this.kats[0] = new Katex(this.s, {
             text: "\\textcolor{#f7e717}{\\vec{v}} = " +
-                "~~~~~~~~\\textcolor{f76767}{x_1} + ~~~~~~~~\\textcolor{47f747}{x_2}",
+                "~~~~~~~~\\textcolor{f76767}{x_0} + ~~~~~~~~\\textcolor{47f747}{x_1}",
             x: this.textX,
             y: this.textY,
             font_size: this.textsize
+        });
+        this.kats[1] = new Katex(this.s, {
+            text: "\\beta_0\\newline\\downarrow",
+            x: this.textX + 120, y: this.textY - 114,
+        });
+        this.kats[2] = new Katex(this.s, {
+            text: "\\beta_1\\newline\\downarrow",
+            x: this.textX + 320, y: this.textY - 114,
         });
 
         this.text1 = new Text(this.s, {
@@ -102,8 +111,7 @@ class Plane_LinComb extends Plane3D {
 
         this.arrow5.reset({ from: [x, y, z] });
         this.arrow5.show(g);
-        this.kat.show();
-
+        for (let k of this.kats) k.show();
 
         this.text1.reset({ str: "" + (b0_coeff / this.step).toFixed(2) });
         this.text1.show();
@@ -126,20 +134,16 @@ const Chap2Part1 = function (s) {
 
     s.preload = function () {
         obj[0] = s.loadModel('../lib/obj/axes.obj');
-        obj[1] = s.loadModel('../lib/obj/x_1.obj');
-        obj[2] = s.loadModel('../lib/obj/x_2.obj');
+        obj[1] = s.loadModel('../lib/obj/x_0.obj');
+        obj[2] = s.loadModel('../lib/obj/x_1.obj');
         obj[3] = s.loadModel('../lib/obj/y.obj');
         // obj[4] = loadModel('../lib/obj/r.obj');
         font = s.loadFont('../lib/font/times.ttf');
     };
 
     s.setup = function () {
-        s.frameRate(fr);
-
-        s.pixelDensity(1);
-        s.createCanvas(cvw, cvh);
-        g3 = s.createGraphics(cvh * 2, cvh * 2, s.WEBGL);  // a square to be displayed to the left
-        g2 = s.createGraphics(100, 10);
+        setup3D(s);
+        g3 = s.createGraphics(600 * 2, cvh * 2, s.WEBGL);  // a square to be displayed to the left
 
         axes = new Axes3D(s, {
             angle: 0,
@@ -147,41 +151,46 @@ const Chap2Part1 = function (s) {
         });
 
         hg = new HelperGrid(s);
+        s.plot = new LS_Plot(s, {
+            xs: [matrix[3], matrix[4], matrix[5]],
+            ys: target,
+            left: 0,
+            centerX: 270,
+            right: 597,
+            labelX: "x",
+            labelY: "y",
+            stepX: 100,
+            stepY: 100,
+            lineColor: s.color(255, 137, 77),
+            showSq: true
+        });
 
         arrows = new Plane_LinComb(s, {
             mat: matrix,
             y: target,
             font: font,
+            textX: 387, textY: 517,
             x_1: obj[1],
             x_2: obj[2],
             y_o: obj[3],
             // r_o: obj[4],
-            size: 300
+            size: 300,
         });
-        kats[0] = new Katex(s, {
-            text: "\\beta_0\\newline\\downarrow",
-            x: 820, y: 87,
 
-
-        });
-        kats[1] = new Katex(s, {
-            text: "\\beta_1\\newline\\downarrow",
-            x: 1020, y: 87,
-        })
     };
 
 
     s.draw = function () {
         s.background(0);
         axes.show(g3);
-
         arrows.show(g3);
         //hg.show();
+        s.plot.show();
 
-        s.image(g3, 0, 0, cvh, cvh);
+        s.image(g3, 600, 0, 600, cvh);
 
         for (let k of kats) k.show();
-        showFR(s, g2);
+        showFR(s);
     };
 };
 

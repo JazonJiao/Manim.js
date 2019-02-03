@@ -24,22 +24,11 @@ class LS_Plot extends Plot {
                 color: this.s.color(207, 207, 27, 87),
                 x: this.ptXs[i],
                 y: y_hat,
-                w: dy, h: dy    // we're constructing a square
+                w: -dy, h: dy    // we're constructing a square
             })
         }
     }
 
-    // // used for paragraph 17
-    // movePts() {
-    //     this.yo = [-2, 0, 3];
-    //     this.yd = y_new;
-    //     this.moved = true;
-    //     this.timer = new Timer2(frames(1.4));
-    // }
-    //
-    // moving() {
-    //
-    // }
 
     reset(args) {
         this.b_new = args.b_new;
@@ -51,7 +40,7 @@ class LS_Plot extends Plot {
             this.sqs[i].reset({
                 x: this.ptXs[i],
                 y: this.ptYs[i],
-                w: dy, h: dy    // we're constructing a square
+                w: -dy, h: dy    // we're constructing a square
             })
         }
 
