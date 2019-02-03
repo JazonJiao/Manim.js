@@ -811,3 +811,73 @@ class Arrows_Transform {
        }
     }
 }
+
+
+
+// the plane used to show multiple regression on 2 independent variables
+// reference: https://www.socscistatistics.com/tests/multipleregression/Default.aspx
+class MR_Plane extends Axes3D {
+    constructor(ctx, args) {
+        super(ctx, args);
+
+        // these are only used for this scene.
+        this.x1 = [10, -10, -10, 10, 20, -30, 5, -5];
+        this.x2 = [10, 20, -10, 30, 5, 10, -20, -5];
+        this.y = [20, 15, 0, 10, 10, -5, -15, 10];
+
+        this.n = this.x1.length;
+        this.step = 10;
+
+        let ax1 = this.avg(this.x1);
+        let ax2 = this.avg(this.x2);
+        let ay = this.avg(this.y);
+
+        let ssx1 = this.dot(this.x1, this.x1, ax1, ax1);
+        let ssx2 = this.dot(this.x2, this.x2, ax2, ax2);
+        let spx1y = this.dot(this.x1, this.y, ax1, ay);
+        let spx2y = this.dot(this.x2, this.y, ax2, ay);
+        let spx1x2 = this.dot(this.x1, this.x2, ax1, ax2);
+        let denom = (ssx1 * ssx2 - spx1x2 * spx1x2);
+        let b1 = (spx1y * ssx2 - spx1x2 * spx2y) / denom;
+        let b2 = (spx2y * ssx1 - spx1x2 * spx1y) / denom;
+        let b0 = ay - b1 * ax1 - b2 * ax2;
+        //console.log(ax1, ax2, ay, ssx1, ssx2, spx1y, spx2y, spx1x2, b1, b2, b0, denom);
+
+        this.plane = new Plane3D(this.s, {
+            a: b1, b: b2, c: b0 * this.step,
+            color: this.s.color(27, 157, 237, 167)
+        })
+    }
+
+    avg(x) { // I know method can be static... (MR_Plane.dot(...))
+        let s = 0;
+        for (let i = 0; i < x.length; i++)
+            s += x[i];
+        return s / x.length;
+    }
+
+    dot(x, y, avgX, avgY) {
+        let s = 0;
+        for (let i = 0; i < x.length; i++) {
+            s += (x[i] - avgX) * (y[i] - avgY);
+        }
+        return s;
+    }
+
+    showPlane(g) {
+        this.show(g);
+        // show the points
+        for (let i = 0; i < this.n; i++) {
+            g.push();
+            g.translate(this.x1[i] * this.step, -this.y[i] * this.step, this.x2[i] * this.step);
+            g.stroke(247, 77, 7);
+            g.strokeWeight(2);
+            g.fill(197, 197, 17);
+            g.rotateX(this.s.frameCount / 17);
+            g.rotateY(this.s.frameCount / 27);
+            g.box(27);
+            g.pop();
+        }
+        this.plane.showPlane(g);
+    }
+}

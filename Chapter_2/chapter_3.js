@@ -34,13 +34,11 @@ const Scene23 = function(s) {
             start: frames(1),
         });
         s.grid = new Grid3D_Transform(s, {
-            mat: stdToP5(
-                //[matrix[3], matrix[4], matrix[5], matrix[0], matrix[1], matrix[2], 0, 0, 0]),
-                //[matrix[0], matrix[3], matrix[1], matrix[4], matrix[2], matrix[5], 0, 0, 0]),
-                [matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], 0, 0, 0]),
-                //[matrix[0], matrix[3], 0, matrix[1], matrix[4], 0, matrix[2], matrix[5], 0]),
+            mat: //[1, -2, -1, 0, 0, 0, 1, -1, 1],
+                stdToP5(
+                    [matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], 0, 0, 0]),
             start: time.three_to_two,
-            numLines: 2,
+            numLines: 2, lineLen: 197
         });
         s.pl = new Plane3D(s, {
             a: 0, b: 0, c: 0

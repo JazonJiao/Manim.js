@@ -38,11 +38,8 @@ function stdToP5(a, b, c) {
         return [a[1], -a[2], a[0]];   // x = y, y = -z, z = x
     } else if (a.length === 6) {      // 012 are column 1, 345 are column 2
         return [a[1], -a[2], a[0], a[4], -a[5], a[3]];
-    } else if (a.length === 9) {      // 012 are row 1, 345 are row 2, 678 are row 3
-        //return [a[1], -a[2], a[0], a[4], -a[5], a[3], a[7], -a[8], a[6]];
-        return [a[3], a[4], a[5], -a[6], -a[7], -a[8], a[0], a[1], a[2]];  // fixme
-        //return [-a[3], -a[4], -a[5], -a[6], -a[7], -a[8], a[0], a[1], a[2]];
-        //return [a[0], a[1], a[2], -a[6], -a[7], -a[8], a[3], a[4], a[5]];
+    } else if (a.length === 9) {      // 012 are ROW 1, 345 are row 2, 678 are row 3
+        return [a[4], -a[5], a[3], -a[7], a[8], -a[6], a[1], -a[2], a[0]]; // fixme: weird...
     }
 }
 
