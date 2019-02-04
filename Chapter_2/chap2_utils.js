@@ -132,7 +132,7 @@ class Grid_b0b extends Grid {
 
 /***
  * ---- args list parameters ----
- * (number) x, y, start, show1s, move1, move2, move3, move4; (p5.Font) font
+ * (number) x, y, start, show1s, move1, move2, move3, move4, end; (p5.Font) font
  */
 class Sys_3Eqs {
     constructor(ctx, args) {
@@ -149,6 +149,8 @@ class Sys_3Eqs {
         this.mv2 = args.move2 || 10000;   // time for move2 animation
         this.mv3 = args.move3 || 10000;
         this.mv4 = args.move4 || 10000;
+        this.mv5 = args.move5 || 10000;
+        this.end = args.end || 10000;
 
         // mode 0: show entire equation
         // mode 1: show X^T only
@@ -165,7 +167,7 @@ class Sys_3Eqs {
             });
             this.kats[i] = new Katex(this.s, {
                 text: "\\beta_0",
-                fadeIn: true, start: this.start, fadeOut: i !== 1, end: this.mv1,
+                fadeIn: true, start: this.start, fadeOut: i !== 1, end: this.mv1,  // fixme
                 x: this.x + 30, y: this.y + i * 57 - 34,
             });
         }
@@ -205,7 +207,7 @@ class Sys_3Eqs {
         // =, 12~14
         for (let i = 0; i < 3; i++) {
             this.txts[i + 12] = new TextFade(this.s, {
-                str: "=", start: this.start, size: 47,
+                str: "=", start: this.start, size: 47, end: this.end,
                 x: this.x + 234, y: this.y + i * 57
             });
         }
@@ -239,12 +241,12 @@ class Sys_3Eqs {
         let tmp2 = this.dot([-1, 1, 2]);
         this.txts[21] = new TextFade(this.s, {
             str: "" + tmp1[0] + "\n" + tmp1[1],
-            start: this.mv4, size: 47, mode: 1,
+            start: this.mv4, size: 47, mode: 1, end: this.mv5,
             x: this.x + 20, y: this.y + 77, font: args.font, color: [255, 77, 97],
         });
         this.txts[22] = new TextFade(this.s, {
             str: "" + tmp2[0] + "\n" + tmp2[1],
-            start: this.mv4, size: 47, mode: 1,
+            start: this.mv4, size: 47, mode: 1, end: this.mv5,
             x: this.x + 92, y: this.y + 77, font: args.font, color: [77, 217, 77],
         });
 
@@ -253,61 +255,70 @@ class Sys_3Eqs {
 
         this.txts[23] = new TextFade(this.s, {
             str: "" + tmp3[0] + "\n" + tmp3[1],
-            start: this.mv4, size: 47, mode: 1,
+            start: this.mv4, size: 47, mode: 1, end: this.mv5,
             x: this.mode === 3 ? this.x + 514 : this.x + 302,
+            y: this.y + 77, font: args.font, color: [77, 177, 255],
+        });
+
+        // final result for vector b, 24
+        this.txts[24] = new TextFade(this.s, {
+            str: "-0.71\n1.57",  // hardcoded lol
+            start: this.mv5, size: 47, mode: 1, end: this.end,
+            x: this.x + 334,
             y: this.y + 77, font: args.font, color: [77, 177, 255],
         });
 
         this.brackets = [];
 
+        let bt = 2;
         // x0
         this.brackets[0] = new Bracket(this.s, {
             x1: this.x - 7, x2: this.x - 7, y1: this.y, y2: this.y + 167,
-            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3, end: this.mv4
+            tipLen: 9, duration: frames(bt), start: this.mv1, strokeweight: 3, end: this.mv4
         });
         this.brackets[1] = new Bracket(this.s, {
             x1: this.x + 44, x2: this.x + 44, y1: this.y + 167, y2: this.y,
-            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3
+            tipLen: 9, duration: frames(bt), start: this.mv1, strokeweight: 3, end: this.end,
         });
 
         // x1
         this.brackets[2] = new Bracket(this.s, {
             x1: this.x + 127, x2: this.x + 127, y1: this.y, y2: this.y + 167,
-            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3
+            tipLen: 9, duration: frames(bt), start: this.mv1, strokeweight: 3, end: this.end,
         });
         this.brackets[3] = new Bracket(this.s, {
             x1: this.x + 194, x2: this.x + 194, y1: this.y + 167, y2: this.y,
-            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3,
+            tipLen: 9, duration: frames(bt), start: this.mv1, strokeweight: 3, end: this.mv5,
         });
 
         // y
         this.brackets[4] = new Bracket(this.s, {
             x1: this.x + 271, x2: this.x + 271, y1: this.y, y2: this.y + 167,
-            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3, end: this.mv4
+            tipLen: 9, duration: frames(bt), start: this.mv1, strokeweight: 3, end: this.mv4
         });
         this.brackets[5] = new Bracket(this.s, {
             x1: this.x + 340, x2: this.x + 340, y1: this.y + 167, y2: this.y,
-            tipLen: 9, duration: frames(2), start: this.mv1, strokeweight: 3
+            tipLen: 9, duration: frames(bt), start: this.mv1, strokeweight: 3, end: this.end,
         });
 
         // X^T for LHS
         this.brackets[6] = new Bracket(this.s, {
             x1: this.x - 222, x2: this.x - 222, y1: this.y + 24, y2: this.y + 142,
-            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3,
+            tipLen: 9, duration: frames(bt), start: this.mv3, strokeweight: 3, end: this.mv5,
         });
         this.brackets[7] = new Bracket(this.s, {
             x1: this.x - 22, x2: this.x - 22, y1: this.y + 142, y2: this.y + 24,
-            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3, end: this.mv4
+            tipLen: 9, duration: frames(bt), start: this.mv3, strokeweight: 3, end: this.mv4
         });
 
         // X^T for RHS
         this.brackets[8] = new Bracket(this.s, {
             x1: this.x + 271, x2: this.x + 271, y1: this.y + 24, y2: this.y + 142,
-            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3,
+            tipLen: 9, duration: frames(bt), start: this.mv3, strokeweight: 3, end: this.end,
         });
         this.brackets[9] = new Bracket(this.s, {
             x1: this.x + 471, x2: this.x + 471, y1: this.y + 142, y2: this.y + 24,
-            tipLen: 9, duration: frames(2), start: this.mv3, strokeweight: 3, end: this.mv4
+            tipLen: 9, duration: frames(bt), start: this.mv3, strokeweight: 3, end: this.mv4
         });
     }
 
@@ -424,10 +435,6 @@ class Sys_3Eqs {
         this.brackets[6].move({
             x1: this.x - 7, x2: this.x - 7, y1: this.y + 24, y2: this.y + 142,
         });
-        // this.brackets[2].move({
-        //     x1: this.x + 134, y1: this.y + 24,
-        //     x2: this.x + 134, y2: this.y + 142
-        // });
         this.brackets[3].move({
             x1: this.x + 119, y1: this.y + 142,
             x2: this.x + 119, y2: this.y + 24
@@ -449,6 +456,12 @@ class Sys_3Eqs {
         }
     }
 
+    move5() {
+        this.brackets[5].move({
+            x1: this.x + 397, x2: this.x + 397, y1: this.y + 142, y2: this.y + 24,
+        })
+    }
+
     show() {
         if (this.moved) this.moving();
 
@@ -456,6 +469,7 @@ class Sys_3Eqs {
         if (this.s.frameCount === this.mv2) this.move2();
         if (this.s.frameCount === this.mv3) this.move3();
         if (this.s.frameCount === this.mv4) this.move4();
+        if (this.s.frameCount === this.mv5) this.move5();
 
         // this is so awkward...
         // I should have used a 2d array to categorize the objects further, e.g. into lhs and rhs

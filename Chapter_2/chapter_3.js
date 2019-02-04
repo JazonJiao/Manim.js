@@ -211,10 +211,13 @@ const Scene26 = function(s) {
 // scene 27
 const Scene27 = function(s) {
     let time = {
+        eqs: frames(2),
         three_to_two: frames(3),
-        inverse_2d: frames(7),
+
         moveCam: frames(4),
-        kat: frames(2),
+        inverse_2d: frames(7),
+        kat: frames(7),
+
         grid: frames(8),
         gridLines: frames(9),
         gridPt: frames(10)
@@ -238,11 +241,11 @@ const Scene27 = function(s) {
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);
 
         s.eqs = new Sys_3Eqs(s, {
-            x: 340, y: 67,
-            move1: 1, move2: 2,
-            move3: 3, move4: time.three_to_two,
+            x: 387, y: 467,
+            move1: 1, move2: 4,
+            move3: 9, move4: time.three_to_two, move5: time.inverse_2d,
             font: tnr,
-            start: frames(1),
+            start: time.eqs, //end: time.kat
         });
 
         s.pl = new Plane3D(s, {
@@ -274,11 +277,14 @@ const Scene27 = function(s) {
             }
         });
 
-        kat = new Katex(s, {
-            text: "",
-            x: 37, y: 0, font_size: 30,
-            fadeIn: true, start: time.kat,
-        })
+        // kat = new Katex(s, {
+        //     text: "b=\\begin{bmatrix}" +
+        //         "-0.71 \\\\" +
+        //         "1.57 \\\\" +
+        //         "  \\end{bmatrix}",
+        //     x: 37, y: 0, font_size: 30,
+        //     fadeIn: true, start: time.kat,
+        // })
     };
 
     s.draw = function () {
@@ -297,7 +303,7 @@ const Scene27 = function(s) {
         s.arrs.show(g3);
         s.pl.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
-        kat.show();
+        //kat.show();
         showFR(s);
     };
 };
