@@ -22,14 +22,42 @@ class Axes3D {
         this.speed = args.speed || -0.0025;  // how many radians to rotate per frame
         this.camY = -567;
         this.camRadius = 674;
-        this.camFcn = ((g) => {
-            let camX = this.camRadius * Math.cos(this.angle);
-            let camZ = this.camRadius * Math.sin(this.angle);
-            this.angle += this.speed;
-
-            g.camera(camX, this.camY, camZ, 0, 0, 0, 0, 1, 0);
-        });
         this.model = args.model;
+    }
+
+    /** 2019-02-04
+     * reset camera properties with smooth animation in a given number of seconds
+     * essentially redefining the camera properties in a spherical coordinates
+     *
+     * @param args
+     * camRadius [cannot be 0; can be, say, 0.01],
+     * angle [to transform to 2d view, use the angle s.PI],
+     * camY [the height of camera; remember that upwards is negative],
+     * speed [set to 0 if don't want to spin],
+     * duration [in seconds]
+     */
+    moveCam(args) {
+        this.camR_o = this.camRadius;
+        this.camR_d = args.camRadius || this.camRadius;
+        this.angle_o = this.angle;
+        this.angle_d = args.angle || this.angle;
+        this.camY_o = this.camY;
+        this.camY_d = args.camY || this.camY;
+        this.speed = args.speed;
+
+        this.moved = true;
+        this.f = 0;
+        let d = args.duration || 2;
+        this.duration = frames(d);
+        this.move_timer = new Timer2(this.duration);
+    }
+
+    moving() {
+        let t = this.move_timer.advance();
+        this.camRadius = this.camR_o + t * (this.camR_d - this.camR_o);
+        this.angle = this.angle_o + t * (this.angle_d - this.angle_o);
+        this.camY = this.camY_o + t * (this.camY_d - this.camY_o);
+        this.f++;
     }
 
     show(g) {
@@ -37,19 +65,22 @@ class Axes3D {
         // however, it will also cause the plane to not show up, as it calls g.fill(this.color);
         g.background(0, 0, 0, 0);
 
-        //g.background(0);
         g.noStroke();
-
-        // @see Arrow3D class
-        //g.fill(177);
-        //g.noStroke();
 
         g.directionalLight(27, 27, 27, 0, 1, 0);
         g.ambientLight(27, 27, 27);
 
         g.specularMaterial(177);
 
-        this.camFcn(g);
+        if (this.moved && this.f <= this.duration) {  // todo: while animation not complete
+            this.moving();
+        } else {
+            this.angle += this.speed;  // fixme: if angle exceeds 2pi, move would be awkward
+        }
+        let camX = this.camRadius * Math.cos(this.angle);
+        let camZ = this.camRadius * Math.sin(this.angle);
+
+        g.camera(camX, this.camY, camZ, 0, 0, 0, 0, 1, 0);
 
         g.push();
         g.rotateX(this.s.PI);

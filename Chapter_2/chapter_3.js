@@ -213,6 +213,7 @@ const Scene27 = function(s) {
     let time = {
         three_to_two: frames(3),
         inverse_2d: frames(7),
+        moveCam: frames(4),
         kat: frames(2),
     };
 
@@ -265,6 +266,14 @@ const Scene27 = function(s) {
 
     s.draw = function () {
         s.background(0);
+        if (s.frameCount === time.moveCam) {
+            s.axes.moveCam({
+                camRadius: 0.01,
+                angle: s.PI,
+                speed: 0,
+                camY: -777
+            });
+        }
         s.axes.show(g3);
         s.eqs.show();
         s.arrs.show(g3);
@@ -275,4 +284,4 @@ const Scene27 = function(s) {
     };
 };
 
-let p = new p5(Scene23);
+let p = new p5(Scene27);
