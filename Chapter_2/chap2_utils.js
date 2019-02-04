@@ -501,6 +501,8 @@ class Normal_Eqs {
  * We are displaying three lines with general equations ax + by = c (1 * beta_0 + x * beta = y).
  * Also displays the least squares solution (β_0, β) as a point on β_0-β space.
  * Uses the global variables, xs and ys, directly.
+ *
+ * time: lines,
  */
 class Grid_3Lines extends Grid {
     constructor(ctx, args) {
@@ -522,7 +524,6 @@ class Grid_3Lines extends Grid {
             });
         }
     }
-
 
     // Takes in the ax + by = c representation of the line.
     // calculate its representation in y = mx + d, and
@@ -574,7 +575,7 @@ class Grid_3Lines_Transform extends Grid_3Lines {
     }
 }
 
-
+// time: line, point, vec
 class Grid_3Lines_With_Point extends Grid_3Lines {
     constructor(ctx, args) {
         super(ctx, args);

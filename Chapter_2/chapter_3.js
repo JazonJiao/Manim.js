@@ -215,6 +215,9 @@ const Scene27 = function(s) {
         inverse_2d: frames(7),
         moveCam: frames(4),
         kat: frames(2),
+        grid: frames(8),
+        gridLines: frames(9),
+        gridPt: frames(10)
     };
 
     let g3;
@@ -256,6 +259,20 @@ const Scene27 = function(s) {
             showY: true,
             showX: true
         });
+        s.grid = new Grid_3Lines_With_Point(s, {
+            centerX: 600,
+            labelX: "\\beta_0",
+            offsetX: -45,
+            labelY: "\\beta",
+            offsetY: -38,
+            stepX: 80,
+            stepY: 80,
+            start: time.grid,
+            time: {
+                lines: time.gridLines,
+                point: time.gridPt
+            }
+        });
 
         kat = new Katex(s, {
             text: "",
@@ -266,12 +283,13 @@ const Scene27 = function(s) {
 
     s.draw = function () {
         s.background(0);
+        s.grid.show();
         if (s.frameCount === time.moveCam) {
             s.axes.moveCam({
                 camRadius: 0.01,
                 angle: s.PI,
                 speed: 0,
-                camY: -777
+                camY: -737
             });
         }
         s.axes.show(g3);
