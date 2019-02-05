@@ -158,15 +158,6 @@ class TextWriteIn extends Text {
  *           (number) font_size, x, y, id; (string) color--note it'o passed as a string;
  *           (bool) fadeOut, end--if display fade out animation, the frame to start animation;
  */
-
-// sample instantiation:
-// kat1 = new Katex({
-//     str: "\\frac {\\sum_{i=1}^n (x_i-\\bar{x})(y_i-\\bar{y})} {\\sum_{i=1}^n(x_i-\\bar{x})^2}",
-//     x: 720,
-//     y: 200,
-//     fadeIn: true,
-//     fontsize: 80
-// });
 class Katex extends TextBase {
     constructor(ctx, args) {
 
@@ -196,14 +187,23 @@ class Katex extends TextBase {
         }
     }
 
-    showInit() {
+    /*** Refactored on 2019-02-04
+     * The show() now takes in the optional parameters x, y.
+     * Otherwise if I have a group of Katex objects stored in a class
+     * that need to move in the same manner, I will have to reset them one by one.
+     * Now I can just inherit that class of a group of Katex's from PointBase, and call
+     * show(this.x, this.y) on each Katex object. No need to move the Katex's one by one now.
+     */
+    show(x, y) {
         if (this.moved) {
             this.moving();
         }
-
-        // Based on the canvas position in the DOM
-        // Note that this absolute value has an offset of 9. Otherwise previous code would break
-        this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y);
+        if (x !== undefined) {
+            this.k.position(x + this.canvasPos.x, y + this.canvasPos.y);
+        } else {
+            // Based on the canvas position in the DOM
+            this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y);
+        }
 
         if (this.fadeIn && this.s.frameCount > this.start) {
             this.k.style('opacity', this.timer.advance());
@@ -211,10 +211,6 @@ class Katex extends TextBase {
         if (this.fadeOut && this.s.frameCount > this.end) {
             this.k.style('opacity', 1 - this.timer2.advance());
         }
-    }
-
-    show() {
-        this.showInit();
         katex.render(this.text, window[this.domId]);
     }
 }

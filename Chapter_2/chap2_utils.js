@@ -456,6 +456,7 @@ class Sys_3Eqs {
         }
     }
 
+    // final form for b
     move5() {
         this.brackets[5].move({
             x1: this.x + 397, x2: this.x + 397, y1: this.y + 142, y2: this.y + 24,
@@ -506,7 +507,52 @@ class Sys_3Eqs {
     }
 }
 
-class Normal_Eqs {
+
+/*** 2019-02-04
+ * normal equations in symbolic form
+ * using the new method for displaying formula animations!
+ */
+class Normal_Eqs extends PointBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.kats = [];
+
+        this.mv4 = args.move4;  // apply X^T
+        this.mv5 = args.move5;  // apply (XTX)^-1
+
+        this.kats[0] = new Katex(this.s, {
+            text: "\\textcolor{47a7ff}{\\vec{b}}=",
+            x: this.x, y: this.y,
+        });
+        this.kats[1] = new Katex(this.s, {
+            text: "\\vec{y}",
+            x: this.x + 77, y: this.y,
+        });
+        this.kats[2] = new Katex(this.s, {
+            text: "X^T", x: this.x + 77, y: this.y,
+            fadeIn: true, start: this.mv4,
+        });
+        this.kats[3] = new Katex(this.s, {
+            text: "(X^{T}X)^{-1}", x: this.x + 77, y: this.y,
+            fadeIn: true, start: this.mv5,
+        });
+    }
+
+    move4() {
+        this.kats[1].shift(67, 0);
+    }
+
+    move5() {
+        this.kats[1].shift(187, 0);
+        this.kats[2].shift(187, 0);
+    }
+
+    show() {
+        if (this.s.frameCount === this.mv4) this.move4();
+        if (this.s.frameCount === this.mv5) this.move5();
+
+        for (let k of this.kats) k.show();
+    }
 
 }
 

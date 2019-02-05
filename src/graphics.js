@@ -50,8 +50,10 @@ class Graphics {         // the master of all classes
 /*** 2019-02-01 --- Major Refactoring
  * Base class for all objects defined by (x, y) position, as opposed to x1, y1, x2, y2 in a line
  *
- * This class is created to centralize the operation of moving an object,
+ * This class is created to centralize the operation of moving and shifting of an object,
  * if the object's position is shown in draw(), instead of setup().
+ *
+ * shift() takes in relative target coordinates, while move() takes in absolute target position.
  *
  * ---- args list parameters ----
  * @optional (number) x, y, start;
@@ -63,6 +65,10 @@ class PointBase {
         this.x = args.x || 0;
         this.y = args.y || 0;
         this.start = args.start || 30;
+    }
+
+    shift(x, y, duration, timerNum) {
+        this.move(this.x + x, this.y + y, duration, timerNum);
     }
 
     // duration is in seconds, not frames

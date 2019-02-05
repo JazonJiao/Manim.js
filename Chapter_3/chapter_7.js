@@ -1,5 +1,5 @@
+// Chapter 7, the Projection Matrix
 // 3d scene
-
 
 /**
  * Adds three vectors to display, in addition to the plane

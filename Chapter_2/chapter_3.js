@@ -1,3 +1,4 @@
+// Chapter 3, Normal Equations
 // In 3D scenes, notice the difference between s and g3
 
 // let angle = 2.4;
@@ -227,7 +228,6 @@ const Scene27 = function(s) {
     let tnr;
     let kat;
     let obj = [];
-    s.arrows = [];
 
     s.preload = function () {
         obj[0] = s.loadModel('../lib/obj/axes.obj');
@@ -235,9 +235,7 @@ const Scene27 = function(s) {
     };
 
     s.setup = function () {
-        s.frameRate(fr);
-        s.pixelDensity(1);
-        s.createCanvas(cvw, cvh);
+        setup3D(s);
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);
 
         s.eqs = new Sys_3Eqs(s, {
@@ -308,4 +306,57 @@ const Scene27 = function(s) {
     };
 };
 
-let p = new p5(Scene27);
+// scene 28
+const Scene28 = function(s) {
+    let time = {
+        three_to_two: frames(3),
+
+        moveCam: frames(4),
+        inverse_2d: frames(7),
+    };
+
+    let g3;
+    let obj = [];
+
+    s.preload = function () {
+        obj[0] = s.loadModel('../lib/obj/axes.obj');
+    };
+
+    s.setup = function () {
+        setup3D(s);
+        g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);
+
+        s.eqs = new Normal_Eqs(s, {
+            x: 100, y: 100,
+            move4: time.three_to_two, move5: time.inverse_2d,
+        });
+
+        s.pl = new Plane3D(s, { a: 0, b: 0, c: 0 });
+        s.axes = new Axes3D(s, {
+            angle: 2.5, speed: speed,
+            model: obj[0]
+        });
+
+        s.arrs = new Arrows_Transform(s, {
+            start: time.three_to_two,
+            solve: time.inverse_2d,
+            showY: true,
+            showX: true
+        });
+    };
+
+    s.draw = function () {
+        s.background(0);
+        if (s.frameCount === time.moveCam)
+            s.axes.moveCam({ camRadius: 0.01, angle: s.PI, speed: 0, camY: -737 });
+        s.axes.show(g3);
+        s.eqs.show();
+        s.arrs.show(g3);
+        s.pl.showPlane(g3);
+        s.image(g3, 0, 0, cvw, cvh);
+        showFR(s);
+    };
+};
+
+
+let p = new p5(Scene28);

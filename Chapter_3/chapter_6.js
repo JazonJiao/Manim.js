@@ -1,3 +1,5 @@
+// Chapter 6, Projection onto a Line
+
 class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear transformations
     constructor(ctx) {
         let time = {
