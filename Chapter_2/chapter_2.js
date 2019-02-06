@@ -37,7 +37,9 @@ function Scene12(s) {  // 3d multiple regression
 const Scene13 = function(s) {
     let time = {
         title: frames(1),
-        chaps: frames(2)
+        chaps: frames(2),
+        chap4: frames(4),
+        chap2: frames(6),
     };
 
     s.txts = [];
@@ -56,7 +58,7 @@ const Scene13 = function(s) {
 
     let xOffset = 277;
     let timeOffset = time.chaps;
-    let timeStep = 5;
+    let timeStep = 3;
     let yOffset = 77;
     let yStep = 57;
 
@@ -64,8 +66,9 @@ const Scene13 = function(s) {
         s.frameRate(fr);
         s.createCanvas(cvw, cvh);
 
-        let i = 0;
+        s.hg = new HelperGrid(s, {});
 
+        let i = 0;
         for (let j = 0; j < 8; j++) {
             let args = {
                 img: yt, start: timeOffset + j * timeStep - 7, duration: 0.77, mode: 1,
@@ -74,6 +77,18 @@ const Scene13 = function(s) {
             };
             s.imgs[j] = new ImageFly(s, args);
         }
+
+        // emphasize chapter 4
+        s.emps[0] = new Emphasis(s, {
+            x: 270, y: 302, w: 480, h: 49,
+            start: time.chap4, end: time.chap2 - 15
+        });
+
+        // emphasize chapter 2
+        s.emps[1] = new Emphasis(s, {
+            x: 270, y: 190, w: 730, h: 49,
+            start: time.chap2
+        });
 
         s.txts[i++] = new TextFade(s, {
             str: "Chapter 1: Simple Linear Regression, Visualized",
@@ -126,17 +141,19 @@ const Scene13 = function(s) {
     s.draw = function() {
         s.background(0);
         s.l.show();
+        //s.hg.show();
+        for (let e of s.emps) e.show();
         for (let t of s.txts) t.show();
-
         for (let i of s.imgs) i.show();
-        showFR(s);
+        //showFR(s);
     }
 };
 
-const Scene13_2 = function(s) {
+// scene 13.2
+const Scene13b = function(s) {
     let time = {
-        brain: frames(0),
-        bubble: frames(5),
+        brain: frames(2),
+        bubble: frames(2.5),
     };
 
     let hg;
@@ -175,9 +192,10 @@ const Scene13_2 = function(s) {
 const Scene14 = function(s) {
 
     let time = {
-        table: frames(3),
-        formula: frames(4),
-        eqs: frames(5)
+        plot: frames(2),
+        table: frames(2),
+        formula: frames(6),
+        eqs: frames(11)
     };
 
     let times;
@@ -204,14 +222,14 @@ const Scene14 = function(s) {
 
         eqs = new Sys_3Eqs(s, {
             x: 757, y: 357,
-            start: getT(time.eqs),
+            start: time.eqs,
             show1s: 10000
         });
 
         kats[0] = new Katex(s, {
             text: "\\beta_0+{\\beta}x=y",
             x: 777, y: 177,
-            start: getT(time.formula),
+            start: time.formula,
             fadeIn: true,
             font_size: 47,
             fadeOut: true,
@@ -228,6 +246,8 @@ const Scene14 = function(s) {
             labelY: "y",
             stepX: 100,
             stepY: 100,
+            start: time.plot,
+            startLSLine: time.formula,
             lineColor: s.color(255, 137, 77),
             showSq: false
         });
@@ -245,17 +265,16 @@ const Scene14 = function(s) {
 }
 
 
-// scenes 15, 18
+// scenes 15
 const Scene15 = function (s) {
     let time = {
         eqs: 1,
         moveEqs: frames(1),
         grid: frames(2),
+        empb0: frames(5),
+        empb: frames(4),
+        empEnd: frames(16),
         lines: frames(3),
-        point: frames(4),
-        vec: frames(5),
-
-        overdet: frames(2),
         brain: frames(4),
     };
 
@@ -264,6 +283,7 @@ const Scene15 = function (s) {
     let times;
     let brain;
     let txts = [];
+    let emps = [];
 
     s.preload = function () {
         times = s.loadFont('../lib/font/times.ttf');
@@ -274,25 +294,19 @@ const Scene15 = function (s) {
         s.frameRate(fr);
         s.createCanvas(cvw, cvh);
         grid = new Grid_3Lines_With_Point(s, {
-            left: 570,
-            right: 1200,
-            centerX: 900,
-            labelX: "\\beta_0",
-            offsetX: -45,
-            labelY: "\\beta",
-            offsetY: -38,
-            stepX: 100,
-            stepY: 100,
-            start: getT(time.grid),
-            time: time
+            left: 570, right: 1200, centerX: 900,
+            labelX: "\\beta_0", offsetX: -45,
+            labelY: "\\beta", offsetY: -38,
+            stepX: 100, stepY: 100,
+            start: getT(time.grid), time: time
         });
 
         brain = new ThoughtBrain(s, {
             start: getT(time.brain),
-            x: 427, y: 537,
-            size: 257,
+            x: 57, y: 537,
+            size: 248,
             font: comic,
-            str: "\"closest solution\""
+            str: "No solution..."
         });
 
         s.eqs = new Sys_3Eqs(s, {
@@ -308,7 +322,15 @@ const Scene15 = function (s) {
             mode: 1, size: 47,
             x: 300, y: 377,
             str: "Overdetermined\nSystem of equations"
-        })
+        });
+        emps[0] = new Emphasis(s, {
+            x: 1150, y: 283, w: 47, h: 50,
+            start: time.empb0, end: time.empEnd
+        });
+        emps[1] = new Emphasis(s, {
+            x: 912, y: 2, w: 32, h: 57,
+            start: time.empb, end: time.empEnd
+        });
     };
 
     s.draw = function () {
@@ -319,11 +341,11 @@ const Scene15 = function (s) {
         s.eqs.show();
 
         for (let t of txts) t.show();
-
+        for (let e of emps) e.show();
         if (s.frameCount === getT(time.moveEqs))
             s.eqs.move(124, 127);
 
-        showFR(s);
+        //showFR(s);
     }
 };
 
@@ -452,9 +474,75 @@ const Scene17 = function(s) {   // scene 17
         }
 
         showFR(s);
-
     }
+};
 
+const Scene18 = function (s) {
+
+    let time = {
+        eqs: 1,
+        grid: frames(2),
+        lines: frames(3),
+        point: frames(4),
+        vec: frames(5),
+        overdet: frames(2),
+        brain: frames(4),
+    };
+
+    let grid;
+    let comic;
+    let times;
+    let brain;
+    let txts = [];
+
+    s.preload = function () {
+        times = s.loadFont('../lib/font/times.ttf');
+        comic = s.loadFont('../lib/font/comic.ttf');
+    };
+
+    s.setup = function () {
+        s.frameRate(fr);
+        s.createCanvas(cvw, cvh);
+        grid = new Grid_3Lines_With_Point(s, {
+            left: 570, right: 1200, centerX: 900,
+            labelX: "\\beta_0", offsetX: -45,
+            labelY: "\\beta", offsetY: -38,
+            stepX: 100, stepY: 100,
+            start: getT(time.grid), time: time
+        });
+
+        brain = new ThoughtBrain(s, {
+            start: getT(time.brain),
+            x: 427, y: 537,
+            size: 257,
+            font: comic,
+            str: "\"closest solution\""
+        });
+
+        s.eqs = new Sys_3Eqs(s, {
+            font: times,
+            x: 124, y: 127,
+            start: getT(time.eqs),
+            show1s: 10000
+        });
+
+        txts[0] = new TextFade(s, {
+            font: times,
+            start: getT(time.overdet),
+            mode: 1, size: 47,
+            x: 300, y: 377,
+            str: "Overdetermined\nSystem of equations"
+        })
+    };
+
+    s.draw = function () {
+        s.background(0);
+        grid.show();
+        brain.show();
+        s.eqs.show();
+        for (let t of txts) t.show();
+        //showFR(s);
+    }
 };
 
 
@@ -518,4 +606,4 @@ const Scene19 = function(s) {
 }
 
 
-let p = new p5(Scene19);
+let p = new p5(Scene15);

@@ -668,7 +668,7 @@ class Grid_3Lines_With_Point extends Grid_3Lines {
         this.closestPoint = new PlotPoint(this.s, {
             x: x, y: y,
             start: getT(this.time.point),  // fixme
-            radius: 24,
+            radius: 17,
             color: [247, 177, 47]
         });
         this.kat = new Katex(this.s, {
