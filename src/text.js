@@ -69,9 +69,7 @@ class Text extends TextBase {
         this.s.textSize(this.size);
 
         this.s.noStroke();
-        if (this.moved) {
-            this.moving();
-        }
+        this.showMove();
     }
 
     show() {
@@ -196,9 +194,7 @@ class Katex extends TextBase {
      * show(this.x, this.y) on each Katex object. No need to move the Katex's one by one now.
      */
     show(x, y) {
-        if (this.moved) {
-            this.moving();
-        }
+        this.showMove();
         if (x !== undefined) {
             this.k.position(x + this.canvasPos.x, y + this.canvasPos.y);
         } else {

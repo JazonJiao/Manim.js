@@ -425,7 +425,7 @@ const Scene16 = function (s) {
         s.grid.show();
         s.plot.show();
         for (let t of txts) t.show();
-        //showFR(s);
+        showFR(s);
     }
 };
 
@@ -434,10 +434,10 @@ const Scene17 = function(s) {   // scene 17
     let time = {
         axes: 1, points: 1, leastSqLine: 2, grid: 1, lines: 1,
 
-        move: frames(3),
-        exact: frames(4),
-        txt: frames(4),
-        arrow: frames(4)
+        move: frames(5),
+        exact: frames(7), // the point
+        txt: frames(8),
+        arrow: frames(8)
     };
 
     let times;
@@ -446,7 +446,6 @@ const Scene17 = function(s) {   // scene 17
     };
 
     s.setup = function() {
-
         s.frameRate(fr);
         s.createCanvas(cvw, cvh);
 
@@ -456,6 +455,7 @@ const Scene17 = function(s) {   // scene 17
             right: 564,
             stepX: 100,
             stepY: 100,
+            labelX: "x", labelY: "y",
             start: getT(time.axes),
             startPt: getT(time.points),
             startLSLine: getT(time.leastSqLine),
@@ -498,28 +498,25 @@ const Scene17 = function(s) {   // scene 17
             s.plot.reset();
             s.grid.move();
         }
-
-        showFR(s);
+        //showFR(s);
     }
 };
 
 const Scene18 = function (s) {
-
     let time = {
         eqs: 1,
-        grid: frames(2),
-        lines: frames(3),
-        point: frames(4),
-        vec: frames(5),
-        overdet: frames(2),
-        brain: frames(4),
+        grid: 1,
+        lines: 1,
+        overdet: frames(1), // 6),
+        brain: frames(12),
+        point: frames(15),
+        vec: frames(15),
     };
 
     let grid;
     let comic;
     let times;
     let brain;
-    let txts = [];
 
     s.preload = function () {
         times = s.loadFont('../lib/font/times.ttf');
@@ -552,7 +549,7 @@ const Scene18 = function (s) {
             show1s: 10000
         });
 
-        txts[0] = new TextFade(s, {
+        s.txt = new TextFade(s, {
             font: times,
             start: getT(time.overdet),
             mode: 1, size: 47,
@@ -563,14 +560,15 @@ const Scene18 = function (s) {
 
     s.draw = function () {
         s.background(0);
+        if (s.frameCount === 60)
+            s.txt.shake(40, 1);
         grid.show();
         brain.show();
         s.eqs.show();
-        for (let t of txts) t.show();
+        s.txt.show();
         //showFR(s);
     }
 };
-
 
 const Scene19 = function(s) {
     let time = {
@@ -623,12 +621,39 @@ const Scene19 = function(s) {
     s.draw = function() {
         s.background(0);
         //hg.show();
-
         txt[0].show();
         txt[1].show();
         s.eqs.show();
+
         showFR(s);
     }
 };
 
-let p = new p5(Scene17);
+const Scene20 = function(s) {
+    let time = {
+        brain: frames(0),
+        bubble: frames(2),
+    };
+    let hg;
+    let times;
+    let brain;
+    s.preload = function() {
+        times = s.loadFont('../lib/font/comic.ttf');
+    };
+    s.setup = function() {
+        s.createCanvas(1200, 675);
+        hg = new HelperGrid(s);
+        brain = new ThoughtBrain(s, {
+            start: time.brain,
+            font: times, size: 400, font_size: 45,
+            str: "Non-square matrix as\nlinear transformation!",
+            bubbleStart: time.bubble
+        });
+    };
+    s.draw = function() {
+        s.background(0);
+        brain.show();
+    }
+};
+
+let p = new p5(Scene18);

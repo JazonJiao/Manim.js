@@ -71,31 +71,75 @@ class PointBase {
         this.move(this.x + x, this.y + y, duration, timerNum);
     }
 
-    // duration is in seconds, not frames
-    // this is controlled by s.draw(), not this.show().
+    /*** move(), 2019-02-01
+     * Moves to a location with respect to the p5 coordinate
+     * In s.draw(), use if (s.frameCount === [t]) [var].move(...);
+     *
+     * --- arg list ---
+     * duration is in seconds, not frames
+     */
     move(x, y, duration, timerNum) {
         this.xo = this.x;
         this.xd = x;
         this.yo = this.y;
         this.yd = y;
         this.moved = true;
-        let d = 1;
-        if (duration) {
-            d = duration;
-        }
-        this.move_timer = timerFactory(frames(d), timerNum);
+        this.move_duartion = frames(1);
+        if (duration)
+            this.move_duartion = frames(duration);
+
+        this.f = 0;
+        this.move_timer = timerFactory(this.move_duartion, timerNum);
     }
 
     moving() {
-        let t = this.move_timer.advance();
-        this.x = this.xo + t * (this.xd - this.xo);
-        this.y = this.yo + t * (this.yd - this.yo);
+        if (this.f < this.move_duartion) {
+            let t = this.move_timer.advance();
+            this.x = this.xo + t * (this.xd - this.xo);
+            this.y = this.yo + t * (this.yd - this.yo);
+            this.f++;
+        } else {
+            this.moved = false;
+        }
+    }
+
+    /*** shake(), 2019-02-17
+     * Shake vertically as emphasis
+     * In s.draw(), use if (s.frameCount === [t]) [var].shake(...);
+     *
+     * --- arg list ---
+     * @param amp - amplitude in pixels
+     * @param duration - in seconds
+     */
+    shake(amp, duration) {
+        this.yo = this.y;
+        this.amp = amp;
+        this.shaked = true;
+        this.move_duartion = frames(1);
+        if (duration)
+            this.move_duartion = frames(duration);
+
+        this.f = 0;
+        this.move_timer = new Timer2(this.move_duartion);
+    }
+
+    shaking() {
+        if (this.f < this.move_duartion) {
+            let t = this.move_timer.advance() * this.s.TWO_PI;
+            this.y = this.yo + this.amp * Math.sin(t);
+            this.f++;
+        } else {
+            this.shaked = false;
+        }
     }
 
     // to be called at the beginning of the show() function of derived classes
+    // move() and shake() cannot happen at the same time
     showMove() {
         if (this.moved)
             this.moving();
+        else if (this.shaked)
+            this.shaking();
     }
 
     show() {
