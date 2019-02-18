@@ -7,8 +7,8 @@ let speed = -0.002;
 // scenes 23 and 24
 const Scene23 = function(s) {
     let time = {
-        three_to_two: frames(2),
-        fn: frames(4),
+        three_to_two: frames(4),
+        fn: frames(10),
     };
 
     let g3;
@@ -71,7 +71,7 @@ const Scene23 = function(s) {
         s.pl.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
         txt.show();
-        showFR(s);
+        //showFR(s);
     };
 
 };
@@ -212,16 +212,16 @@ const Scene26 = function(s) {
 // scene 27
 const Scene27 = function(s) {
     let time = {
-        eqs: frames(2),
-        three_to_two: frames(3),
+        eqs: frames(1),
+        three_to_two: frames(5),
 
-        moveCam: frames(4),
-        inverse_2d: frames(7),
-        kat: frames(7),
+        moveCam: frames(8),
+        inverse_2d: frames(10),
+        kat: frames(10),
 
-        grid: frames(8),
-        gridLines: frames(9),
-        gridPt: frames(10)
+        grid: frames(15),
+        gridLines: frames(15),
+        gridPt: frames(15)
     };
 
     let g3;
@@ -326,7 +326,7 @@ const Scene28 = function(s) {
         setup3D(s);
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);
 
-        s.eqs = new Normal_Eqs(s, {
+        s.eqs = new Beta_Formula(s, {
             x: 100, y: 100,
             move4: time.three_to_two, move5: time.inverse_2d,
         });
@@ -359,4 +359,4 @@ const Scene28 = function(s) {
 };
 
 
-let p = new p5(Scene28);
+let p = new p5(Scene27);

@@ -507,10 +507,10 @@ const Scene18 = function (s) {
         eqs: 1,
         grid: 1,
         lines: 1,
-        overdet: frames(1), // 6),
-        brain: frames(12),
-        point: frames(15),
-        vec: frames(15),
+        overdet: frames(7),
+        brain: frames(14),
+        point: frames(19),
+        vec: frames(19),
     };
 
     let grid;
@@ -560,8 +560,6 @@ const Scene18 = function (s) {
 
     s.draw = function () {
         s.background(0);
-        if (s.frameCount === 60)
-            s.txt.shake(40, 1);
         grid.show();
         brain.show();
         s.eqs.show();
@@ -574,12 +572,13 @@ const Scene19 = function(s) {
     let time = {
         text: frames(1),
         eqs: frames(1),
+        neq: frames(2),
         show1s: frames(2),
         move1: frames(3),
         move2: frames(3) + 1,
         move3: frames(6),
         move4: frames(9),
-        fn: frames(10)
+        fn: frames(10),
     };
 
     let times;
@@ -597,14 +596,16 @@ const Scene19 = function(s) {
         hg = new HelperGrid(s, {});
 
         s.eqs = new Sys_3Eqs(s, {
-            x: 427, y: 257,
+            x: 427, y: 227,
             //time: time,
             start: time.eqs, show1s: time.show1s,
-            move1: getT(time.move1), move2: getT(time.move2),
-            move3: getT(time.move3), move4: getT(time.move4),
+            move1: time.move1, move2: time.move2, move3: time.move3, move4: time.move4,
             font: times,
         });
-
+        s.neq = new Normal_Eqs(s, {
+            x: 527, y: 407,
+            start: time.neq, move3: time.move3 + 2,
+        });
         txt[0] = new TextFade(s, {
             str: "Normal Equations", mode: 1, font: times, size: 57,
             x: 600, y: 100, start: time.text
@@ -624,7 +625,7 @@ const Scene19 = function(s) {
         txt[0].show();
         txt[1].show();
         s.eqs.show();
-
+        s.neq.show();
         showFR(s);
     }
 };
@@ -656,4 +657,4 @@ const Scene20 = function(s) {
     }
 };
 
-let p = new p5(Scene18);
+let p = new p5(Scene19);

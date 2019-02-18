@@ -507,12 +507,52 @@ class Sys_3Eqs {
     }
 }
 
-
-/*** 2019-02-04
+/*** 2019-02-18
  * normal equations in symbolic form
- * using the new method for displaying formula animations!
+ *
+ * arg list: x, y, move4 [apply X^T]
  */
 class Normal_Eqs extends PointBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.kats = [];
+
+        this.mv3 = args.move3;  // apply X^T
+
+        this.kats[0] = new Katex(this.s, {
+            text: "X\\vec{b}=", fadeIn: true, start: this.start,
+            x: this.x, y: this.y,
+        });
+        this.kats[1] = new Katex(this.s, {
+            text: "\\vec{y}", fadeIn: true, start: this.start,
+            x: this.x + 117, y: this.y,
+        });
+        this.kats[2] = new Katex(this.s, {
+            text: "X^T", x: this.x + 117, y: this.y + 3,
+            fadeIn: true, start: this.mv3,
+        });
+        this.kats[3] = new Katex(this.s, {
+            text: "X^T", x: this.x - 67, y: this.y + 3,
+            fadeIn: true, start: this.mv3,
+        });
+    }
+    move4() {
+        this.kats[1].shift(67, 0);
+    }
+    show() {
+        if (this.s.frameCount === this.mv3) this.move4();
+        for (let k of this.kats) k.show();
+    }
+}
+
+
+/*** 2019-02-04
+ * the solution of beta-hat in the normal equations
+ * using the new method for displaying formula animations!
+ *
+ * arg list: x, y, move4 [apply X^T], move5 [apply (XTX)^-1]
+ */
+class Beta_Formula extends PointBase {
     constructor(ctx, args) {
         super(ctx, args);
         this.kats = [];
@@ -553,7 +593,6 @@ class Normal_Eqs extends PointBase {
 
         for (let k of this.kats) k.show();
     }
-
 }
 
 
