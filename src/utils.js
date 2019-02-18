@@ -595,7 +595,7 @@ class DottedLine extends Line {
  *
  * ----args list parameters----
  * @mandatory (number) x1, x2, y1, y2, start
- * @optional (color) colors; (number) strokeweight, tipLen, tipAngle, frames;
+ * @optional (color) colors; (number) strokeweight, tipLen, tipAngle, duration;
  *           (bool) fadeIn, (array) colorArr
  */
 class Arrow extends Line {

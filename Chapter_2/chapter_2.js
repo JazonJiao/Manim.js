@@ -267,15 +267,26 @@ const Scene14 = function(s) {
 
 // scenes 15
 const Scene15 = function (s) {
-    let time = {
+    let SN = 1;
+    let time = SN === 0 ? {
         eqs: 1,
-        moveEqs: frames(1),
-        grid: frames(2),
-        empb0: frames(5),
-        empb: frames(4),
-        empEnd: frames(16),
-        lines: frames(3),
-        brain: frames(4),
+        moveEqs: frames(2),
+        grid: frames(8),
+        lines: frames(10),
+        empb0: frames(18),
+        empb: frames(19),
+        brain: frames(21),
+
+        empEnd: frames(100),
+    } : {
+        eqs: 1, moveEqs: 1, grid: frames(1),
+
+        lines: frames(4),
+        txt: frames(6),
+        txtEnd: frames(10),
+        brain: frames(11),
+
+        empb0: frames(100), empb: frames(100), empEnd: frames(100),
     };
 
     let grid;
@@ -306,7 +317,7 @@ const Scene15 = function (s) {
             x: 57, y: 537,
             size: 248,
             font: comic,
-            str: "No solution..."
+            str: SN === 0 ? "Not the usual\nx-y coordinates..." : "No solution..."
         });
 
         s.eqs = new Sys_3Eqs(s, {
@@ -318,10 +329,10 @@ const Scene15 = function (s) {
 
         txts[0] = new TextFade(s, {
             font: times,
-            start: getT(time.overdet),
-            mode: 1, size: 47,
-            x: 300, y: 377,
-            str: "Overdetermined\nSystem of equations"
+            start: getT(time.txt), end: time.txtEnd,
+            mode: 1, size: 42,
+            x: 737, y: 137,
+            str: "No common\nintersection"
         });
         emps[0] = new Emphasis(s, {
             x: 1150, y: 283, w: 47, h: 50,
@@ -351,17 +362,26 @@ const Scene15 = function (s) {
 
 
 const Scene16 = function (s) {
-    let time = {
-        grid: frames(2),
+    let SN = 1;
+    let time = SN === 0 ? {
+        grid: frames(.1),
+        pt: frames(4),
+        line: frames(6),
+        plot: frames(7),
 
-        pt: frames(3),
+        vec: frames(15),
+        kat: frames(17),
+    } : {
+        grid: 1,
+        plot: frames(3),
+
+        pt: frames(4),
         vec: frames(4),
-        kat: frames(5),
+        kat: frames(4),
     };
 
     let comic;
     let times;
-    let brain;
     let txts = [];
 
     s.preload = function () {
@@ -396,39 +416,33 @@ const Scene16 = function (s) {
             labelY: "y",
             stepX: 100,
             stepY: 100,
-            showSq: false
+            showSq: false, startLSLine: time.line, start: time.plot
         });
-
-        // txts[0] = new TextFade(s, {
-        //     font: times,
-        //     start: getT(time.overdet),
-        //     mode: 1, size: 47,
-        //     x: 300, y: 377,
-        //     str: "Overdetermined\nSystem of equations"
-        // })
     };
 
     s.draw = function () {
         s.background(0);
         s.grid.show();
         s.plot.show();
-
         for (let t of txts) t.show();
-
-        showFR(s);
+        //showFR(s);
     }
 };
 
 
 const Scene17 = function(s) {   // scene 17
     let time = {
-        axes: 1,
-        points: 1,
-        leastSqLine: 2,
+        axes: 1, points: 1, leastSqLine: 2, grid: 1, lines: 1,
 
-        grid: frames(1),
-        lines: frames(2),
         move: frames(3),
+        exact: frames(4),
+        txt: frames(4),
+        arrow: frames(4)
+    };
+
+    let times;
+    s.preload = function () {
+        times = s.loadFont('../lib/font/times.ttf');
     };
 
     s.setup = function() {
@@ -447,7 +461,6 @@ const Scene17 = function(s) {   // scene 17
             startLSLine: getT(time.leastSqLine),
             xs: [-1, 1, 2], ys: [-2, 0, 3]
         });
-
         s.grid = new Grid_3Lines_Transform(s, {
             left: 570,
             right: 1200,
@@ -460,6 +473,17 @@ const Scene17 = function(s) {   // scene 17
             stepY: 100,
             start: getT(time.grid),
             time: time
+        });
+        s.txt = new TextFade(s, {
+            font: times,
+            start: getT(time.txt), // end: time.txtEnd,
+            mode: 2, size: 42,
+            x: 827, y: 237,
+            str: "Exact solution exists"
+        });
+        s.arrow = new Arrow(s, {
+            x1: 837, y1: 257, x2: 879, y2: 240,
+            start: time.arrow, // duration: frames(0.7)
         })
     }
 
@@ -468,6 +492,8 @@ const Scene17 = function(s) {   // scene 17
 
         s.plot.show();
         s.grid.show();
+        s.txt.show();
+        s.arrow.show();
         if (s.frameCount === getT(time.move)) {
             s.plot.reset();
             s.grid.move();
@@ -603,7 +629,6 @@ const Scene19 = function(s) {
         s.eqs.show();
         showFR(s);
     }
-}
+};
 
-
-let p = new p5(Scene15);
+let p = new p5(Scene17);

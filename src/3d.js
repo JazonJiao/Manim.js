@@ -9,7 +9,8 @@
  * Axis3D (WEBGL)
  * This class is also responsible for the basic setups of a 3D scene,
  * including lighting and camera. fixme: Its show() is called first in draw().
- * in preload(), use axesObject = loadModel('../lib/obj/axes.obj'); and pass that in as model
+ * in preload(), use axesObject = loadModel('../lib/obj/axes.obj'); and pass that in as model.
+ * Assumes angle mode is in radians.
  *
  * ---- args list parameters---
  * @mandatory (p5.Gemoetry) model
@@ -72,10 +73,16 @@ class Axes3D {
 
         g.specularMaterial(177);
 
-        if (this.moved && this.f <= this.duration) {  // todo: while animation not complete
+        if (this.moved && this.f <= this.duration) {
             this.moving();
         } else {
-            this.angle += this.speed;  // fixme: if angle exceeds 2pi, move would be awkward
+            this.angle += this.speed;
+
+            // reset angles so that they remain between -PI and PI
+            if (this.angle < -this.s.PI)
+                this.angle += this.s.TWO_PI;
+            else if (this.angle > this.s.PI)
+                this.angle -= this.s.TWO_PI;
         }
         let camX = this.camRadius * Math.cos(this.angle);
         let camZ = this.camRadius * Math.sin(this.angle);

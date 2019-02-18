@@ -90,9 +90,9 @@ function setup3D(s) {
 function showFR(s) {
     const fps = s.frameRate();
     let pos = (cvw === 1200) ? 0 : 1200;
-
     s.fill(255);
     s.textSize(10);
+    s.textAlign(s.LEFT, s.TOP);
     s.noStroke();
     s.text("FPS: " + fps.toFixed(1), pos, 10);
 

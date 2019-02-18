@@ -605,6 +605,12 @@ class Grid_3Lines extends Grid {
 class Grid_3Lines_Transform extends Grid_3Lines {
     constructor(ctx, args) {
         super(ctx, args);
+        this.exactSoln = new PlotPoint(this.s, {
+            x: 900, y: 237.5,      // hardcoded value
+            start: getT(this.time.exact),
+            radius: 17,
+            color: [247, 177, 47]
+        });
     }
 
     move() {
@@ -632,6 +638,7 @@ class Grid_3Lines_Transform extends Grid_3Lines {
 
         this.showGrid();
         for (let l of this.lines) l.show();
+        this.exactSoln.show();
     }
 }
 

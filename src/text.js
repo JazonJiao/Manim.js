@@ -123,6 +123,7 @@ class TextFade extends Text {
 }
 
 // needs to pass in an extra parameter in frames, start
+// does not yet support fade out
 class TextWriteIn extends Text {
     constructor(ctx, args) {
         super(ctx, args);
