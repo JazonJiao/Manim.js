@@ -469,7 +469,7 @@ class Line {
         this.timer = timerFactory(this.duration, args.mode);
 
         this.end = args.end || 100000;
-        this.timer_end = new Timer0(this.duration);
+        this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 1);
     }
 
     reset(args) {
@@ -481,12 +481,7 @@ class Line {
 
     showSetup() {
         this.s.stroke(this.color);
-        if (this.s.frameCount <= this.end) {
-            this.s.strokeWeight(this.strokeweight);
-        } else {
-            // fixme: 1.00001 is used since strokeWeight(0) will produce incorrect behavior
-            this.s.strokeWeight(this.strokeweight * (1.00001 - this.timer_end.advance()));
-        }
+        this.timer_sw.advance();
     }
 
     show() {

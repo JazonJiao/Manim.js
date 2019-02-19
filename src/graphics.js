@@ -65,6 +65,7 @@ class PointBase {
         this.x = args.x || 0;
         this.y = args.y || 0;
         this.start = args.start || 30;
+        this.end = args.end || 100000;
     }
 
     shift(x, y, duration, timerNum) {

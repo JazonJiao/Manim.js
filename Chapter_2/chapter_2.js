@@ -648,13 +648,16 @@ const Scene20 = function(s) {
             start: time.brain,
             font: times, size: 400, font_size: 45,
             str: "Non-square matrix as\nlinear transformation!",
-            bubbleStart: time.bubble
+            bubbleStart: time.bubble,
+            bulbStart: 10,
+            bulbEnd: 1000
         });
     };
     s.draw = function() {
         s.background(0);
         brain.show();
+        s.bezier(100, 100, 200, 90, 200, 210, 100, 200);
     }
 };
 
-let p = new p5(Scene19);
+let p = new p5(Scene20);

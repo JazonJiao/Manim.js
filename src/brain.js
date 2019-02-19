@@ -168,21 +168,55 @@ class Bubble {
     }
 }
 
+/*** 2019-02-18
+ *
+ * ---- args list parameters ----
+ * x, y, start, end, radius, duration, strokeweight
+ */
+class Bulb extends PointBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.radius = args.radius || 40;
+        this.duration = args.duration || 0.7;
+        this.strokeweight = args.strokeweight || 2;
+
+        this.timer2 = new Timer2(frames(this.duration));
+        this.timer1 = new Timer1(frames(this.duration));
+        this.sw_t1 = new StrokeWeightTimer(this.s, this.end, this.strokeweight, this.duration);
+        this.sw_t2 = new StrokeWeightTimer(this.s, this.end, this.strokeweight * 2, this.duration);
+    }
+    show() {
+        this.s.text('💡', 20, 29);
+
+        this.sw_t1.advance();
+        let t2 = this.timer2.advance();
+        this.s.noFill();
+        this.s.arc(this.x, this.y, this.radius, this.radius, this.s.PI * 0.7, this.s.PI * 2.3);
+        this.sw_t2.advance();
+        this.s.line(this.x - this.radius * 0.7, this.y + this.radius * 0.8,
+            this.x + this.radius * 0.7, this.y + this.radius * 0.8,);
+    }
+
+}
+
 /*** 2019-01-05
  * A brain with a thought bubble
  *
  * ---- args list parameters ----
  * @mandatory (number) x, y; (font) font; (string) str
- * @optional (number) start, duration, bubbleStart, size, font_size
+ * @optional (number) start, duration, size, font_size, bubbleStart,
+ *           [used for the light bulb:] bulbStart, rayStart, rayEnd, bulbEnd
  */
 class ThoughtBrain extends BrainBase {
     constructor(ctx, args) {
         super(ctx, args);
         this.x = args.x || 170;
         this.y = args.y || 440;
-        this.size = args.size || 400;   // when displaying, the size of the brain (w is already defined)
+        this.size = args.size || 400;   // when displaying, size of the brain (w is already defined)
+        this.bulbStart = args.bulbStart || 100000;
+        this.bulbEnd = args.bulbEnd || 100000;
 
-        this.bubble = new Bubble(this.s,{
+        this.bubble = new Bubble(this.s, {
             x: this.x + this.size / 2,
             y: this.y + this.size / 8,
             w: this.size * 1.5,
@@ -191,11 +225,18 @@ class ThoughtBrain extends BrainBase {
             size: args.font_size,  // font size
             str: args.str,
             start: args.bubbleStart || this.start
-        })
+        });
+        this.bulb = new Bulb(this.s, {
+            x: this.x,
+            y: this.y,
+            start: this.bulbStart,
+            end: this.bulbEnd
+        });
     }
     show() {
         this.showBrain();
         this.bubble.show();
+        this.bulb.show();
         this.s.image(this.g, this.x, this.y, this.size, this.size);
     }
 }

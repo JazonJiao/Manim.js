@@ -113,3 +113,32 @@ function timerFactory(frames, mode) {
         return new Timer2(frames);
     }
 }
+
+/*** 2019-02-18
+ * This timer is responsible for setting the stroke weight value and
+ * displaying fade out animations for line-like objects.
+ *
+ * --- arg list ---
+ * ctx - the p5 object
+ * end - time to start fade out animations (in frames)
+ * strokeWeight
+ * duration - the duration of fade out anim (in seconds)
+ */
+class StrokeWeightTimer {
+    constructor(ctx, end, strokeWeight, duration) {
+        this.s = ctx;
+        this.end = end;
+        this.sw = strokeWeight || 4;
+        this.duration = duration || 1;
+        this.timer = new Timer0(frames(this.duration));
+    }
+
+    advance() {
+        if (this.s.frameCount <= this.end) {
+            this.s.strokeWeight(this.sw);
+        } else {
+            // fixme: 1.00001 is used since strokeWeight(0) will produce incorrect behavior
+            this.s.strokeWeight(this.sw * (1.00001 - this.timer.advance()));
+        }
+    }
+}
