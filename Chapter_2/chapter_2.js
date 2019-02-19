@@ -636,27 +636,27 @@ const Scene20 = function(s) {
         bubble: frames(2),
     };
     let hg;
-    let times;
-    let brain;
+    let comic;
+    let emoji;
     s.preload = function() {
-        times = s.loadFont('../lib/font/comic.ttf');
+        comic = s.loadFont('../lib/font/comic.ttf');
+        emoji = s.loadFont('../lib/font/emoji.ttf');
     };
     s.setup = function() {
         s.createCanvas(1200, 675);
         hg = new HelperGrid(s);
-        brain = new ThoughtBrain(s, {
+        s.brain = new ThoughtBrain(s, {
             start: time.brain,
-            font: times, size: 400, font_size: 45,
+            font: comic, size: 400, font_size: 45,
             str: "Non-square matrix as\nlinear transformation!",
             bubbleStart: time.bubble,
-            bulbStart: 10,
-            bulbEnd: 1000
+
+            emoji: emoji,
         });
     };
     s.draw = function() {
         s.background(0);
-        brain.show();
-        s.bezier(100, 100, 200, 90, 200, 210, 100, 200);
+        s.brain.show();
     }
 };
 

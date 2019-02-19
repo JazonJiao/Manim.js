@@ -169,34 +169,47 @@ class Bubble {
 }
 
 /*** 2019-02-18
+ * After the bulb is in place, the rays glow outwards and stay for a second before fading
  *
  * ---- args list parameters ----
- * x, y, start, end, radius, duration, strokeweight
+ * @mandatory x, y, (p5.Font) emoji
+ * @optional  start, end, size
  */
 class Bulb extends PointBase {
     constructor(ctx, args) {
         super(ctx, args);
-        this.radius = args.radius || 40;
-        this.duration = args.duration || 0.7;
-        this.strokeweight = args.strokeweight || 2;
+        this.size = args.size || 47;
+        this.txt = new TextFade(this.s, {
+            str: '💡', font: args.emoji, mode: 1,
+            color: [247, 248, 7], size: this.size,
+            start: this.start, end: this.end,
+            x: this.x,
+            y: this.y + this.size * 2,
+        });
 
-        this.timer2 = new Timer2(frames(this.duration));
-        this.timer1 = new Timer1(frames(this.duration));
-        this.sw_t1 = new StrokeWeightTimer(this.s, this.end, this.strokeweight, this.duration);
-        this.sw_t2 = new StrokeWeightTimer(this.s, this.end, this.strokeweight * 2, this.duration);
+        this.rays = [];
+        let startScale = 0.57;
+        let endScale = 0.77;
+        let angle = this.s.PI / 4;
+        for (let i = 0; i < 7; i++) {
+            this.rays[i] = new Line(this.s, {
+                x1: this.x + Math.cos(angle) * this.size * startScale,
+                y1: this.y + Math.sin(angle) * this.size * startScale,
+                x2: this.x + Math.cos(angle) * this.size * endScale,
+                y2: this.y + Math.sin(angle) * this.size * endScale,
+                start: this.start + frames(1), end: this.start + frames(3),
+                color: this.s.color(247, 248, 7),
+                strokeweight: this.size / 20,
+            });
+            angle -= this.s.PI / 4;
+        }
     }
     show() {
-        this.s.text('💡', 20, 29);
-
-        this.sw_t1.advance();
-        let t2 = this.timer2.advance();
-        this.s.noFill();
-        this.s.arc(this.x, this.y, this.radius, this.radius, this.s.PI * 0.7, this.s.PI * 2.3);
-        this.sw_t2.advance();
-        this.s.line(this.x - this.radius * 0.7, this.y + this.radius * 0.8,
-            this.x + this.radius * 0.7, this.y + this.radius * 0.8,);
+        if (this.s.frameCount === this.start)
+            this.txt.move(this.x, this.y + this.size * 0.2, 1, 1); // fixme
+        this.txt.show();
+        for (let r of this.rays) r.show();
     }
-
 }
 
 /*** 2019-01-05
@@ -205,16 +218,16 @@ class Bulb extends PointBase {
  * ---- args list parameters ----
  * @mandatory (number) x, y; (font) font; (string) str
  * @optional (number) start, duration, size, font_size, bubbleStart,
- *           [used for the light bulb:] bulbStart, rayStart, rayEnd, bulbEnd
+ *       [used for the light bulb:] (font) emoji; (number) bulbStart, bulbEnd
  */
 class ThoughtBrain extends BrainBase {
     constructor(ctx, args) {
         super(ctx, args);
         this.x = args.x || 170;
         this.y = args.y || 440;
-        this.size = args.size || 400;   // when displaying, size of the brain (w is already defined)
-        this.bulbStart = args.bulbStart || 100000;
-        this.bulbEnd = args.bulbEnd || 100000;
+        this.size = args.size || 400;  // when displaying, size of the brain (w is already defined)
+        this.bulbStart = args.bulbStart || this.start + frames(2);
+        this.bulbEnd = args.bulbEnd || this.start + frames(6);
 
         this.bubble = new Bubble(this.s, {
             x: this.x + this.size / 2,
@@ -226,17 +239,20 @@ class ThoughtBrain extends BrainBase {
             str: args.str,
             start: args.bubbleStart || this.start
         });
-        this.bulb = new Bulb(this.s, {
-            x: this.x,
-            y: this.y,
-            start: this.bulbStart,
-            end: this.bulbEnd
-        });
+        if (args.emoji) {
+            this.bulb = new Bulb(this.s, {
+                emoji: args.emoji,
+                x: this.x, y: this.y, size: this.size / 10,
+                start: this.bulbStart,
+                end: this.bulbEnd
+            });
+        }
     }
     show() {
         this.showBrain();
         this.bubble.show();
-        this.bulb.show();
+        if (this.bulb)
+            this.bulb.show();
         this.s.image(this.g, this.x, this.y, this.size, this.size);
     }
 }
