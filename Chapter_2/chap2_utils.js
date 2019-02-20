@@ -528,15 +528,17 @@ class Normal_Eqs extends PointBase {
             x: this.x + 117, y: this.y,
         });
         this.kats[2] = new Katex(this.s, {
-            text: "X^T", x: this.x + 117, y: this.y + 3,
+            text: "X^T", x: this.x + 117, y: this.y - 44,
             fadeIn: true, start: this.mv3,
         });
         this.kats[3] = new Katex(this.s, {
-            text: "X^T", x: this.x - 67, y: this.y + 3,
+            text: "X^T", x: this.x - 67, y: this.y - 44,
             fadeIn: true, start: this.mv3,
         });
     }
     move4() {
+        this.kats[2].shift(0, 47);
+        this.kats[3].shift(0, 47);
         this.kats[1].shift(67, 0);
     }
     show() {

@@ -568,17 +568,39 @@ const Scene18 = function (s) {
     }
 };
 
+const Scene18b = function(s) {
+    let times;
+    s.preload = function() {
+        times = s.loadFont('../lib/font/times.ttf');
+    };
+    s.setup = function() {
+        s.frameRate(fr);
+        s.createCanvas(cvw, cvh);
+        s.eqs = new Sys_3Eqs(s, {
+            x: 124, y: 127,
+            start: 1, font: times, show1s: 100000,
+        });
+    };
+    s.draw = function() {
+        s.background(0);
+        if (s.frameCount === frames(2))
+            s.eqs.move(427, 227);
+        s.eqs.show();
+    }
+};
+
 const Scene19 = function(s) {
     let time = {
-        text: frames(1),
-        eqs: frames(1),
-        neq: frames(2),
-        show1s: frames(2),
-        move1: frames(3),
-        move2: frames(3) + 1,
-        move3: frames(6),
-        move4: frames(9),
-        fn: frames(10),
+        eqs: 1,
+        text: frames(2),
+        show1s: frames(9),
+        neq: frames(11),
+        move1: frames(11),
+        move2: frames(11) + 1,
+        move3: frames(15),
+        move4: frames(23),
+        fn: frames(26),
+        fnEnd: frames(28.5)
     };
 
     let times;
@@ -614,9 +636,8 @@ const Scene19 = function(s) {
             str: "* The plural \"equations\" in \"normal equations\" " +
                 "\nindicates it's usually a system of many linear equations",
             font: times, size: 27, mode: 1,
-            x: 600, y: 627, start: time.fn
+            x: 600, y: 627, start: time.fn, end: time.fnEnd
         })
-
     };
 
     s.draw = function() {
@@ -626,7 +647,7 @@ const Scene19 = function(s) {
         txt[1].show();
         s.eqs.show();
         s.neq.show();
-        showFR(s);
+        //showFR(s);
     }
 };
 
@@ -657,6 +678,7 @@ const Scene20 = function(s) {
     s.draw = function() {
         s.background(0);
         s.brain.show();
+
     }
 };
 
