@@ -361,8 +361,8 @@ const Scene15 = function (s) {
 };
 
 
-const Scene16 = function (s) {
-    let SN = 1;
+const Scene16 = function (s) {   // need to change fr to 60 for this scene
+    let SN = 0;
     let time = SN === 0 ? {
         grid: frames(.1),
         pt: frames(4),
@@ -379,7 +379,6 @@ const Scene16 = function (s) {
         vec: frames(4),
         kat: frames(4),
     };
-
     let comic;
     let times;
     let txts = [];
@@ -425,7 +424,7 @@ const Scene16 = function (s) {
         s.grid.show();
         s.plot.show();
         for (let t of txts) t.show();
-        showFR(s);
+        //showFR(s);
     }
 };
 
@@ -653,8 +652,9 @@ const Scene19 = function(s) {
 
 const Scene20 = function(s) {
     let time = {
-        brain: frames(0),
-        bubble: frames(2),
+        brain: frames(1),
+        bulb: frames(2),
+        bubble: frames(4),
     };
     let hg;
     let comic;
@@ -664,6 +664,7 @@ const Scene20 = function(s) {
         emoji = s.loadFont('../lib/font/emoji.ttf');
     };
     s.setup = function() {
+        s.frameRate(fr);
         s.createCanvas(1200, 675);
         hg = new HelperGrid(s);
         s.brain = new ThoughtBrain(s, {
@@ -673,13 +674,46 @@ const Scene20 = function(s) {
             bubbleStart: time.bubble,
 
             emoji: emoji,
+            bulbStart: time.bulb
         });
     };
     s.draw = function() {
         s.background(0);
         s.brain.show();
-
     }
 };
 
-let p = new p5(Scene20);
+const Credit2 = function (s) {
+    let txts = [];
+    let times;
+    s.preload = function () {
+        times = s.loadFont('../lib/font/times.ttf');
+    };
+    s.setup = function() {
+        s.frameRate(fr);
+        s.createCanvas(1200, cvh);
+        s.background(0);
+        txts[0] = new TextWriteIn(s, {
+            str: "Inspired By: 3Blue1Brown, The Coding Train, and so many other wonderful YouTubers\n" +
+                "Source Code (written in p5.js): https://github.com/JazonJiao/Essence-Linear-Regression\n",
+            x: 34, y: 57,
+            size: 32,
+            font: times,
+            start: frames(2)
+        });
+        txts[1] = new TextFade(s, {
+            str: "Nonsquare matrices as transformations between dimensions | " +
+                "Essence of linear algebra, chapter 8 (by 3Blue1Brown)",
+            mode: 1, x: 600, y: 37,
+            size: 24,
+            font: times,
+            start: frames(2)
+        })
+    };
+    s.draw = function() {
+        s.background(0);
+        txts[0].show();
+    }
+};
+
+let p = new p5(Scene16);

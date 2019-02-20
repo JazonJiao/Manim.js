@@ -7,8 +7,8 @@ let speed = -0.002;
 // scenes 23 and 24
 const Scene23 = function(s) {
     let time = {
-        three_to_two: frames(4),
-        fn: frames(10),
+        three_to_two: frames(8),
+        fn: frames(20),
     };
 
     let g3;
@@ -215,9 +215,9 @@ const Scene27 = function(s) {
         eqs: frames(1),
         three_to_two: frames(5),
 
-        moveCam: frames(8),
-        inverse_2d: frames(10),
-        kat: frames(10),
+        moveCam: frames(5),
+        inverse_2d: frames(7),
+        kat: frames(7),
 
         grid: frames(15),
         gridLines: frames(15),
@@ -302,7 +302,7 @@ const Scene27 = function(s) {
         s.pl.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
         //kat.show();
-        showFR(s);
+        // showFR(s);
     };
 };
 
@@ -359,4 +359,4 @@ const Scene28 = function(s) {
 };
 
 
-let p = new p5(Scene27);
+let p = new p5(Scene23);
