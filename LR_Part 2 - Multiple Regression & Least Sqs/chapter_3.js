@@ -4,6 +4,59 @@
 // let angle = 2.4;
 let speed = -0.002;
 
+const Scene21 = function(s) {
+    let time = {
+        eqs: 1,
+        text: frames(2),
+        show1s: frames(9),
+        neq: frames(11),
+        move1: frames(11),
+        move2: frames(11) + 1,
+        move3: frames(15),
+        move4: frames(23),
+        fn: frames(26),
+        fnEnd: frames(28.5)
+    };
+    let times;
+    let hg;
+    let txt = [];
+    s.preload = function() {
+        times = s.loadFont('../lib/font/times.ttf');
+    };
+
+    s.setup = function() {
+        s.background(0);
+        s.frameRate(fr);
+        s.createCanvas(cvw, cvh);
+        hg = new HelperGrid(s, {});
+
+        s.eqs = new Sys_3Eqs(s, {
+            x: 427, y: 227,
+            //time: time,
+            start: time.eqs, show1s: time.show1s,
+            move1: time.move1, move2: time.move2, move3: time.move3, move4: time.move4,
+            font: times,
+        });
+        s.neq = new Normal_Eqs(s, {
+            x: 527, y: 407,
+            start: time.neq, move3: time.move3 + 2,
+        });
+        txt[0] = new TextFade(s, {
+            str: "Normal Equations", mode: 1, font: times, size: 57,
+            x: 600, y: 100, start: time.text
+        });
+    };
+
+    s.draw = function() {
+        s.background(0);
+        //hg.show();
+        txt[0].show();
+        s.eqs.show();
+        s.neq.show();
+        //showFR(s);
+    }
+};
+
 // scenes 23 and 24
 const Scene23 = function(s) {
     let time = {
