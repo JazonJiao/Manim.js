@@ -502,7 +502,8 @@ const Scene17 = function(s) {   // scene 17
 };
 
 const Scene18 = function (s) {
-    let time = {
+    let SN = 1;   // used for Scene 22
+    let time = SN === 0 ? {
         eqs: 1,
         grid: 1,
         lines: 1,
@@ -510,6 +511,14 @@ const Scene18 = function (s) {
         brain: frames(14),
         point: frames(19),
         vec: frames(19),
+    } : {
+        eqs: 1,
+        grid: 1,
+        lines: frames(3),
+        overdet: frames(6),
+        brain: frames(9),
+        point: frames(9),
+        vec: frames(9),
     };
 
     let grid;
@@ -553,7 +562,7 @@ const Scene18 = function (s) {
             start: getT(time.overdet),
             mode: 1, size: 47,
             x: 300, y: 377,
-            str: "Overdetermined\nSystem of equations"
+            str: SN === 0 ? "Overdetermined\nSystem of equations" : "3 Equations,\n2 Unknowns"
         })
     };
 
@@ -716,4 +725,4 @@ const Credit2 = function (s) {
     }
 };
 
-let p = new p5(Scene16);
+let p = new p5(Scene18);

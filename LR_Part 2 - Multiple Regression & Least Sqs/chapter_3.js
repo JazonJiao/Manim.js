@@ -5,7 +5,19 @@
 let speed = -0.002;
 
 const Scene21 = function(s) {
-    let time = {
+    let SN = 0;
+    let time = SN === 0 ? {
+        eqs: 1,
+
+        show1s: frames(3.5),
+        neq: frames(5),
+        move1: frames(5),
+        move2: frames(5) + 1,
+
+        emp: frames(9),
+        empEnd: frames(150),
+        move3: frames(10000),
+    } : {
         eqs: 1,
         text: frames(2),
         show1s: frames(9),
@@ -14,12 +26,11 @@ const Scene21 = function(s) {
         move2: frames(11) + 1,
         move3: frames(15),
         move4: frames(23),
-        fn: frames(26),
-        fnEnd: frames(28.5)
     };
     let times;
     let hg;
     let txt = [];
+    let emps = [];
     s.preload = function() {
         times = s.loadFont('../lib/font/times.ttf');
     };
@@ -41,16 +52,25 @@ const Scene21 = function(s) {
             x: 527, y: 407,
             start: time.neq, move3: time.move3 + 2,
         });
-        txt[0] = new TextFade(s, {
+        txt[0] = SN === 1 ? new TextFade(s, {
             str: "Normal Equations", mode: 1, font: times, size: 57,
             x: 600, y: 100, start: time.text
+        }) : undefined;
+        emps[0] = new Emphasis(s, {
+            x: 562, y: 252, w: 67, h: 117,
+            start: time.emp, end: time.empEnd,
+        });
+        emps[1] = new Emphasis(s, {
+            x: 567, y: 443, w: 24, h: 47,
+            start: time.emp, end: time.empEnd,
         });
     };
 
     s.draw = function() {
         s.background(0);
+        for (let e of emps) e.show();
         //hg.show();
-        txt[0].show();
+        for (let t of txt) if (t) t.show();
         s.eqs.show();
         s.neq.show();
         //showFR(s);
@@ -266,11 +286,11 @@ const Scene26 = function(s) {
 const Scene27 = function(s) {
     let time = {
         eqs: frames(1),
-        three_to_two: frames(5),
+        three_to_two: frames(15),
 
-        moveCam: frames(5),
-        inverse_2d: frames(7),
-        kat: frames(7),
+        moveCam: frames(15),
+        inverse_2d: frames(17),
+        kat: frames(17),
 
         grid: frames(15),
         gridLines: frames(15),
@@ -412,4 +432,4 @@ const Scene28 = function(s) {
 };
 
 
-let p = new p5(Scene23);
+let p = new p5(Scene21);
