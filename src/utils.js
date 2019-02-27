@@ -374,21 +374,24 @@ class PlotPoint extends Point {
 }
 
 /** 2018-12-23
- * A rectangle, with fade-in init animation
+ * A rectangle, with fade-in and fade-out animations
  *
  * ----args list parameters----
  * @mandatory (number) x, y, w, h
- * @optional (number) start; (color) color
+ * @optional (number) start; (array) color
  */
-class Rect {
-    constructor(args) {
-        this.x = args.x;
-        this.y = args.y;
+class Rect extends PointBase {
+    constructor(ctx, args) {
+        super(ctx, args);
         this.w = args.w;
         this.h = args.h;
-        this.start = args.start || frames(1);
 
-        this.timer = new Timer0(frames(1));
+        this.color = args.color || [255, 255, 255, 255];
+
+        // timer for displaying start and end animations, respectively
+        this.timer = new Timer0(frames(this.duration));  // fixme: use Timer1?
+        this.timer2 = new Timer1(frames(this.duration));
+        this.t = 0;
     }
 
     reset(args) {
@@ -398,10 +401,22 @@ class Rect {
         this.h = args.h || this.h;
     }
 
-    show() {
-
+    // sets stroke and the t value
+    showSetup() {
+        this.s.noStroke();
+        if (this.s.frameCount > this.start) {
+            this.t = this.timer.advance();
+        }
+        if (this.s.frameCount > this.end) {
+            this.t = 1 - this.timer2.advance();
+        }
     }
 
+    show() {
+        this.showSetup();
+        this.s.fill(this.color[0], this.color[1], this.color[2], this.color[3] * this.t);
+        this.s.rect(this.x, this.y, this.w, this.h);
+    }
 }
 
 /** 2018-12-22
@@ -410,31 +425,21 @@ class Rect {
  *
  * ----args list parameters----
  * @mandatory (number) x, y, w, h
- * @optional (number) start, end; (color) color
+ * @optional (number) start, end; (color) color // fixme: I should change all to array at some time
  */
 class Emphasis extends Rect {
     constructor(ctx, args) {
-        super(args);
+        super(ctx, args);
         this.s = ctx;
+        this.duration = 0.5;
 
         this.end = args.end || 10000;
         this.color = args.color || this.s.color(107, 107, 17);
-
-        // timer for displaying start and end animations, respectively
-        this.timer = new Timer1(frames(0.5));
-        this.timer2 = new Timer1(frames(0.5));
-        this.t = 0;
     }
 
     show() {
-        this.s.noStroke();
+        this.showSetup();
         this.s.fill(this.color);
-        if (this.s.frameCount > this.start) {
-            this.t = this.timer.advance();
-        }
-        if (this.s.frameCount > this.end) {
-            this.t = 1 - this.timer2.advance();
-        }
         this.s.rect(this.x, this.y, this.w * this.t, this.h);
     }
 }
@@ -925,32 +930,28 @@ class Bracket {
  * user can use the ImageFly class to display init animation of flying in from the left, etc.
  *
  * ---- args list parameters ----
- * @mandatory (p5.Image) img
- * @optional (number) x, y, w, h, start
+ * @mandatory (p5.Image) img, (number) x, y
+ * @optional (number) w, h, start
  */
 class ImageBase extends PointBase {
     constructor(ctx, args) {
         super(ctx, args);
-        this.w = args.w;
-        this.h = args.h;
-
         this.img = args.img;
+        this.w = args.w || this.img.width; // fixme: will this result in overhead?
+        this.h = args.h || this.img.height;
     }
 
     showImage() {
         this.showMove();
-        if (this.w) {
-            this.s.image(this.img, this.x, this.y, this.w, this.h);
-        } else {
-            this.s.image(this.img, this.x, this.y);
-        }
+        this.s.image(this.img, this.x, this.y, this.w, this.h);
     }
 }
 
 /***
  * ImageFly
  *
- * mode 1: fly from left
+ * mode 1: fly from left;  mode 2: fly from right;
+ * mode 3: fly from up;    mode 4: fly from bottom
  *
  * ---- args list parameters ----
  * @mandatory (p5.Image) img, mode
@@ -959,25 +960,63 @@ class ImageBase extends PointBase {
 class ImageFly extends ImageBase {
     constructor(ctx, args) {
         super(ctx, args);
-
-        this.duration = args.duration || 1;
+        this.xf = this.x;  // final positions
+        this.yf = this.y;
         this.mode = args.mode || 1;
 
-        if (this.mode === 1) {  // todo
-            this.xf = this.x;
-            this.x = -this.w;
+        switch (this.mode) {
+            case 1:
+                this.x = -this.img.width; break;
+            case 2:
+                this.x = cvw; break;
+            case 3:
+                this.y = -this.img.height; break;
+            case 4:
+                this.y = cvh; break;
         }
-
     }
 
     show() {
         if (this.s.frameCount === this.start) {
-            this.move(this.xf, this.y, this.duration, 1);
+            this.move(this.xf, this.yf, this.duration, 1);
         }
         this.showImage();
     }
 }
 
-class ImageGrow extends ImageBase {  // grow from center
+class ImageGrow extends ImageBase {  // grow from center; no additional args needed
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.xc = this.x + this.w / 2;
+        this.yc = this.y + this.h / 2;
+        this.timer = new Timer1(frames(this.duration));
+    }
+    show() {
+        this.showMove();
+        if (this.s.frameCount > this.start) {
+            let t = this.timer.advance();
+            this.s.image(this.img,
+                this.xc - this.w * t / 2, this.yc - this.h * t / 2, this.w * t, this.h * t);
+        }
+    }
+}
 
+/*** 2019-02-27
+ * ImageFade
+ * Can display fade in and fade out animations
+ * Since there is an extra layer of black rectangle embedded in canvas,
+ * need to be careful not to cause bugs
+ */
+class ImageFade extends ImageBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.rect = new Rect(this.s, {
+            x: this.x, y: this.y, w: this.w, h: this.h, duration: 0.7,
+            color: [0, 0, 0, 255], start: 1, end: this.start,
+        });
+    }
+    show() {
+        this.showImage();
+        this.rect.show(); // this function call needs to be after the previous
+    }
 }

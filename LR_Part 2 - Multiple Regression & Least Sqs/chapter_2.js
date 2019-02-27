@@ -516,6 +516,7 @@ const Scene18 = function (s) {
         grid: 1,
         lines: frames(3),
         overdet: frames(6),
+        txt: frames(6),
         brain: frames(9),
         point: frames(9),
         vec: frames(9),
@@ -562,8 +563,15 @@ const Scene18 = function (s) {
             start: getT(time.overdet),
             mode: 1, size: 47,
             x: 300, y: 377,
-            str: SN === 0 ? "Overdetermined\nSystem of equations" : "3 Equations,\n2 Unknowns"
+            str: "Overdetermined\nSystem of equations"
         })
+        s.txt2 = new TextFade(s, {
+            font: times,
+            start: time.txt, end: time.txtEnd,
+            mode: 1, size: 42,
+            x: 737, y: 137,
+            str: "No common\nintersection"
+        });
     };
 
     s.draw = function () {
@@ -572,6 +580,7 @@ const Scene18 = function (s) {
         brain.show();
         s.eqs.show();
         s.txt.show();
+        s.txt2.show();
         //showFR(s);
     }
 };

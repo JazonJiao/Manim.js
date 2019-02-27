@@ -56,7 +56,7 @@ class Graphics {         // the master of all classes
  * shift() takes in relative target coordinates, while move() takes in absolute target position.
  *
  * ---- args list parameters ----
- * @optional (number) x, y, start;
+ * @optional (number) x, y, start [in frames], duration [in secs], end [in frames];
  */
 class PointBase {
     constructor(ctx, args) {
@@ -65,6 +65,7 @@ class PointBase {
         this.x = args.x || 0;
         this.y = args.y || 0;
         this.start = args.start || 30;
+        this.duration = args.duration || 1;  // fixme
         this.end = args.end || 100000;
     }
 

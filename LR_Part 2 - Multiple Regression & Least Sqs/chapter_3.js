@@ -1,4 +1,4 @@
-// Chapter 3, Normal Equations
+// Chapter 3, Normal Equations and 3d-to-2d Transformations
 // In 3D scenes, notice the difference between s and g3
 
 // let angle = 2.4;
@@ -74,6 +74,45 @@ const Scene21 = function(s) {
         s.eqs.show();
         s.neq.show();
         //showFR(s);
+    }
+};
+
+const Scene22 = function(s) {
+    let time = {
+        pics: frames(1),
+        logo_3b1b: frames(2),
+    };
+    s.imgs = [];
+    let src = [], times;
+    s.preload = function() {
+        src[0] = s.loadImage('./img/2.webp');
+        src[1] = s.loadImage('./img/3.webp');
+        src[2] = s.loadImage('./img/4.webp');
+        src[3] = s.loadImage('../lib/img/3b1b_logo.jpg');
+        times = s.loadFont('../lib/font/times.ttf');
+    };
+    s.setup = function() {
+        s.frameRate(fr);
+        s.createCanvas(cvw, cvh);
+        for (let i = 0; i < 3; i++) {
+            s.imgs[i] = new ImageFade(s, {
+                img: src[i], start: time.pics + i * 15, duration: 0.77, mode: 3,
+                x: 127 + i * 327, y: 217, w: 297, h: 167,
+            });
+        }
+        s.imgs[3] = new ImageGrow(s, {
+            img: src[3], start: time.logo_3b1b, duration: 0.77,
+            x: 347, y: 447, w: 57, h: 57
+        });
+        s.txt = new TextWriteIn(s, {
+            str: "Essence of Linear Algebra",
+            font: times, start: time.logo_3b1b, x: 437, y: 457, size: 37
+        })
+    };
+    s.draw = function() {
+        s.background(0);
+        for (let i of s.imgs) i.show();
+        s.txt.show();
     }
 };
 
@@ -432,4 +471,4 @@ const Scene28 = function(s) {
 };
 
 
-let p = new p5(Scene21);
+let p = new p5(Scene22);
