@@ -79,7 +79,7 @@ const Scene21 = function(s) {
 
 const Scene22 = function(s) {
     let time = {
-        pics: frames(1),
+        pics: frames(3),
         logo_3b1b: frames(2),
     };
     s.imgs = [];
@@ -116,11 +116,74 @@ const Scene22 = function(s) {
     }
 };
 
-// scenes 23 and 24
+const Scene23a = function (s) {
+    let tnr;
+    s.preload = function () {
+        tnr = s.loadFont('../lib/font/times.ttf');
+    };
+    s.setup = function () {
+        s.frameRate(fr);
+        s.createCanvas(cvw, cvh);
+        let xo = -357, yo = 177;
+        s.eqs = new Sys_3Eqs(s, {
+            x: 1147 + xo, y: 40 + yo,
+            move1: 1, move2: 2, move3: 3, move4: 10000, mode: 1, font: tnr, start: frames(1),
+        });
+        s.kat = new Katex(s, {
+            x: 787 + xo, y: 64 + yo, text: "X^T =",
+        });
+    };
+    s.draw = function () {
+        s.background(0);
+        s.kat.show();
+        s.eqs.show();
+    };
+}
+
+// scene 23
 const Scene23 = function(s) {
     let time = {
-        three_to_two: frames(8),
-        fn: frames(20),
+        ar: frames(2),
+        grid: frames(3)
+    };
+    let g3, tnr;
+    let obj = [];
+    s.preload = function () {
+        obj[0] = s.loadModel('../lib/obj/axes.obj');
+    };
+    s.setup = function () {
+        setup3D(s);
+        g3 = s.createGraphics(600 * 2, 600 * 2, s.WEBGL);
+        s.axes = new Axes3D(s, {
+            angle: 1, camRadius: 700, model: obj[0]
+        });
+        s.arrow = new Arrow(s, {
+            y1: 317, y2: 317, x1: 607, x2: 647, start: time.ar, strokeweight: 4,
+            color: s.color(255, 255, 0)
+        })
+        s.grid = new Grid(s, {
+            left: 675, centerX: 937, start: time.grid
+        });
+        s.arrs = new Arrows_Transform(s, {
+            time: time, start: time.three_to_two, showBasis: true, //showX: true,
+        });
+    };
+    s.draw = function () {
+        s.background(0);
+        s.axes.show(g3);
+        s.grid.showGrid();
+        s.arrow.show();
+        s.image(g3, 0, 37, 600, 600);
+    };
+};
+
+// scenes 23 and 24
+const Scene24 = function(s) {
+    let time = {
+        xt: frames(2),
+        three_to_two: frames(11),
+        fn: frames(21),
+        fnEnd: frames(26)
     };
 
     let g3;
@@ -146,9 +209,11 @@ const Scene23 = function(s) {
             font: tnr,
             start: frames(1),
         });
+        s.kat = new Katex(s, {
+            x: 787, y: 64, text: "X^T =", fadeIn: true, start: time.xt
+        });
         s.grid = new Grid3D_Transform(s, {
-            mat: //[1, -2, -1, 0, 0, 0, 1, -1, 1],
-                stdToP5(
+            mat: stdToP5(
                     [matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], 0, 0, 0]),
             start: time.three_to_two,
             numLines: 2, lineLen: 197
@@ -166,11 +231,10 @@ const Scene23 = function(s) {
             showBasis: true,
             //showX: true,
         });
-
         txt = new TextFade(s, {
             str: "* This is one reason Grant (3b1b) didn’t \n" +
                 "show the actual animation in his EoLA Chap 8 video",
-            size: 27, mode: 1, x: 600, y: 627, start: time.fn
+            size: 27, mode: 1, x: 600, y: 627, start: time.fn, end: time.fnEnd
         })
     };
 
@@ -183,21 +247,22 @@ const Scene23 = function(s) {
         s.pl.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
         txt.show();
+        s.kat.show();
         //showFR(s);
     };
-
 };
 
 // scene 25
 const Scene25 = function(s) {
     let time = {
-        three_to_two: frames(7),
-        kat: frames(2),
+        kat: frames(7), // 7
+        x_T: frames(12),
+        three_to_two: frames(19),
+        katT: frames(22),
     };
-
     let g3;
     let tnr;
-    let kat;
+    let kat = [];
     let obj = [];
     s.arrows = [];
 
@@ -205,11 +270,17 @@ const Scene25 = function(s) {
         obj[0] = s.loadModel('../lib/obj/axes.obj');
         tnr = s.loadFont('../lib/font/times.ttf');
     };
-
     s.setup = function () {
         setup3D(s);
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);
-
+        s.mask = new Rect(s, {
+            x: 600, y: 0, w: 427, h: 400, start: 1, end: time.x_T, color: [0, 0, 0, 255]
+        });
+        s.grid = new Grid3D_Transform(s, {
+            mat: stdToP5(
+                [matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], 0, 0, 0]),
+            start: time.three_to_two, numLines: 2, lineLen: 197
+        });
         s.eqs = new Sys_3Eqs(s, {
             x: 540, y: 67,
             move1: 1, move2: 2,
@@ -218,56 +289,58 @@ const Scene25 = function(s) {
             font: tnr,
             start: frames(1),
         });
-        s.grid;
         s.pl = new Plane3D(s, {
             a: 0, b: 0, c: 0
         });
         s.axes = new Axes3D(s, {
-            angle: 2.4, speed: speed,
+            angle: 0, speed: speed,
             model: obj[0]
         });
-
         s.arrs = new Arrows_Transform(s, {
             start: time.three_to_two,
             showBasis: true,
             showY: true
         });
-
-        kat = new Katex(s, {
+        kat[0] = new Katex(s, {
+            text: "\\textcolor{17a7e7}{\\vec{y}}=" +
+                target[0] + "\\textcolor{ffaaaa}{\\hat{\\imath}}+" +
+                target[1] + "\\textcolor{aaffaa}{\\hat{\\jmath}}+" +
+                target[2] + "\\textcolor{aaaaff}{\\hat{k}}",
+            x: 77, y: 0, font_size: 30, fadeIn: true, start: time.kat, fadeOut: true, end: time.katT
+        });
+        kat[1] = new Katex(s, {
             text: "T(\\textcolor{17a7e7}{\\vec{y}})=" +
                 target[0] + "~T(\\textcolor{ffaaaa}{\\hat{\\imath}})+" +
                 target[1] + "~T(\\textcolor{aaffaa}{\\hat{\\jmath}})+" +
                 target[2] + "~T(\\textcolor{aaaaff}{\\hat{k}})",
-            x: 37, y: 0, font_size: 30,
-            fadeIn: true, start: time.kat,
+            x: 37, y: 0, font_size: 30, fadeIn: true, start: time.katT,
         })
     };
 
     s.draw = function () {
         s.background(0);
+        s.eqs.show();
+        s.mask.show();
         s.axes.show(g3);
         s.arrs.show(g3);
-        //s.grid.show(g3);
+        s.grid.show(g3);
         s.pl.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
-        kat.show();
-        showFR(s);
+        for (let k of kat) k.show();
+        //showFR(s);
     };
 };
 
 // scene 26
 const Scene26 = function(s) {
     let time = {
-        three_to_two: frames(7),
-        kat: frames(2),
+        three_to_two: frames(16),
+        x_T: frames(13),
     };
-
     let g3;
     let tnr;
     let kat;
     let obj = [];
-    s.arrows = [];
-
     s.preload = function () {
         obj[0] = s.loadModel('../lib/obj/axes.obj');
         tnr = s.loadFont('../lib/font/times.ttf');
@@ -278,7 +351,9 @@ const Scene26 = function(s) {
         s.pixelDensity(1);
         s.createCanvas(cvw, cvh);
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);
-
+        s.mask = new Rect(s, {
+            x: 600, y: 0, w: 367, h: 400, start: 1, end: time.x_T, color: [0, 0, 0, 255]
+        });
         s.eqs = new Sys_3Eqs(s, {
             x: 977, y: 67,
             move1: 1, move2: 2,
@@ -287,37 +362,29 @@ const Scene26 = function(s) {
             font: tnr,
             start: frames(1),
         });
-
         s.pl = new Plane3D(s, {
             a: 0, b: 0, c: 0
         });
         s.axes = new Axes3D(s, {
-            angle: 2.5, speed: speed,
+            angle: 0.6, speed: speed,
             model: obj[0]
         });
-
         s.arrs = new Arrows_Transform(s, {
             start: time.three_to_two,
             showBasis: true,
             showX: true
         });
-
-        kat = new Katex(s, {
-            text: "",
-            x: 37, y: 0, font_size: 30,
-            fadeIn: true, start: time.kat,
-        })
     };
 
     s.draw = function () {
         s.background(0);
-        s.axes.show(g3);
         s.eqs.show();
+        s.mask.show();
+        s.axes.show(g3);
         s.arrs.show(g3);
         s.pl.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
-        kat.show();
-        showFR(s);
+        //showFR(s);
     };
 };
 
@@ -471,4 +538,4 @@ const Scene28 = function(s) {
 };
 
 
-let p = new p5(Scene22);
+let p = new p5(Scene26);

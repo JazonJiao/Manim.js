@@ -14,7 +14,7 @@
  *
  * ---- args list parameters---
  * @mandatory (p5.Gemoetry) model
- * @optional (number) angle, speed
+ * @optional (number) angle, speed, camRadius
  */
 class Axes3D {
     constructor(ctx, args) {
@@ -22,7 +22,7 @@ class Axes3D {
         this.angle = args.angle || 0;  // starting angle
         this.speed = args.speed || -0.0025;  // how many radians to rotate per frame
         this.camY = -567;
-        this.camRadius = 674;
+        this.camRadius = 674 || args.camRadius; // set to about 700 for displaying axes half-screen
         this.model = args.model;
     }
 

@@ -378,7 +378,7 @@ class PlotPoint extends Point {
  *
  * ----args list parameters----
  * @mandatory (number) x, y, w, h
- * @optional (number) start; (array) color
+ * @optional (number) start, end; (array) color
  */
 class Rect extends PointBase {
     constructor(ctx, args) {
@@ -925,7 +925,7 @@ class Bracket {
 /*** 2019-02-01
  * ImageBase (could not name it to Image since it would conflict p5.Image)
  *
- * This class does not support init animations.
+ * This class does not support init animations. See ImageFly, ImageGrow, ImageFade.
  * Since this.s.tint() is a very costly method and slows down the frame rate drastically,
  * user can use the ImageFly class to display init animation of flying in from the left, etc.
  *

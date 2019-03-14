@@ -607,7 +607,8 @@ const Scene18b = function(s) {
 };
 
 const Scene19 = function(s) {
-    let time = {
+    let SN = 1;
+    let time = SN === 0 ? {
         eqs: 1,
         text: frames(2),
         show1s: frames(9),
@@ -616,6 +617,17 @@ const Scene19 = function(s) {
         move2: frames(11) + 1,
         move3: frames(15),
         move4: frames(23),
+        fn: frames(26),
+        fnEnd: frames(28.5)
+    } : {
+        eqs: 1,
+        text: 1,
+        show1s: 1,
+        neq: 1,
+        move1: 2,
+        move2: 3,
+        move3: 10,
+        move4: frames(5),
         fn: frames(26),
         fnEnd: frames(28.5)
     };
@@ -734,4 +746,4 @@ const Credit2 = function (s) {
     }
 };
 
-let p = new p5(Scene18);
+let p = new p5(Scene19);
