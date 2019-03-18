@@ -842,12 +842,12 @@ class Bracket {
         // let dy = args.y2 - args.y1;
         // let len = Math.sqrt(dx * dx + dy * dy);
 
-        this.tipLen = args.tipLen || 17;
+        this.tipLen = args.tipLen || 9;
 
         this.start = args.start || 100;
         this.end = args.end || 100000;
         this.duration = args.duration || frames(1);
-        this.strokeweight = args.strokeweight || 4;
+        this.strokeweight = args.strokeweight || 3;
 
         this.lines = [];
         this.lines[0] = new LineCenter(this.s, {
@@ -886,6 +886,15 @@ class Bracket {
             x1: args.x2 + this.tipLen * sin, x2: args.x2,
             y1: args.y2 - this.tipLen * cos, y2: args.y2,
         });
+    }
+
+    // shift the coordinates of the bracket
+    shift(x1, y1, x2, y2, duration) {
+        let na = {
+            x1: this.x1 + x1, x2: this.x2 + x2, y1: this.y1 + y1, y2: this.y2 + y2,
+            duration: duration
+        };
+        this.move(na);
     }
 
     // ----args list----

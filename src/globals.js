@@ -71,11 +71,16 @@ function frames(sec) {
 
 
 /**
- * All 3D scenes should call this in s.setup()
+ * All 3D/2D scenes should call in s.setup()
  */
 function setup3D(s) {
     s.frameRate(fr);
     s.pixelDensity(1);
+    s.createCanvas(cvw, cvh);
+}
+
+function setup2D(s) {
+    s.frameRate(fr);
     s.createCanvas(cvw, cvh);
 }
 

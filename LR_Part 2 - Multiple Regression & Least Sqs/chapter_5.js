@@ -62,7 +62,7 @@ class Plane_LinComb extends Plane3D {
         this.kats = [];
         this.kats[0] = new Katex(this.s, {
             text: "\\textcolor{#f7e717}{\\vec{v}} = " +
-                "~~~~~~~~\\textcolor{f76767}{x_0} + ~~~~~~~~\\textcolor{47f747}{x_1}",
+                "~~~~~~~~\\textcolor{f76767}{\\vec{x_0}} + ~~~~~~~~\\textcolor{47f747}{\\vec{x_1}}",
             x: this.textX,
             y: this.textY,
             font_size: this.textsize
@@ -196,4 +196,4 @@ const Chap2Part1 = function (s) {
     };
 };
 
-let p26 = new p5(Chap2Part1);
+let p = new p5(Chap2Part1);

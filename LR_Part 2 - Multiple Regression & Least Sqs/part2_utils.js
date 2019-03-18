@@ -75,8 +75,6 @@ class LS_Plot extends Plot {
     }
 }
 
-
-
 class Grid_b0b extends Grid {
     constructor(ctx, args) {
         super(ctx, args);
@@ -125,10 +123,23 @@ class Grid_b0b extends Grid {
     }
 }
 
-
-
-
-
+// matrix specification:
+//
+// class Sys_4Eqs {  // args: font, mv
+//     constructor(ctx, args) {
+//         this.s = ctx;
+//         this.mv = args.mv;
+//
+//
+//     }
+//     show() {
+//         this.kat.show();
+//         this.bl.show();
+//         this.br.show();
+//         this.x0.show();
+//         this.x1.show();
+//     }
+// }
 
 /***
  * ---- args list parameters ----

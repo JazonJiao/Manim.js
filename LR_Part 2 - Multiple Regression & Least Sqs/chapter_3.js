@@ -537,5 +537,71 @@ const Scene28 = function(s) {
     };
 };
 
+// SEE HERE FOR MATRIX SPECS
+const Scene29 = function(s) {
+    let time = {
+        to4: frames(4),
+        txt1: frames(5),
+        txt2: frames(6),
+        txt3: frames(7),
+    }
+    let tnr;
+    s.txt = [];
+    let x = 577, y = 217;  // the coordinates specifying the matrix location (upper-left)
 
-let p = new p5(Scene26);
+    s.preload = function() {
+        tnr = s.loadFont('../lib/font/times.ttf');
+    };
+    s.setup = function () {
+        setup2D(s);
+        s.hg = new HelperGrid(s, {});
+        s.kat = new Katex(s, {
+            x: 470, y: 240, text: "X="
+        });
+        s.txt[0] = new TextWriteIn(s, {
+            str: "3 data points", x: 100, y: 100, start: time.txt1, font: tnr, color: [255, 255, 255]
+        });
+        s.txt[1] = new TextWriteIn(s, {
+            str: "two vectors in 4D space", x: 200, y: 200, start: time.txt2, font: tnr,
+        });
+        s.txt[2] = new TextFade(s, {
+            str: "...unless you're a string theorist :)",
+            x: 867, y: 640, start: time.txt3, size: 24, font: tnr,
+        });
+        s.bl = new Bracket(s, {
+            x1: x, y1: y, x2: x, y2: y + 167
+        });
+        s.br = new Bracket(s, {
+            x1: x + 137, y1: y + 167, x2: x + 137, y2: y
+        });
+        s.x0 = new TextFade(s, {
+            x: x + 17, y: y,
+            str: "1\n1\n1\n1\n", font: tnr, color: [255, 77, 97], size: 47
+        });
+        s.x1 = new TextFade(s, {
+            x: x + 84, y: y,
+            str: "-1\n 1\n 2\n 4\n", font: tnr, color: [77, 217, 77], size: 47
+        });
+        s.box = new Rect(s, {
+            x: 597, w: 100, y: 400, h: 47, color: [0, 0, 0, 255], end: time.to4,
+        })
+    }
+    s.draw = function () {
+        if (s.frameCount === time.to4) {
+            s.bl.shift(0, 0, 0, 63, 30);
+            s.br.shift(0, 63, 0, 0, 30);
+            s.kat.shift(0, 27);
+        }
+        s.background(0);
+        for (let t of s.txt) t.show();
+        //s.hg.show();
+        s.kat.show();
+        s.bl.show();
+        s.br.show();
+        s.x0.show();
+        s.x1.show();
+        s.box.show();
+    }
+}
+
+let p = new p5(Scene29);
