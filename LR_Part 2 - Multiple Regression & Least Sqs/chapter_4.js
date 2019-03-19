@@ -1,15 +1,22 @@
 // Chapter 4, Multiple Regression
 
+let Red = [255, 77, 97];
+let Green = [77, 217, 77];
+let Blue = [77, 177, 255];
+let Yellow = [247, 227, 47];
+
 // scene 26
 const Scene31 = function(s) {
     let time = {
-
+        x: frames(1),  // light up x, y coords
+        xE: frames(2), // x, y unlit
+        y: frames(3),  // light up z coords
+        yE: frames(4), // z unlit
     };
     let g3;
     let tnr;
     let obj = [];
-    let tmr = [];
-    s.arr = [];
+    s.arr = []; s.keq = [];
 
     s.preload = function () {
         obj[0] = s.loadModel('../lib/obj/axes.obj');
@@ -22,12 +29,17 @@ const Scene31 = function(s) {
         s.axes = new Axes3D(s, {
             angle: 0.6, model: obj[0]
         });
-        s.arr[0] = new Arrow(s, {
-
+        s.arr[0] = new Arrow3D(s, {
+            from: [-400, 0, 0], to: [-400, 0, 0], tipLen: 0.1, tipRadius: 5, radius: 5, color: Green
+        });
+        s.arr[1] = new Arrow3D(s, {
+            from: [0, -400, 0], to: [0, -400, 0], tipLen: 0.1, tipRadius: 5, radius: 5, color: Yellow
+        });
+        s.arr[2] = new Arrow3D(s, {
+            from: [0, 0, -400], to: [0, 0, -400], tipLen: 0.1, tipRadius: 5, radius: 5, color: Blue
         });
 
-
-        let ex = 407, ey = 7;
+        let ex = 107, ey = 7;
         s.keq[0] = new Katex(s, { x: ex, y: ey, text: "\\textcolor{#47b7f7}{y}=", });
         s.keq[1] = new Katex(s, { x: ex + 87, y: ey, text: "\\beta_0", color: "#f75757", });
         s.keq[2] = new Katex(s, { x: ex + 137, y: ey, text: "+", });
@@ -39,8 +51,23 @@ const Scene31 = function(s) {
     };
 
     s.draw = function () {
+        if (s.frameCount === time.x) {
+            s.arr[0].move({ to: [400, 0, 0], mode: 1, duration: 27 });
+            s.arr[1].move({ to: [0, 400, 0], mode: 1, duration: 27 });
+        }
+        if (s.frameCount === time.xE) {
+            s.arr[0].move({ from: [400, 0, 0], mode: 1, duration: 27 });
+            s.arr[1].move({ from: [0, 400, 0], mode: 1, duration: 27 });
+        }
+        if (s.frameCount === time.y)
+            s.arr[2].move({ to: [0, 0, 400], mode: 1, duration: 27 });
+        if (s.frameCount === time.yE)
+            s.arr[2].move({ from: [0, 0, 400], mode: 1, duration: 27 });
+
         s.background(0);
         s.axes.show(g3);
+        for (let a of s.arr) a.show(g3);
+        for (let k of s.keq) k.show();
         s.image(g3, 0, 0, cvw, cvh);
         //showFR(s);
     };
@@ -203,4 +230,4 @@ const Scene34 = function(s) {
     }
 }
 
-let p = new p5(Scene34);
+let p = new p5(Scene31);

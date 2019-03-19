@@ -266,7 +266,7 @@ class Grid3D_Transform extends Grid3D {
  *
  * ---- args list parameters ----
  * @mandatory (array) to--[x2, y2, z2] in standard coordinates,
- * @optional (array) from; (number) radius, tipLen, tipRadius; (color) color;
+ * @optional (array) from; (number) radius, tipLen, tipRadius; (array) color;
  *           (p5.Geometry) label; (function) fcn
  */
 class Arrow3D {
@@ -282,7 +282,7 @@ class Arrow3D {
             this.fcn = args.fcn || ((g) => g.rotateZ(-this.s.PI / 2));  // default rotation function
         }
 
-        this.color = args.color || color(177);
+        this.color = args.color || [177, 177, 177];
         this.radius = args.radius || 3;
         this.tipLen = args.tipLen || 30;
 
@@ -363,7 +363,7 @@ class Arrow3D {
     }
 
     // ----args list----
-    // from [in std coords], to [in std coords], duration [in frames]
+    // from [in std coords], to [in std coords], duration [in frames], mode
     // in draw(), use: if (s.frameCount === getT(time.xxx)) s.variable.move();
     move(args) {
         // this is to fix the issue of not being able to move multiple times
@@ -374,8 +374,9 @@ class Arrow3D {
         this.to_d = args.to ? stdToP5(args.to) : this.to;
         this.moved = true;
         let t = args.duration || frames(2);
+        let m = args.mode === undefined ? 2 : args.mode;
 
-        this.timer = new Timer2(t);
+        this.timer = new timerFactory(t, m);
     }
 
     moving() {
