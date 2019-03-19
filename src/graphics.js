@@ -138,7 +138,7 @@ class PointBase {
     shaking() {
         if (this.f < this.move_duartion) {
             let t = this.move_timer.advance() * this.s.TWO_PI;
-            this.y = this.yo + this.amp * Math.sin(t);
+            this.y = this.yo - this.amp * Math.sin(t);
             this.f++;
         } else {
             this.shaked = false;
@@ -148,7 +148,7 @@ class PointBase {
     jumping() {
         if (this.f < this.move_duartion) {
             let t = this.move_timer.advance() * this.s.PI;
-            this.y = this.yo + this.amp * Math.sin(t);
+            this.y = this.yo - this.amp * Math.sin(t);
             this.f++;
         } else {
             this.jumped = false;

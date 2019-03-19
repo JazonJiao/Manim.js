@@ -27,7 +27,7 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
         this.arrows[1] = new Arrow(this.s, {
             x1: this.centerX, x2: this.centerX + this.step,
             y1: this.centerY, y2: this.centerY,
-            color: this.s.color('#57c757'), strokeweight: 7, tipLen: 27,
+            color: this.s.color('#47c747'), strokeweight: 7, tipLen: 27,
             start: time.i_hat, //fadeIn: true
         });
 
@@ -35,7 +35,7 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
         this.arrows[2] = new Arrow(this.s, {
             x1: this.centerX, x2: this.centerX,
             y1: this.centerY, y2: this.centerY - this.step,
-            color: this.s.color('#f76767'), strokeweight: 7, tipLen: 27,
+            color: this.s.color('#f75757'), strokeweight: 7, tipLen: 27,
             start: time.j_hat
         });
 

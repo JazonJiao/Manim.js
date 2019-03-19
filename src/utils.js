@@ -432,6 +432,8 @@ class Emphasis extends Rect {
         super(ctx, args);
         this.s = ctx;
         this.duration = 0.5;
+        this.timer = new Timer1(frames(this.duration));  // the duration went wrong
+        this.timer2 = new Timer1(frames(this.duration));
 
         this.end = args.end || 10000;
         this.color = args.color || this.s.color(107, 107, 17);
