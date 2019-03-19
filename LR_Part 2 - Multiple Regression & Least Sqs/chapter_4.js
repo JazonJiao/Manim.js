@@ -4,6 +4,7 @@ let Red = [255, 77, 97];
 let Green = [77, 217, 77];
 let Blue = [77, 177, 255];
 let Yellow = [247, 227, 47];
+let Orange = [247, 137, 27];
 
 const Scene31 = function(s) {
     let time = {
@@ -230,8 +231,14 @@ const Scene34 = function(s) {
 };
 
 const Scene36 = function(s) {
+    let timeX = frames(2);
     let time = {
-        table: frames(1)
+        pts: frames(2),
+        table: frames(1),
+        x: timeX,
+        k1: timeX,
+        k2: timeX + 7,
+        k3: timeX + 7
     };
     let tnr;
 
@@ -242,20 +249,23 @@ const Scene36 = function(s) {
         setup2D(s);
 
         // the data used for quadratic regression
-        let xs = [-10, -6, 2, 7, 13, 21];
-        let ys = [3, -2, -4, 7, 17, 34];
+        let xs = [-9, -6, 2, 7, 13, 19];
+        let ys = [3, -4, -7, 1, 9, 21];
         let x2 = [];
         for (let i = 0; i < xs.length; i++)
             x2[i] = xs[i] * xs[i];
 
-        s.axes = new Axes(s, {
+        s.plot = new Plot(s, {
+            xs: xs, ys: ys,
+            startPt: time.pts,
             right: 675,
-            centerX: 100, centerY: 550,
-            stepX: 10, stepY: 10,
+            centerX: 200, centerY: 500,
+            labelX: "x", labelY: "y",
+            stepX: 20, stepY: 20,
         });
         s.table = new Table(s, {
-            x: 797, y: 57,
-            xs: target, ys: [matrix[3], matrix[4], matrix[5]],
+            x: 697, y: 57,
+            xs: xs, ys: ys,
             start: time.table,
             font: tnr,
             colorX: [77, 217, 77], colorY: [77, 177, 255],
@@ -264,18 +274,54 @@ const Scene36 = function(s) {
         s.b = new MR_Plane(s, {  // only to extract the coefficients b0, b1, b2
             x1: xs, x2: x2, y: ys,
         });
-
-        s.p = new FcnPlot(s, {
-            axes: s.axes,
-            f: ((x) => { return (x * x * s.b.b2 + x * s.b.b1 + s.b.b0); })
+        s.graph = new FcnPlot(s, {
+            axes: s.plot, color: Orange,
+            f: ((x) => { return (x * x * s.b.b2 + x * s.b.b1 + s.b.b0); })  // quadratic best-fit
         });
+
+        // adapted (copied lol) from Scene 34
+        let ex = 177, ey = 7;
+        s.keq = []; s.kat = [];
+        s.keq[0] = new Katex(s, { x: ex, y: ey, text: "\\textcolor{#47b7f7}{y}=", });
+        s.keq[1] = new Katex(s, { x: ex + 87, y: ey, text: "\\beta_0", color: "#f75757", });
+        s.keq[2] = new Katex(s, { x: ex + 137, y: ey, text: "+", });
+        s.keq[3] = new Katex(s, { x: ex + 177, y: ey, text: "\\beta_1", color: "#47c747", });
+        s.keq[4] = new Katex(s, { x: ex + 227, y: ey, text: "x" });
+        s.keq[5] = new Katex(s, { x: ex + 277, y: ey, text: "+", });
+        s.keq[6] = new Katex(s, { x: ex + 317, y: ey, text: "\\beta_2", color: "#f7f717" });
+        s.keq[7] = new Katex(s, { x: ex + 367, y: ey, text: "x^2" });
+
+        let tx = 407, y = 177, ty = 317, tdy = 297;
+        s.bl = new Bracket(s, { x1: tx - 27, y1: y, x2: tx - 27, y2: y + tdy, start: time.x, });
+        s.br = new Bracket(s, { x1: tx + 167, y1: y + tdy, x2: tx + 167, y2: y, start: time.x });
+
+        let nx = 397, ny = 177, dx = 67;
+        s.kat[3] = new Katex(s, { x: nx, y: ny, text: "1\\newline 1\\newline 1", color: "#f75757",
+            fadeIn: true, start: time.k1, });
+        s.kat[4] = new Katex(s, { x: nx + dx, y: ny, text: "x_a\\newline x_b\\newline x_c", color: '#47c747',
+            fadeIn: true, start: time.k1 + 7, });
+        s.kat[5] = new Katex(s, { x: nx + dx * 2, y: ny, text: "x_a^2\\newline x_b^2\\newline x_c^2", color: '#f7f717',
+            fadeIn: true, start: time.k1 + 14, });
+
+        let kx = 400, ky = 357;
+        s.kat[0] = new Katex(s, { x: kx, y: ky, text: "⋮", color: "#f75757",
+            fadeIn: true, start: time.k1, });
+        s.kat[1] = new Katex(s, { x: kx + dx, y: ky, text: "⋮", color: '#47c747',
+            fadeIn: true, start: time.k1 + 7,});
+        s.kat[2] = new Katex(s, { x: kx + dx * 2, y: ky, text: "⋮", color: '#f7f717',
+            fadeIn: true, start: time.k1 + 14, });
     };
 
     s.draw = function () {
         s.background(0);
-        s.axes.showAxes();
-        s.p.show();
+        s.plot.showAxes();
+        s.plot.showPoints();
+        s.graph.show();
         s.table.show();
+        for (let k of s.keq) k.show();
+        for (let k of s.kat) k.show();
+        s.bl.show();
+        s.br.show();
         showFR(s);
     };
 };

@@ -249,7 +249,7 @@ class Plot extends Axes {
             this.points[i] = new PlotPoint(this.s, {
                 x: this.ptXs[i],
                 y: this.ptYs[i],
-                radius: 17,
+                radius: 12,
                 // display all points in 1 second
                 start: this.startPt + i * frames(1) / this.numPts
             })
@@ -743,7 +743,7 @@ class FcnPlot {
             b = this.a.centerY - y * this.a.stepY;  // plotted y
             this.ys[i] = b;
 
-            if (a > this.a.right) // this is because we want to draw a little to the right
+            if (a > this.a.right) // this is because we want to draw a little over the right
                 break;
         }
     }
@@ -823,7 +823,7 @@ class Table {
                 color: args.colorX,
                 duration: frames(0.5),
                 size: this.sizeY,
-                str: "" + this.ys[i - 1],
+                str: "" + this.xs[i - 1],   // 3/19: why did this go wrong without me noticing???
                 font: this.font,
                 x: this.x + this.sizeX * (0.6 + i * 1.4),
                 y: this.y + this.sizeY * 0.6,
@@ -833,7 +833,7 @@ class Table {
                 color: args.colorY,
                 duration: frames(0.5),
                 size: this.sizeY,
-                str: "" + this.xs[i - 1],
+                str: "" + this.ys[i - 1],  // and here?
                 font: this.font,
                 x: this.x + this.sizeX * (0.6 + i * 1.4),
                 y: this.y + this.sizeY * 1.8,
