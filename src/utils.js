@@ -474,7 +474,7 @@ class Line {
         this.timer = timerFactory(this.duration, args.mode);
 
         this.end = args.end || 100000;
-        this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 1);
+        this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
     }
 
     reset(args) {
@@ -590,13 +590,15 @@ class DottedLine extends Line {
  * If needs fade in animation, need to pass in fadeIn: true, colorArr: [...]
  *
  * Since changing the opacity of the object can only be done when color is an array.
- * At this point t's almost impossible to refactor the parent class so that Line takes in
+ * At this point it's almost impossible to refactor the parent class so that Line takes in
  * an array as argument for this.color
+ *
+ * Can also display fade out animation if end is passed in
  *
  * ----args list parameters----
  * @mandatory (number) x1, x2, y1, y2, start
  * @optional (color) colors; (number) strokeweight, tipLen, tipAngle, duration;
- *           (bool) fadeIn, (array) colorArr
+ *           (bool) fadeIn, start, end, (array) colorArr
  */
 class Arrow extends Line {
     constructor(ctx, args) {
@@ -610,18 +612,11 @@ class Arrow extends Line {
         } else {
             this.timer = new Timer2(this.duration);
         }
+        //this.fadeOut = args.fadeOut || false;
 
         // define tip length/angle for all vectors on this canvas
         this.tipLen = args.tipLen || 15;
         this.tipAngle = args.tipAngle || 0.4;  // this is in radians
-
-        // x1, x2 are the coordinates of start point and end point; arrow points from x1 to x2.
-        // x3, x4 are the endpoints of the two lines originating from x2 that draw the arrow.
-        // Ditto for y3 and y4.
-        this.x3 = 0;
-        this.x4 = 0;
-        this.y3 = 0;
-        this.y4 = 0;
 
         this.setArrow();
     }
@@ -650,14 +645,16 @@ class Arrow extends Line {
         let sin_theta = Math.sin(this.tipAngle);
         let cos_theta = Math.cos(this.tipAngle);
 
+        // x1, x2 are the coordinates of start point and end point; arrow points from x1 to x2.
+        // x3, x4 are the endpoints of the two lines originating from x2 that draw the arrow.
+        // Ditto for y3 and y4.
         this.x3 = this.x2 + cos_theta * x - sin_theta * y;
         this.y3 = this.y2 + sin_theta * x + cos_theta * y;
-
         this.x4 = this.x2 + cos_theta * x + sin_theta * y;
         this.y4 = this.y2 + cos_theta * y - sin_theta * x;
     }
 
-    showFade() {
+    showFadeIn() {
         let t = this.timer.advance() * 255;
         this.s.stroke(this.colorArr[0], this.colorArr[1], this.colorArr[2], t);
         this.s.strokeWeight(this.strokeweight);
@@ -668,7 +665,6 @@ class Arrow extends Line {
     }
 
     showGrow() {
-
         // show the main line
         let dx2 = this.x2 - this.x1;
         let dy2 = this.y2 - this.y1;
@@ -694,10 +690,13 @@ class Arrow extends Line {
     show() {
         if (this.s.frameCount > this.start) {
             if (this.fadeIn) {
-                this.showFade();
+                this.showFadeIn();
             } else {
                 this.showGrow();
             }
+        }
+        if (this.fadeOut && this.s.frameCount > this.end) {
+
         }
     }
 }

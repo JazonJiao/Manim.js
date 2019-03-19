@@ -120,7 +120,17 @@ class PointBase {
         this.move_duartion = frames(1);
         if (duration)
             this.move_duartion = frames(duration);
+        this.f = 0;
+        this.move_timer = new Timer2(this.move_duartion);
+    }
 
+    jump(amp, duration) {
+        this.yo = this.y;
+        this.amp = amp;
+        this.jumped = true;
+        this.move_duartion = frames(1);
+        if (duration)
+            this.move_duartion = frames(duration);
         this.f = 0;
         this.move_timer = new Timer2(this.move_duartion);
     }
@@ -135,6 +145,16 @@ class PointBase {
         }
     }
 
+    jumping() {
+        if (this.f < this.move_duartion) {
+            let t = this.move_timer.advance() * this.s.PI;
+            this.y = this.yo + this.amp * Math.sin(t);
+            this.f++;
+        } else {
+            this.jumped = false;
+        }
+    }
+
     // to be called at the beginning of the show() function of derived classes
     // move() and shake() cannot happen at the same time
     showMove() {
@@ -142,6 +162,8 @@ class PointBase {
             this.moving();
         else if (this.shaked)
             this.shaking();
+        else if (this.jumped)
+            this.jumping();
     }
 
     show() {

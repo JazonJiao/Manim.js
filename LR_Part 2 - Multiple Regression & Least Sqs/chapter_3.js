@@ -540,67 +540,111 @@ const Scene28 = function(s) {
 // SEE HERE FOR MATRIX SPECS
 const Scene29 = function(s) {
     let time = {
+        txt1: frames(3),
+        txt1e: frames(4),
         to4: frames(4),
-        txt1: frames(5),
-        txt2: frames(6),
-        txt3: frames(7),
+        txt2: frames(4),
+        txt3: frames(5),
+        txt3e: frames(7),
+        txt2e: frames(8),
+        brain: frames(8),
+        shift: frames(8),
+        eq: frames(1),
     }
-    let tnr;
-    s.txt = [];
-    let x = 577, y = 217;  // the coordinates specifying the matrix location (upper-left)
+    let tnr, comic;
+    s.txt = []; s.kat = []; s.bl = []; s.br = []; s.box = [];
+    let x = 327, y = 217;  // the coordinates specifying the matrix location (upper-left)
+    let x1 = 637;
+    let dx = 297;
 
     s.preload = function() {
+        comic = s.loadFont('../lib/font/comic.ttf');
         tnr = s.loadFont('../lib/font/times.ttf');
     };
     s.setup = function () {
         setup2D(s);
         s.hg = new HelperGrid(s, {});
-        s.kat = new Katex(s, {
-            x: 470, y: 240, text: "X="
+        s.kat[0] = new Katex(s, {
+            x: x - 107, y: 240, text: "X="
         });
-        s.txt[0] = new TextWriteIn(s, {
-            str: "3 data points", x: 100, y: 100, start: time.txt1, font: tnr, color: [255, 255, 255]
+        s.kat[1] = new Katex(s, {
+            x: x1 - 97, y: 240, text: "\\vec{y}="
         });
-        s.txt[1] = new TextWriteIn(s, {
-            str: "two vectors in 4D space", x: 200, y: 200, start: time.txt2, font: tnr,
+        s.kat[2] = new Katex(s, {
+            x: 417, y: -100, text: "\\vec{b}=(X^T X)^{-1} X^T \\vec{y}"
+        });
+        s.txt[0] = new TextFade(s, {
+            str: "   3 data points\n= 3 dimensions",
+            x: 757, y: 277, start: time.txt1, end: time.txt1e, font: tnr, color: [255, 255, 255]
+        });
+        s.txt[1] = new TextFade(s, {
+            str: "the 4th dimension", x: 797, y: 400, start: time.txt2, end: time.txt2e, font: tnr,
         });
         s.txt[2] = new TextFade(s, {
-            str: "...unless you're a string theorist :)",
-            x: 867, y: 640, start: time.txt3, size: 24, font: tnr,
+            str: "...unless if you're a string theorist :)",
+            x: 847, y: 640, start: time.txt3, end: time.txt3e, size: 24, font: tnr,
         });
-        s.bl = new Bracket(s, {
-            x1: x, y1: y, x2: x, y2: y + 167
-        });
-        s.br = new Bracket(s, {
-            x1: x + 137, y1: y + 167, x2: x + 137, y2: y
-        });
+        s.arr = new Arrow(s, {
+            x1: 787, x2: 727, y1: 422, y2: 422, start: time.txt2, end: time.txt2e,
+        })
+        s.bl[0] = new Bracket(s, { x1: x, y1: y, x2: x, y2: y + 167, start: 1, });
+        s.br[0] = new Bracket(s, { x1: x + 137, y1: y + 167, x2: x + 137, y2: y, start: 1 });
+        s.bl[1] = new Bracket(s, { x1: x1, y1: y, x2: x1, y2: y + 167, start: 1, });
+        s.br[1] = new Bracket(s, { x1: x1 + 77, y1: y + 167, x2: x1 + 77, y2: y, start: 1 });
         s.x0 = new TextFade(s, {
-            x: x + 17, y: y,
-            str: "1\n1\n1\n1\n", font: tnr, color: [255, 77, 97], size: 47
+            x: x + 17, y: y, str: "1\n1\n1\n1\n", font: tnr, color: [255, 77, 97], size: 47
         });
         s.x1 = new TextFade(s, {
-            x: x + 84, y: y,
-            str: "-1\n 1\n 2\n 4\n", font: tnr, color: [77, 217, 77], size: 47
+            x: x + 84, y: y, str: "-1\n 1\n 2\n 4\n", font: tnr, color: [77, 217, 77], size: 47
         });
-        s.box = new Rect(s, {
-            x: 597, w: 100, y: 400, h: 47, color: [0, 0, 0, 255], end: time.to4,
+        s.y = new TextFade(s, {
+            x: x1 + 17, y: y, str: "-2\n 0\n 3\n 7\n", font: tnr, color: [77, 177, 255], size: 47
+        });
+        s.box[0] = new Rect(s, {
+            x: x + 20, w: 100, y: 400, h: 47, color: [0, 0, 0, 255], end: time.to4,
+        });
+        s.box[1] = new Rect(s, {
+            x: x1 + 20, w: 50, y: 400, h: 47, color: [0, 0, 0, 255], end: time.to4,
+        });
+        s.brain = new ThoughtBrain(s, {
+            start: time.brain,
+            font: comic, x: 57, y: 537,
+            size: 248, font_size: 34,
+            str: "The matrix algebra\nstill works out",
+            bubbleStart: time.bubble,
         })
     }
     s.draw = function () {
         if (s.frameCount === time.to4) {
-            s.bl.shift(0, 0, 0, 63, 30);
-            s.br.shift(0, 63, 0, 0, 30);
-            s.kat.shift(0, 27);
+            for (let b of s.bl) b.shift(0, 0, 0, 63, 30);
+            for (let b of s.br) b.shift(0, 63, 0, 0, 30);
+            s.kat[0].shift(0, 27);
+            s.kat[1].shift(0, 27);
+        }
+        if (s.frameCount === time.shift) {
+            for (let b of s.bl) b.shift(dx, 0, dx, 0, 30);
+            for (let b of s.br) b.shift(dx, 0, dx, 0, 30);
+            s.x0.shift(dx, 0, 1);
+            s.x1.shift(dx, 0, 1);
+            s.y.shift(dx, 0, 1);
+            s.kat[0].shift(dx, 0);
+            s.kat[1].shift(dx, 0);
+        }
+        if (s.frameCount === time.eq) {
+            s.kat[2].shift(0, 127);
         }
         s.background(0);
         for (let t of s.txt) t.show();
+        for (let k of s.kat) k.show();
         //s.hg.show();
-        s.kat.show();
-        s.bl.show();
-        s.br.show();
+        for (let b of s.bl) b.show();
+        for (let b of s.br) b.show();
         s.x0.show();
         s.x1.show();
-        s.box.show();
+        s.y.show();
+        for (let b of s.box) b.show();
+        s.arr.show();
+        s.brain.show();
     }
 }
 

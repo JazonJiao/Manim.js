@@ -932,8 +932,6 @@ class Arrows_Transform {
     }
 }
 
-
-
 // the plane used to show multiple regression on 2 independent variables
 // reference: https://www.socscistatistics.com/tests/multipleregression/Default.aspx
 class MR_Plane extends Axes3D {
@@ -952,11 +950,11 @@ class MR_Plane extends Axes3D {
         let ax2 = this.avg(this.x2);
         let ay = this.avg(this.y);
 
-        let ssx1 = this.dot(this.x1, this.x1, ax1, ax1);
-        let ssx2 = this.dot(this.x2, this.x2, ax2, ax2);
-        let spx1y = this.dot(this.x1, this.y, ax1, ay);
-        let spx2y = this.dot(this.x2, this.y, ax2, ay);
-        let spx1x2 = this.dot(this.x1, this.x2, ax1, ax2);
+        let ssx1 = MR_Plane.dot(this.x1, this.x1, ax1, ax1);
+        let ssx2 = MR_Plane.dot(this.x2, this.x2, ax2, ax2);
+        let spx1y = MR_Plane.dot(this.x1, this.y, ax1, ay);
+        let spx2y = MR_Plane.dot(this.x2, this.y, ax2, ay);
+        let spx1x2 = MR_Plane.dot(this.x1, this.x2, ax1, ax2);
         let denom = (ssx1 * ssx2 - spx1x2 * spx1x2);
         let b1 = (spx1y * ssx2 - spx1x2 * spx2y) / denom;
         let b2 = (spx2y * ssx1 - spx1x2 * spx1y) / denom;
