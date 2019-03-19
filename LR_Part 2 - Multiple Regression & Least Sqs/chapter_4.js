@@ -5,7 +5,6 @@ let Green = [77, 217, 77];
 let Blue = [77, 177, 255];
 let Yellow = [247, 227, 47];
 
-// scene 26
 const Scene31 = function(s) {
     let time = {
         x: frames(1),  // light up x, y coords
@@ -228,6 +227,57 @@ const Scene34 = function(s) {
         for (let e of s.kne) e.show();
         s.box.show();
     }
-}
+};
 
-let p = new p5(Scene31);
+const Scene36 = function(s) {
+    let time = {
+        table: frames(1)
+    };
+    let tnr;
+
+    s.preload = function () {
+        tnr = s.loadFont('../lib/font/times.ttf');
+    };
+    s.setup = function () {
+        setup2D(s);
+
+        // the data used for quadratic regression
+        let xs = [-10, -6, 2, 7, 13, 21];
+        let ys = [3, -2, -4, 7, 17, 34];
+        let x2 = [];
+        for (let i = 0; i < xs.length; i++)
+            x2[i] = xs[i] * xs[i];
+
+        s.axes = new Axes(s, {
+            right: 675,
+            centerX: 100, centerY: 550,
+            stepX: 10, stepY: 10,
+        });
+        s.table = new Table(s, {
+            x: 797, y: 57,
+            xs: target, ys: [matrix[3], matrix[4], matrix[5]],
+            start: time.table,
+            font: tnr,
+            colorX: [77, 217, 77], colorY: [77, 177, 255],
+            size: 47, sizeX: 47
+        });
+        s.b = new MR_Plane(s, {  // only to extract the coefficients b0, b1, b2
+            x1: xs, x2: x2, y: ys,
+        });
+
+        s.p = new FcnPlot(s, {
+            axes: s.axes,
+            f: ((x) => { return (x * x * s.b.b2 + x * s.b.b1 + s.b.b0); })
+        });
+    };
+
+    s.draw = function () {
+        s.background(0);
+        s.axes.showAxes();
+        s.p.show();
+        s.table.show();
+        showFR(s);
+    };
+};
+
+let p = new p5(Scene36);

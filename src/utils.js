@@ -89,8 +89,8 @@ class Axes {
         this.centerY = args.centerY || ctx.height / 2 || height / 2;
 
         // define how many pixels correspond to 1 on each axis
-        this.stepX = args.stepX || 1;
-        this.stepY = args.stepY || 1;
+        this.stepX = args.stepX || 100;
+        this.stepY = args.stepY || 100;
 
         this.start = args.start || 0;
 
@@ -370,7 +370,6 @@ class PlotPoint extends Point {
     constructor(ctx, args) {
         super(ctx, args);
     }
-
 }
 
 /** 2018-12-23
@@ -436,7 +435,7 @@ class Emphasis extends Rect {
         this.timer2 = new Timer1(frames(this.duration));
 
         this.end = args.end || 10000;
-        this.color = args.color || this.s.color(107, 107, 17);
+        this.color = args.color || this.s.color(107, 107, 17, 177);
     }
 
     show() {
@@ -699,6 +698,69 @@ class Arrow extends Line {
         }
         if (this.fadeOut && this.s.frameCount > this.end) {
 
+        }
+    }
+}
+
+/*** 2019-03-19
+ * FcnPlot
+ * Plots a function on a 2D axes
+ *
+ * ---- args list parameters ----
+ * @mandatory (function) f; (Axes or one of its child classes) axes
+ * @optional (number) start, duration, strokeweight, mode [for timer], segLen
+ *           (array) color
+ */
+class FcnPlot {
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.f = args.f || ((x) => { return (x * x / 7 - 1); });
+        this.a = args.axes;
+        this.segLen = args.segLen || 2;  // how many pixels wide is a line segment in the plot
+
+        this.start = args.start || 1;
+        this.duration = args.duration || 1;
+        this.mode = args.mode || 0;
+
+        this.sw = args.strokeweight || 3;
+        this.color = args.color || [77, 177, 77];
+
+        this.timer = timerFactory(frames(this.duration), this.mode);
+
+        this.xs = [];
+        this.ys = [];
+        this.calcPoints();
+    }
+
+    calcPoints() {
+        this.len = (this.a.right - this.a.left) / this.segLen + 1;
+        let i = 0;
+        let x, y, b;
+        for (let a = this.a.left; ; a += this.segLen, i++) {
+            this.xs[i] = a;  // plotted x
+            x = (a - this.a.centerX) / this.a.stepX;  // actual x
+            y = this.f(x);  // actual y
+            b = this.a.centerY - y * this.a.stepY;  // plotted y
+            this.ys[i] = b;
+
+            if (a > this.a.right) // this is because we want to draw a little to the right
+                break;
+        }
+    }
+
+    show() {
+        if (this.s.frameCount >= this.start) {
+            this.s.beginShape();
+            this.s.stroke(this.color);
+            this.s.strokeWeight(this.sw);
+            //this.s.strokeJoin(this.s.ROUND);
+            this.s.noFill();
+
+            let t = this.timer.advance();
+            for (let i = 0; i < this.len * t; i++) {
+                this.s.vertex(this.xs[i], this.ys[i]);
+            }
+            this.s.endShape();
         }
     }
 }

@@ -29,7 +29,6 @@ class LS_Plot extends Plot {
         }
     }
 
-
     reset(args) {
         this.b_new = args.b_new;
         this.b0_new = args.b0_new;
@@ -122,24 +121,6 @@ class Grid_b0b extends Grid {
         this.arrow.show();
     }
 }
-
-// matrix specification:
-//
-// class Sys_4Eqs {  // args: font, mv
-//     constructor(ctx, args) {
-//         this.s = ctx;
-//         this.mv = args.mv;
-//
-//
-//     }
-//     show() {
-//         this.kat.show();
-//         this.bl.show();
-//         this.br.show();
-//         this.x0.show();
-//         this.x1.show();
-//     }
-// }
 
 /***
  * ---- args list parameters ----
@@ -939,9 +920,9 @@ class MR_Plane extends Axes3D {
         super(ctx, args);
 
         // these are only used for this scene.
-        this.x1 = [10, -10, -10, 10, 20, -30, 5, -5];
-        this.x2 = [10, 20, -10, 30, 5, 10, -20, -5];
-        this.y = [20, 15, 0, 10, 10, -5, -15, 10];
+        this.x1 = args.x1 || [10, -10, -10, 10, 20, -30, 5, -5];
+        this.x2 = args.x2 || [10, 20, -10, 30, 5, 10, -20, -5];
+        this.y = args.y || [20, 15, 0, 10, 10, -5, -15, 10];
 
         this.n = this.x1.length;
         this.step = 10;
@@ -950,19 +931,18 @@ class MR_Plane extends Axes3D {
         let ax2 = this.avg(this.x2);
         let ay = this.avg(this.y);
 
-        let ssx1 = MR_Plane.dot(this.x1, this.x1, ax1, ax1);
-        let ssx2 = MR_Plane.dot(this.x2, this.x2, ax2, ax2);
-        let spx1y = MR_Plane.dot(this.x1, this.y, ax1, ay);
-        let spx2y = MR_Plane.dot(this.x2, this.y, ax2, ay);
-        let spx1x2 = MR_Plane.dot(this.x1, this.x2, ax1, ax2);
+        let ssx1 = this.dot(this.x1, this.x1, ax1, ax1);
+        let ssx2 = this.dot(this.x2, this.x2, ax2, ax2);
+        let spx1y = this.dot(this.x1, this.y, ax1, ay);
+        let spx2y = this.dot(this.x2, this.y, ax2, ay);
+        let spx1x2 = this.dot(this.x1, this.x2, ax1, ax2);
         let denom = (ssx1 * ssx2 - spx1x2 * spx1x2);
-        let b1 = (spx1y * ssx2 - spx1x2 * spx2y) / denom;
-        let b2 = (spx2y * ssx1 - spx1x2 * spx1y) / denom;
-        let b0 = ay - b1 * ax1 - b2 * ax2;
-        //console.log(ax1, ax2, ay, ssx1, ssx2, spx1y, spx2y, spx1x2, b1, b2, b0, denom);
+        this.b1 = (spx1y * ssx2 - spx1x2 * spx2y) / denom;
+        this.b2 = (spx2y * ssx1 - spx1x2 * spx1y) / denom;
+        this.b0 = ay - this.b1 * ax1 - this.b2 * ax2;
 
         this.plane = new Plane3D(this.s, {
-            a: b1, b: b2, c: b0 * this.step,
+            a: this.b1, b: this.b2, c: this.b0 * this.step,
             color: this.s.color(27, 157, 237, 167)
         })
     }
