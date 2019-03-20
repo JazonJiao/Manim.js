@@ -670,7 +670,7 @@ const Chap1Part1 = function (s) {
         kats[6] = new Katex(s, {
             text: scn === 9 || 10 ? "\\hat{\\beta_0}=\\bar{y}-\\hat{\\beta}\\bar{x}" : "\\hat{\\beta_0}",
             x: 115, y: scn === 9 || 2 ? 0 : 140,
-            color: s.color(247, 117, 117),
+            color: s.color(247, 117, 117),  // PINK
             start: getT(time.showIntercept),
             fadeIn: true,
             font_size: scn === 9 || 10 ? 40 : 42

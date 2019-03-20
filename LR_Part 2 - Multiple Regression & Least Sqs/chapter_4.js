@@ -73,7 +73,7 @@ const Scene31 = function(s) {
     };
 };
 
-const Scene34 = function(s) {
+const Scene33 = function(s) {
     let SN = 0;
     let time = SN === 1 ? {
         txt1: frames(3),
@@ -239,6 +239,50 @@ const Scene34 = function(s) {
     }
 };
 
+const Scene35 = function (s) {
+    let t = 2, dt = 1.5;
+    let time = {
+        x3: frames(t),
+        x4: frames(t += dt),
+        x5: frames(t += dt),
+        x6: frames(t += dt)
+    };
+    let kat = [];
+    let ex = 677, ey = 248, dx = 72, sx = 72, sy = 100;
+    s.setup = function() {
+        setup2D(s);
+        kat[0] = new Katex(s, { x: ex - 277, y: ey, text: "y=\\beta_0+\\beta_1 x_1 + \\beta_2 x_2",});
+        kat[1] = new Katex(s, { x: ex + dx, y: ey - sy, text: "+~\\beta_3 x_3", fadeIn: true, start: time.x3 });
+        kat[2] = new Katex(s, { x: ex + 2 * dx, y: ey - sy, text: "+~\\beta_4 x_4", fadeIn: true, start: time.x4 });
+        kat[3] = new Katex(s, { x: ex + 3 * dx, y: ey - sy, text: "+~\\beta_5 x_5", fadeIn: true, start: time.x5 });
+        kat[4] = new Katex(s, { x: ex + 4 * dx, y: ey - sy, text: "+~\\beta_6 x_6", fadeIn: true, start: time.x6 });
+    };
+
+    s.draw = function() {
+        if (s.frameCount === time.x3) {
+            kat[0].shift(-sx, 0);
+            kat[1].shift(0, sy);
+        }
+        if (s.frameCount === time.x4) {
+            for (let i = 0; i < 2; i++)
+                kat[i].shift(-sx, 0);
+            kat[2].shift(0, sy);
+        }
+        if (s.frameCount === time.x5) {
+            for (let i = 0; i < 3; i++)
+                kat[i].shift(-sx, 0);
+            kat[3].shift(0, sy);
+        }
+        if (s.frameCount === time.x6) {
+            for (let i = 0; i < 4; i++)
+                kat[i].shift(-sx, 0);
+            kat[4].shift(0, sy);
+        }
+        s.background(0);
+        for (let k of kat) k.show();
+    }
+};
+
 const Scene36 = function(s) {
     let time = {
         pts: frames(2),
@@ -355,28 +399,74 @@ const Scene36 = function(s) {
     };
 };
 
+let xCoords = [10, 14, 20, 27, 33, 40];
+let yCoords = [11, 17, 18, 29, 32, 37];
+
 const Scene37 = function (s) {
     let time = {
         move: frames(2),
-        remove0: frames(3),
+        //show0: frames(2),
+
+    }
+    let kat = [];
+    s.setup = function() {
+        setup2D(s);
+        s.plot = new LRP_Scene37(s, {
+            startPt: 10, startLSLine: 10000000,
+            right: 600, centerX: 67, centerY: 550, stepX: 10, stepY: 10,
+            xs: xCoords, ys: yCoords, lineColor: s.color(247, 137, 27)
+        });
+        s.axes = new AxesTransform(s, {
+            plot: s.plot,
+            move: time.move,
+        });
+        let kx = 637, ky = 37;
+        kat[0] = new Katex(s, {
+            text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n " +
+                "(\\textcolor{#37c717}{x_i}-~~~)(\\textcolor{#27a7f7}{y_i}-~~~)} " +
+                "{\\sum_{i=1}^n(\\textcolor{#37c717}{x_i}-~~~)^2}",
+            x: kx - 57, y: ky, font_size: 54,
+        });
+        let x1 = 920, y1 = 50, x2 = 1065, x3 = 984, y3 = 107;
+        kat[1] = new Katex(s, { text: "\\bar{x}", x: x1, y: y1, fadeOut: true, end: time.move });
+        kat[2] = new Katex(s, { text: "\\bar{y}", x: x2, y: y1, fadeOut: true, end: time.move });
+        kat[3] = new Katex(s, { text: "\\bar{x}", x: x3, y: y3, fadeOut: true, end: time.move });
+        kat[4] = new Katex(s, {
+            text: "0", color: '#f76737', x: x1, y: y1, fadeIn: true, start: time.move
+        });
+        kat[5] = new Katex(s, {
+            text: "0", color: '#f76737', x: x2, y: y1, fadeIn: true, start: time.move
+        });
+        kat[6] = new Katex(s, {
+            text: "0", color: '#f76737', x: x3, y: y3, fadeIn: true, start: time.move
+        });
+    };
+
+    s.draw = function() {
+        s.background(0);
+        s.plot.show();
+        s.plot.showPoints();
+        s.axes.show();
+        for (let k of kat) k.show();
+        //showFR(s);
+    }
+};
+
+const Scene38 = function (s) {
+    let time = {
+        move: 7,
         line: frames(4),
         exp1: frames(1),
         exp2: frames(2),
         exp3: frames(3)
-    }
+    };
     let kat = [];
     let comic;
-
     s.preload = function () {
         comic = s.loadFont('../lib/font/comic.ttf');
     };
-
     s.setup = function() {
         setup2D(s);
-
-        let xCoords = [10, 14, 20, 27, 33, 40];
-        let yCoords = [11, 17, 18, 29, 31, 37];
-
         s.plot = new LRP_Scene37(s, {
             startPt: 10, move: time.move, startLSLine: time.line,
             right: 600, centerX: 67, centerY: 550, stepX: 10, stepY: 10,
@@ -390,29 +480,27 @@ const Scene37 = function (s) {
                 "the line must\nto go through the origin, " +
                 "so we\nhave only 1 degree of freedom\n—the slope.",
             font: comic, font_size: 24, x: 37, y: 537, size: 277,
-        })
-
+        });
         kat[0] = new Katex(s, {
-            text: "\\textcolor{#37c717}{\\vec{x}} = \\small{\\begin{bmatrix}" +
-                "\\textcolor{#37c717}{-14}\\\\" +
-                "\\textcolor{#37c717}{-10}\\\\" +
-                "\\textcolor{#37c717}{-6}\\\\" +
-                "\\textcolor{#37c717}{3}\\\\" +
-                "\\textcolor{#37c717}{9}\\\\" +
-                "\\textcolor{#37c717}{16}" +
-                "\\end{bmatrix}}",
+            text: "\\textcolor{#37f717}{\\vec{x} = \\scriptsize {\\begin{bmatrix}" +
+                "-14\\\\" +
+                "-10\\\\" +
+                "-4\\\\" +
+                "3\\\\" +
+                "9\\\\" +
+                "16\\end{bmatrix}}}",
             fadeIn: true, start: 1,
-            x: 347, y: 307
+            x: 637, y: 327
+        });
+        kat[1] = new Katex(s, {
+            text: "\\textcolor{#27c7ff}{\\vec{y} = \\scriptsize {\\begin{bmatrix}" +
+                "-13\\\\-7\\\\-6\\\\5\\\\8\\\\13" +
+                "\\end{bmatrix}}}",
+            fadeIn: true, start: 1,
+            x: 887, y: 327
         });
 
         let kx = 637, ky = 37;
-        kat[1] = new Katex(s, {
-            text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n " +
-                "(\\textcolor{#37c717}{x_i}-~~~)(\\textcolor{#27a7f7}{y_i}-~~~)} " +
-                "{\\sum_{i=1}^n(\\textcolor{#37c717}{x_i}-~~~)^2}",
-            x: kx - 57, y: ky, font_size: 54,
-            fadeOut: true, end: time.remove0
-        });
         kat[2] = new Katex(s, {
             text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n \\textcolor{#37c717}{x_i} " +
                 "\\textcolor{#27a7f7}{y_i}} {\\sum_{i=1}^n \\textcolor{#37c717}{x_i}^2}",
@@ -422,19 +510,19 @@ const Scene37 = function (s) {
         kat[3] = new Katex(s, {
             text: "\\textstyle=\\frac{\\textcolor{#37c717}{\\vec{x}}⋅\\textcolor{#27a7f7}{\\vec{y}}}" +
                 "{\\textcolor{#37c717}{\\vec{x}}⋅\\textcolor{#37c717}{\\vec{x}}}",
-            x: kx, y: ky + 130, font_size: 54,
+            x: kx + 297, y: ky + 7, font_size: 54,
             fadeIn: true, start: time.exp1
         });
         kat[4] = new Katex(s, {
             text: "\\textstyle=\\frac{\\textcolor{#37c717}{\\vec{x}}^T\\textcolor{#27a7f7}{\\vec{y}}}" +
                 "{\\textcolor{#37c717}{\\vec{x}}^T\\textcolor{#37c717}{\\vec{x}}}",
-            x: kx, y: ky + 240, font_size: 54,
+            x: kx, y: ky + 125, font_size: 54,
             fadeIn: true, start: time.exp2
         });
         kat[5] = new Katex(s, {
             text: "=(\\textcolor{#37c717}{\\vec{x}}^T\\textcolor{#37c717}{\\vec{x}})^{-1}" +
                 "{\\textcolor{#37c717}{\\vec{x}}^T\\textcolor{#27a7f7}{\\vec{y}}}",
-            x: kx, y: ky + 387, font_size: 37,
+            x: kx + 181, y: ky + 167, font_size: 37,
             fadeIn: true, start: time.exp3
         });
     };
@@ -446,8 +534,8 @@ const Scene37 = function (s) {
         s.axes.show();
         s.brain.show();
         for (let k of kat) k.show();
+        //showFR(s);
     }
 };
 
-
-let p = new p5(Scene37);
+let p = new p5(Scene35);
