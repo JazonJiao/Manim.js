@@ -770,7 +770,6 @@ class SLR_Plot_2 extends Plot { // the plot used to illustrate simple linear reg
         });
     }
 
-
     show() {
         if (this.moved) {
             this.resetting();
@@ -977,5 +976,46 @@ class MR_Plane extends Axes3D {
             g.pop();
         }
         this.plane.showPlane(g);
+    }
+}
+
+class LRP_Scene37 extends Plot {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.xBarLine = new DottedLine(this.s, {
+            x1: this.coordX, x2: this.coordX, y1: this.top, y2: this.bottom,
+            color: this.s.color(77, 177, 247), strokeweight: 2, start: 1
+        });
+        this.yBarLine = new DottedLine(this.s, {
+            x1: this.left, x2: this.right, y1: this.coordY, y2: this.coordY,
+            color: this.s.color(77, 177, 247), strokeweight: 2, start: 1
+        });
+    }
+    show() {
+        this.xBarLine.show();
+        this.yBarLine.show();
+    }
+}
+
+class AxesTransform {   // used in Scene 37
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.p = args.plot;
+        this.arrX = new Arrow(this.s, {
+            x1: this.p.left, x2: this.p.right, y1: this.p.centerY, y2: this.p.centerY,
+            start: 1
+        });
+        this.arrY = new Arrow(this.s, {
+            x1: this.p.centerX, x2: this.p.centerX, y1: this.p.bottom, y2: this.p.top,
+            start: 1
+        })
+    }
+    show() {
+        if (this.s.frameCount === 100) {
+            this.arrY.shift(-this.p.centerX + this.p.coordX, 0, -this.p.centerX + this.p.coordX, 0, 1);
+            this.arrX.shift(0, -this.p.centerY + this.p.coordY, 0, -this.p.centerY + this.p.coordY, 1);
+        }
+        this.arrX.show();
+        this.arrY.show();
     }
 }

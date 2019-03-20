@@ -231,14 +231,13 @@ const Scene34 = function(s) {
 };
 
 const Scene36 = function(s) {
-    let timeX = frames(2);
     let time = {
         pts: frames(2),
         table: frames(1),
-        x: timeX,
-        k1: timeX,
-        k2: timeX + 7,
-        k3: timeX + 7
+        x: frames(2),
+        k1: frames(2),
+        fn: frames(3),
+        neq: frames(2)
     };
     let tnr;
 
@@ -264,7 +263,7 @@ const Scene36 = function(s) {
             stepX: 20, stepY: 20,
         });
         s.table = new Table(s, {
-            x: 697, y: 57,
+            x: 697, y: 47,
             xs: xs, ys: ys,
             start: time.table,
             font: tnr,
@@ -279,37 +278,57 @@ const Scene36 = function(s) {
             f: ((x) => { return (x * x * s.b.b2 + x * s.b.b1 + s.b.b0); })  // quadratic best-fit
         });
 
+        s.txt = new TextFade(s, {
+            font: tnr,
+            start: time.fn, // end: time.txtEnd,
+            size: 27,
+            x: 267, y: 247,
+            str: "Note: Starting this chapter, x_1, x_2 ... \ndenote different predictor variables. \n" +
+                "So here I use x_a, x_b ... for individual\ndata points."
+        })
+
         // adapted (copied lol) from Scene 34
-        let ex = 177, ey = 7;
+        let ex = 167, ey = 7;
         s.keq = []; s.kat = [];
         s.keq[0] = new Katex(s, { x: ex, y: ey, text: "\\textcolor{#47b7f7}{y}=", });
         s.keq[1] = new Katex(s, { x: ex + 87, y: ey, text: "\\beta_0", color: "#f75757", });
         s.keq[2] = new Katex(s, { x: ex + 137, y: ey, text: "+", });
         s.keq[3] = new Katex(s, { x: ex + 177, y: ey, text: "\\beta_1", color: "#47c747", });
         s.keq[4] = new Katex(s, { x: ex + 227, y: ey, text: "x" });
-        s.keq[5] = new Katex(s, { x: ex + 277, y: ey, text: "+", });
-        s.keq[6] = new Katex(s, { x: ex + 317, y: ey, text: "\\beta_2", color: "#f7f717" });
-        s.keq[7] = new Katex(s, { x: ex + 367, y: ey, text: "x^2" });
+        s.keq[5] = new Katex(s, { x: ex + 267, y: ey, text: "+", });
+        s.keq[6] = new Katex(s, { x: ex + 307, y: ey, text: "\\beta_2", color: "#f7f717" });
+        s.keq[7] = new Katex(s, { x: ex + 357, y: ey, text: "x^2" });
 
-        let tx = 407, y = 177, ty = 317, tdy = 297;
+        let sx = 477, sy = 47;
+
+        let tx = 407 + sx, y = 177 + sy, tdx = 179, tdy = 297;
         s.bl = new Bracket(s, { x1: tx - 27, y1: y, x2: tx - 27, y2: y + tdy, start: time.x, });
-        s.br = new Bracket(s, { x1: tx + 167, y1: y + tdy, x2: tx + 167, y2: y, start: time.x });
+        s.br = new Bracket(s, { x1: tx + tdx, y1: y + tdy, x2: tx + tdx, y2: y, start: time.x });
 
-        let nx = 397, ny = 177, dx = 67;
-        s.kat[3] = new Katex(s, { x: nx, y: ny, text: "1\\newline 1\\newline 1", color: "#f75757",
-            fadeIn: true, start: time.k1, });
-        s.kat[4] = new Katex(s, { x: nx + dx, y: ny, text: "x_a\\newline x_b\\newline x_c", color: '#47c747',
-            fadeIn: true, start: time.k1 + 7, });
-        s.kat[5] = new Katex(s, { x: nx + dx * 2, y: ny, text: "x_a^2\\newline x_b^2\\newline x_c^2", color: '#f7f717',
-            fadeIn: true, start: time.k1 + 14, });
+        let nx = 390 + sx, ny = 140 + sy, dx = 67;
+        s.kat[3] = new Katex(s, { x: nx + 10, y: ny,
+            text: "1\\newline 1\\newline 1\\newline 1"
+            , color: "#f75757", fadeIn: true, start: time.k1, font_size: 39 });
+        s.kat[4] = new Katex(s, { x: nx + dx, y: ny,
+            text: "x_a\\newline x_b\\newline x_c\\newline x_d",
+            color: '#47c747', fadeIn: true, start: time.k1 + 7, });
+        s.kat[5] = new Katex(s, { x: nx + dx * 2, y: ny,
+            text: "x_a^2\\newline x_b^2\\newline x_c^2\\newline x_d^2",
+            color: '#f7f717', fadeIn: true, start: time.k1 + 14, });
 
-        let kx = 400, ky = 357;
+        let kx = 407 + sx, ky = 357 + sy;
         s.kat[0] = new Katex(s, { x: kx, y: ky, text: "⋮", color: "#f75757",
             fadeIn: true, start: time.k1, });
         s.kat[1] = new Katex(s, { x: kx + dx, y: ky, text: "⋮", color: '#47c747',
             fadeIn: true, start: time.k1 + 7,});
         s.kat[2] = new Katex(s, { x: kx + dx * 2, y: ky, text: "⋮", color: '#f7f717',
             fadeIn: true, start: time.k1 + 14, });
+
+        s.kat[6] = new Katex(s, {
+            x: 271 + sx, y: 260 + sy, text: "X=", fadeIn: true, start: time.k1,
+        });
+        s.kat[7] = new Katex(s, { x: 747, y: 527, text: "\\vec{b}=(X^T X)^{-1} X^T \\vec{y}",
+            fadeIn: true, start: time.neq });
     };
 
     s.draw = function () {
@@ -322,8 +341,74 @@ const Scene36 = function(s) {
         for (let k of s.kat) k.show();
         s.bl.show();
         s.br.show();
+        s.txt.show();
         showFR(s);
     };
 };
 
-let p = new p5(Scene36);
+const Scene37 = function (s) {
+    let time = {
+        move: frames(2)
+    }
+    let kat = [];
+    let comic;
+
+    s.preload = function () {
+        comic = s.loadFont('../lib/font/comic.ttf');
+    };
+
+    s.setup = function() {
+        setup2D(s);
+
+        let xCoords = [10, 14, 20, 27, 33, 40];
+        let yCoords = [11, 17, 18, 29, 31, 37];
+
+        s.plot = new LRP_Scene37(s, {
+            startPt: 10, move: time.move,
+            right: 675, centerX: 100, centerY: 550, stepX: 10, stepY: 10,
+            xs: xCoords, ys: yCoords
+        });
+        s.axes = new AxesTransform(s, {
+            plot: s.plot,
+        });
+
+        kat[0] = new Katex(s, {
+            text: "\\vec{x} = \\small{\\begin{bmatrix}" +
+                "\\textcolor{#57f757}{-14}\\\\" +
+                "\\textcolor{#57f757}{-10}\\\\" +
+                "\\textcolor{#57f757}{-6}\\\\" +
+                "\\textcolor{#57f757}{3}\\\\" +
+                "\\textcolor{#57f757}{9}\\\\" +
+                "\\textcolor{#57f757}{16}" +
+                "\\end{bmatrix}}",
+            fadeIn: true, start: 1,
+            x: 407, y: 307
+        });
+
+        let kx = 577, ky = 37;
+        kat[1] = new Katex(s, {
+            text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n (x_i-~~~)(y_i-~~~)} " +
+                "{\\sum_{i=1}^n(x_i-~~~)^2}",
+            x: kx, y: ky, font_size: 54,
+            fadeOut: true, end: 100
+        });
+        kat[2] = new Katex(s, {
+            text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n x_i y_i} " +
+                "{\\sum_{i=1}^n x_i^2}",
+            x: kx, y: ky, font_size: 54,
+            fadeIn: true, start: 100
+        });
+
+    };
+
+    s.draw = function() {
+        s.background(0);
+        s.plot.show();
+        s.plot.showPoints();
+        s.axes.show();
+        for (let k of kat) k.show();
+    }
+};
+
+
+let p = new p5(Scene37);

@@ -478,6 +478,41 @@ class Line {
         this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
     }
 
+    // 2019-03-19: copied from the Bracket class
+    shift(x1, y1, x2, y2, duration) {
+        let na = {
+            x1: this.x1 + x1, x2: this.x2 + x2, y1: this.y1 + y1, y2: this.y2 + y2,
+            duration: duration
+        };
+        this.move(na);
+    }
+
+    // ----args list----
+    // x1, x2, y1, y2, duration (in seconds)
+    // in draw(), use: if (s.frameCount === getT(time.xxx)) s.variable.move();
+    move(args) {
+        this.x1o = this.x1;
+        this.x2o = this.x2;
+        this.y1o = this.y1;
+        this.y2o = this.y2;
+        this.x1d = args.x1 || this.x1;
+        this.x2d = args.x2 || this.x2;
+        this.y1d = args.y1 || this.y1;
+        this.y2d = args.y2 || this.y2;
+        this.moved = true;
+        let t = args.duration || 1;
+
+        this.move_timer = new Timer2(frames(t));
+    }
+
+    moving() {
+        let t = this.move_timer.advance();
+        this.reset({
+            x1: this.x1o + t * (this.x1d - this.x1o), x2: this.x2o + t * (this.x2d - this.x2o),
+            y1: this.y1o + t * (this.y1d - this.y1o), y2: this.y2o + t * (this.y2d - this.y2o),
+        })
+    }
+
     reset(args) {
         this.x1 = args.x1 || this.x1;
         this.y1 = args.y1 || this.y1;
@@ -488,6 +523,8 @@ class Line {
     showSetup() {
         this.s.stroke(this.color);
         this.timer_sw.advance();
+        if (this.moved)
+            this.moving();
     }
 
     show() {
@@ -628,6 +665,7 @@ class Arrow extends Line {
         this.setArrow();
     }
 
+
     // I could have used arctan() to first obtain the angle of the arrow, then calculate the
     // angle of the two line segments, and finally get their coordinates.
     // However, arctan() will discard information about how the arrow is oriented (domain -90 ~ 90)
@@ -671,8 +709,7 @@ class Arrow extends Line {
         let dy2 = this.y2 - this.y1;
         this.showSetup();
 
-        // 2019-01-26 BUG FIX:
-        // no wonder why the display of arrows appears 6 times slower...
+        // 2019-01-26 BUG FIX: no wonder why the display of arrows appears 6 times slower...
         let t = this.timer.advance();
 
         this.s.line(this.x1, this.y1, this.x1 + t * dx2, this.y1 + t * dy2);
@@ -893,8 +930,9 @@ class Table {
  * @mandatory (number) x1, x2, y1, y2
  * @optional (number) tipLen, start, end, duration, strokeweight
  */
-class Bracket {
+class Bracket extends Line {
     constructor(ctx, args) {
+        super(ctx, args);
         this.s = ctx;
         // this.x = args.x;
         // this.y = args.y;
@@ -949,41 +987,6 @@ class Bracket {
             x1: args.x2 + this.tipLen * sin, x2: args.x2,
             y1: args.y2 - this.tipLen * cos, y2: args.y2,
         });
-    }
-
-    // shift the coordinates of the bracket
-    shift(x1, y1, x2, y2, duration) {
-        let na = {
-            x1: this.x1 + x1, x2: this.x2 + x2, y1: this.y1 + y1, y2: this.y2 + y2,
-            duration: duration
-        };
-        this.move(na);
-    }
-
-    // ----args list----
-    // x1, x2, y1, y2, duration (in frames)
-    // in draw(), use: if (s.frameCount === getT(time.xxx)) s.variable.move();
-    move(args) {
-        this.x1o = this.x1;
-        this.x2o = this.x2;
-        this.y1o = this.y1;
-        this.y2o = this.y2;
-        this.x1d = args.x1 || this.x1;
-        this.x2d = args.x2 || this.x2;
-        this.y1d = args.y1 || this.y1;
-        this.y2d = args.y2 || this.y2;
-        this.moved = true;
-        let t = args.duration || frames(2);
-
-        this.move_timer = new Timer2(t);
-    }
-
-    moving() {
-        let t = this.move_timer.advance();
-        this.reset({
-            x1: this.x1o + t * (this.x1d - this.x1o), x2: this.x2o + t * (this.x2d - this.x2o),
-            y1: this.y1o + t * (this.y1d - this.y1o), y2: this.y2o + t * (this.y2d - this.y2o),
-        })
     }
 
     show() {
