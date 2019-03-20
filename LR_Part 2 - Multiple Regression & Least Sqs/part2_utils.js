@@ -979,7 +979,7 @@ class MR_Plane extends Axes3D {
     }
 }
 
-class LRP_Scene37 extends Plot {
+class LRP_Scene37 extends Plot {  // used for Scene 37, copied from Chap1
     constructor(ctx, args) {
         super(ctx, args);
         this.xBarLine = new DottedLine(this.s, {
@@ -992,6 +992,7 @@ class LRP_Scene37 extends Plot {
         });
     }
     show() {
+        this.LSLine.show();
         this.xBarLine.show();
         this.yBarLine.show();
     }
