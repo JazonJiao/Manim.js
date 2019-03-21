@@ -753,7 +753,7 @@ class FcnPlot {
         this.s = ctx;
         this.f = args.f || ((x) => { return (x * x / 7 - 1); });
         this.a = args.axes;
-        this.segLen = args.segLen || 2;  // how many pixels wide is a line segment in the plot
+        this.segLen = args.segLen || 7;  // how many pixels wide is a line segment in the plot
 
         this.start = args.start || 1;
         this.duration = args.duration || 1;

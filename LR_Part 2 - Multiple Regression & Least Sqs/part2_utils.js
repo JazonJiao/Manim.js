@@ -502,7 +502,7 @@ class Sys_3Eqs {
 /*** 2019-02-18
  * normal equations in symbolic form
  *
- * arg list: x, y, move4 [apply X^T]
+ * arg list: x, y, move4 [apply X^T], move6 [solve for beta], emp [an array]
  */
 class Normal_Eqs extends PointBase {
     constructor(ctx, args) {
@@ -510,31 +510,56 @@ class Normal_Eqs extends PointBase {
         this.kats = [];
 
         this.mv3 = args.move3;  // apply X^T
+        this.mv6 = args.move6 || 100000;  // apply XTX-1
+        if (args.emp) this.emp = args.emp;
 
         this.kats[0] = new Katex(this.s, {
-            text: "X\\vec{b}=", fadeIn: true, start: this.start,
-            x: this.x, y: this.y,
+            text: "X", fadeIn: true, start: this.start,
+            x: this.x, y: this.y, fadeOut: true, end: this.mv6
         });
         this.kats[1] = new Katex(this.s, {
+            text: "\\vec{b}=", fadeIn: true, start: this.start,
+            x: this.x + 42, y: this.y - 2,
+        });
+        this.kats[2] = new Katex(this.s, {
             text: "\\vec{y}", fadeIn: true, start: this.start,
             x: this.x + 117, y: this.y,
         });
-        this.kats[2] = new Katex(this.s, {
+        this.kats[3] = new Katex(this.s, {
             text: "X^T", x: this.x + 117, y: this.y - 44,
             fadeIn: true, start: this.mv3,
         });
-        this.kats[3] = new Katex(this.s, {
-            text: "X^T", x: this.x - 67, y: this.y - 44,
-            fadeIn: true, start: this.mv3,
+        this.kats[4] = new Katex(this.s, {
+            text: "X^T", x: this.x - 57, y: this.y - 44,
+            fadeIn: true, start: this.mv3, fadeOut: true, end: this.mv6
+        });
+        this.kats[5] = new Katex(this.s, {
+            text: "(X^T X)^{-1}", x: this.x - 74, y: this.y - 2,
+            fadeIn: true, start: this.mv6,
         });
     }
     move4() {
-        this.kats[2].shift(0, 47);
-        this.kats[3].shift(0, 47);
-        this.kats[1].shift(67, 0);
+        this.kats[3].shift(0, 42);
+        this.kats[4].shift(0, 42);
+        this.kats[2].shift(67, 0);
+    }
+    move6() {
+        let dx = 67;
+        this.kats[2].shift(dx - 8, 0);
+        this.kats[4].shift(dx, 0);
+        this.kats[0].shift(dx, 0);
+        this.kats[5].shift(dx, 0);
+        this.kats[3].shift(dx - 8, 0);
+        this.kats[1].shift(dx - 189, 0);
     }
     show() {
         if (this.s.frameCount === this.mv3) this.move4();
+        if (this.s.frameCount === this.mv6) this.move6();
+        if (this.emp) {
+            if (this.s.frameCount === this.emp[0]) this.kats[5].jump(27);
+            if (this.s.frameCount === this.emp[1]) this.kats[3].jump(27);
+            if (this.s.frameCount === this.emp[2]) this.kats[2].jump(27);
+        }
         for (let k of this.kats) k.show();
     }
 }

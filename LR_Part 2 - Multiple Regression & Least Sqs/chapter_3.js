@@ -646,6 +646,27 @@ const Scene29 = function(s) {
         s.arr.show();
         s.brain.show();
     }
-}
+};
 
-let p = new p5(Scene27);
+const Scene30 = function(s) {
+    let time = {
+        xT: frames(4),
+        inv: frames(7),
+        emp: [frames(9), frames(10), frames(11)],
+    };
+    s.setup = function () {
+        setup2D(s);
+        //s.h = new HelperGrid(s, {});
+        s.n = new Normal_Eqs(s, {
+            x: 507, y: 248,
+            move3: time.xT, move6: time.inv, emp: time.emp
+        })
+    };
+    s.draw = function () {
+        s.background(0);
+        //s.h.show();
+        s.n.show();
+    };
+};
+
+let p = new p5(Scene30);

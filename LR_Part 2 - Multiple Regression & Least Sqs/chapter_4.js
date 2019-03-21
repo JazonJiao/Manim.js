@@ -423,7 +423,7 @@ const Scene37 = function (s) {
         let kx = 637, ky = 37;
         kat[0] = new Katex(s, {
             text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n " +
-                "(\\textcolor{#37c717}{x_i}-~~~)(\\textcolor{#27a7f7}{y_i}-~~~)} " +
+                "(\\textcolor{" + "#37c717" + "}{x_i}-~~~)(\\textcolor{#27a7f7}{y_i}-~~~)} " +
                 "{\\sum_{i=1}^n(\\textcolor{#37c717}{x_i}-~~~)^2}",
             x: kx - 57, y: ky, font_size: 54,
         });
@@ -448,7 +448,7 @@ const Scene37 = function (s) {
         s.plot.showPoints();
         s.axes.show();
         for (let k of kat) k.show();
-        //showFR(s);
+        showFR(s);
     }
 };
 
@@ -534,8 +534,8 @@ const Scene38 = function (s) {
         s.axes.show();
         s.brain.show();
         for (let k of kat) k.show();
-        //showFR(s);
+        showFR(s);
     }
 };
 
-let p = new p5(Scene35);
+let p = new p5(Scene38);
