@@ -99,7 +99,7 @@ const Scene33 = function(s) {
         x: frames(4),
         b: frames(2),
         y: frames(3),
-        neq: frames(5),
+        neq: frames(7),
 
         emp: frames(1000),
     };
@@ -538,4 +538,4 @@ const Scene38 = function (s) {
     }
 };
 
-let p = new p5(Scene38);
+let p = new p5(Scene33);

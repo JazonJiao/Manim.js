@@ -144,6 +144,11 @@ class Sys_3Eqs {
         this.mv5 = args.move5 || 10000;
         this.end = args.end || 10000;
 
+        this.empx = args.empx || 10000;
+        this.empy = args.empy || 10000;
+        this.empxtl = args.empxtl || 10000;
+        this.empxtr = args.empxtr || 10000;
+
         // mode 0: show entire equation
         // mode 1: show X^T only
         // mode 2: show lhs transform
@@ -463,6 +468,18 @@ class Sys_3Eqs {
         if (this.s.frameCount === this.mv3) this.move3();
         if (this.s.frameCount === this.mv4) this.move4();
         if (this.s.frameCount === this.mv5) this.move5();
+        if (this.s.frameCount === this.empx) {
+            for (let i = 0; i < 6; i++) this.txts[i].jump(27, 0);
+        }
+        if (this.s.frameCount === this.empy) {
+            for (let i = 6; i < 9; i++) this.txts[i].jump(27, 0);
+        }
+        if (this.s.frameCount === this.empxtl) {
+            for (let i = 15; i < 18; i++) this.txts[i].jump(27, 0);
+        }
+        if (this.s.frameCount === this.empxtr) {
+            for (let i = 18; i < 21; i++) this.txts[i].jump(27, 0);
+        }
 
         // this is so awkward...
         // I should have used a 2d array to categorize the objects further, e.g. into lhs and rhs
@@ -576,16 +593,17 @@ class Beta_Formula extends PointBase {
         super(ctx, args);
         this.kats = [];
 
+        this.mv0 = args.move0;  // show y
         this.mv4 = args.move4;  // apply X^T
         this.mv5 = args.move5;  // apply (XTX)^-1
 
         this.kats[0] = new Katex(this.s, {
-            text: "\\textcolor{47a7ff}{\\vec{b}}=",
+            text: "\\vec{b}=",
             x: this.x, y: this.y,
         });
         this.kats[1] = new Katex(this.s, {
-            text: "\\vec{y}",
-            x: this.x + 77, y: this.y,
+            text: "\\textcolor{47a7ff}{\\vec{y}}",
+            x: this.x + 77, y: this.y, fadeIn: true, start: this.mv0
         });
         this.kats[2] = new Katex(this.s, {
             text: "X^T", x: this.x + 77, y: this.y,

@@ -339,7 +339,6 @@ const Scene26 = function(s) {
     };
     let g3;
     let tnr;
-    let kat;
     let obj = [];
     s.preload = function () {
         obj[0] = s.loadModel('../lib/obj/axes.obj');
@@ -391,21 +390,22 @@ const Scene26 = function(s) {
 // scene 27
 const Scene27 = function(s) {
     let time = {
-        eqs: frames(1),
-        three_to_two: frames(15),
+        eqs: 1,
+        empxtl: frames(10.7),
+        empx: frames(12.7),
+        empxtr: frames(16.7),
+        empy: frames(18.4),
+        three_to_two: frames(22.8),
+        moveCam: frames(32),
 
-        moveCam: frames(15),
-        inverse_2d: frames(17),
-        kat: frames(17),
-
-        grid: frames(15),
-        gridLines: frames(15),
-        gridPt: frames(15)
+        inverse_2d: frames(38.7),
+        grid: frames(48),
+        gridLines: frames(50),
+        gridPt: frames(56.7)
     };
 
     let g3;
     let tnr;
-    let kat;
     let obj = [];
 
     s.preload = function () {
@@ -421,6 +421,7 @@ const Scene27 = function(s) {
             x: 387, y: 467,
             move1: 1, move2: 4,
             move3: 9, move4: time.three_to_two, move5: time.inverse_2d,
+            empx: time.empx, empy: time.empy, empxtl: time.empxtl, empxtr: time.empxtr,
             font: tnr,
             start: time.eqs, //end: time.kat
         });
@@ -429,7 +430,7 @@ const Scene27 = function(s) {
             a: 0, b: 0, c: 0
         });
         s.axes = new Axes3D(s, {
-            angle: 2.5, speed: speed,
+            angle: 4, speed: speed,
             model: obj[0]
         });
 
@@ -453,15 +454,6 @@ const Scene27 = function(s) {
                 point: time.gridPt
             }
         });
-
-        // kat = new Katex(s, {
-        //     text: "b=\\begin{bmatrix}" +
-        //         "-0.71 \\\\" +
-        //         "1.57 \\\\" +
-        //         "  \\end{bmatrix}",
-        //     x: 37, y: 0, font_size: 30,
-        //     fadeIn: true, start: time.kat,
-        // })
     };
 
     s.draw = function () {
@@ -480,25 +472,26 @@ const Scene27 = function(s) {
         s.arrs.show(g3);
         s.pl.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
-        //kat.show();
-        // showFR(s);
+        //showFR(s);
     };
 };
 
 // scene 28
 const Scene28 = function(s) {
     let time = {
-        three_to_two: frames(3),
-
-        moveCam: frames(4),
-        inverse_2d: frames(7),
+        showY: frames(5),
+        three_to_two: frames(10),
+        moveCam: frames(10),
+        inverse_2d: frames(15),
+        txt: frames(17),
     };
 
-    let g3;
+    let g3, times;
     let obj = [];
 
     s.preload = function () {
         obj[0] = s.loadModel('../lib/obj/axes.obj');
+        times = s.loadFont('../lib/font/times.ttf');
     };
 
     s.setup = function () {
@@ -507,7 +500,7 @@ const Scene28 = function(s) {
 
         s.eqs = new Beta_Formula(s, {
             x: 100, y: 100,
-            move4: time.three_to_two, move5: time.inverse_2d,
+            move0: time.showY, move4: time.three_to_two, move5: time.inverse_2d,
         });
 
         s.pl = new Plane3D(s, { a: 0, b: 0, c: 0 });
@@ -515,7 +508,11 @@ const Scene28 = function(s) {
             angle: 2.5, speed: speed,
             model: obj[0]
         });
-
+        s.txt = new TextFade(s, {
+            str: "Reminder: applying a transformation\n" +
+                "means left multiplying by a matrix",
+            font: times, start: time.txt, x: 877, y: 77, size: 27, mode: 1
+        });
         s.arrs = new Arrows_Transform(s, {
             start: time.three_to_two,
             solve: time.inverse_2d,
@@ -530,10 +527,11 @@ const Scene28 = function(s) {
             s.axes.moveCam({ camRadius: 0.01, angle: s.PI, speed: 0, camY: -737 });
         s.axes.show(g3);
         s.eqs.show();
+        s.txt.show();
         s.arrs.show(g3);
         s.pl.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
-        showFR(s);
+        //showFR(s);
     };
 };
 
@@ -549,7 +547,8 @@ const Scene29 = function(s) {
         txt2e: frames(8),
         brain: frames(8),
         shift: frames(8),
-        eq: frames(1),
+        eq: frames(10),
+        // emp: frames(10), // emphasize formula
     }
     let tnr, comic;
     s.txt = []; s.kat = []; s.bl = []; s.br = []; s.box = [];
@@ -616,14 +615,14 @@ const Scene29 = function(s) {
     }
     s.draw = function () {
         if (s.frameCount === time.to4) {
-            for (let b of s.bl) b.shift(0, 0, 0, 63, 30);
-            for (let b of s.br) b.shift(0, 63, 0, 0, 30);
+            for (let b of s.bl) b.shift(0, 0, 0, 63, 1);
+            for (let b of s.br) b.shift(0, 63, 0, 0, 1);
             s.kat[0].shift(0, 27);
             s.kat[1].shift(0, 27);
         }
         if (s.frameCount === time.shift) {
-            for (let b of s.bl) b.shift(dx, 0, dx, 0, 30);
-            for (let b of s.br) b.shift(dx, 0, dx, 0, 30);
+            for (let b of s.bl) b.shift(dx, 0, dx, 0, 1);
+            for (let b of s.br) b.shift(dx, 0, dx, 0, 1);
             s.x0.shift(dx, 0, 1);
             s.x1.shift(dx, 0, 1);
             s.y.shift(dx, 0, 1);
@@ -650,16 +649,17 @@ const Scene29 = function(s) {
 
 const Scene30 = function(s) {
     let time = {
+        start: frames(2),
         xT: frames(4),
-        inv: frames(7),
-        emp: [frames(9), frames(10), frames(11)],
+        inv: frames(6),
+        emp: [frames(10), frames(12), frames(13)],
     };
     s.setup = function () {
         setup2D(s);
         //s.h = new HelperGrid(s, {});
         s.n = new Normal_Eqs(s, {
             x: 507, y: 248,
-            move3: time.xT, move6: time.inv, emp: time.emp
+            start: time.start, move3: time.xT, move6: time.inv, emp: time.emp
         })
     };
     s.draw = function () {
@@ -669,4 +669,6 @@ const Scene30 = function(s) {
     };
 };
 
-let p = new p5(Scene30);
+let p = new p5(Scene29);
+
+// fixme: the audio volume doesn't change for 1+?
