@@ -100,7 +100,6 @@ const Scene33 = function(s) {
         b: frames(2),
         y: frames(3),
         neq: frames(7),
-
         emp: frames(1000),
     };
     let dx = 67;
@@ -117,10 +116,10 @@ const Scene33 = function(s) {
         setup2D(s);
         s.hg = new HelperGrid(s, {});
 
-        // s.txt[4] = new TextFade(s, {
-        //     str: "   3 data points\n= 3 dimensions",
-        //     x: 757, y: 277, start: time.txt1, end: time.txt1e, font: tnr, color: [255, 255, 255]
-        // });
+        if (SN === 0) s.txt[4] = new TextWriteIn(s, {
+            str: "Chapter 4: Multiple Regression—coming next month!",
+            x: 347, y: 617, start: 27, font: tnr, size: 27,
+        });
         // s.txt[5] = new TextFade(s, {
         //     str: "One entry", x: 797, y: 400, start: time.txt2, end: time.txt2e, font: tnr,
         // });

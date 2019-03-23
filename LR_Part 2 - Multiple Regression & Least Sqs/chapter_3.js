@@ -538,16 +538,17 @@ const Scene28 = function(s) {
 // SEE HERE FOR MATRIX SPECS
 const Scene29 = function(s) {
     let time = {
-        txt1: frames(3),
-        txt1e: frames(4),
-        to4: frames(4),
-        txt2: frames(4),
-        txt3: frames(5),
-        txt3e: frames(7),
-        txt2e: frames(8),
-        brain: frames(8),
-        shift: frames(8),
-        eq: frames(10),
+        xy: frames(2),
+        txt1: frames(6),
+        txt1e: frames(10),
+        to4: frames(13),
+        txt2: frames(15),
+        txt3: frames(19),
+        txt3e: frames(21.7),
+        txt2e: frames(22.7),
+        brain: frames(22.7),
+        shift: frames(22.7),
+        eq: frames(26.7),
         // emp: frames(10), // emphasize formula
     }
     let tnr, comic;
@@ -574,7 +575,7 @@ const Scene29 = function(s) {
         });
         s.txt[0] = new TextFade(s, {
             str: "   3 data points\n= 3 dimensions",
-            x: 757, y: 277, start: time.txt1, end: time.txt1e, font: tnr, color: [255, 255, 255]
+            x: 757, y: 247, start: time.txt1, end: time.txt1e, font: tnr, color: [255, 255, 255]
         });
         s.txt[1] = new TextFade(s, {
             str: "the 4th dimension", x: 797, y: 400, start: time.txt2, end: time.txt2e, font: tnr,
@@ -586,18 +587,21 @@ const Scene29 = function(s) {
         s.arr = new Arrow(s, {
             x1: 787, x2: 727, y1: 422, y2: 422, start: time.txt2, end: time.txt2e,
         })
-        s.bl[0] = new Bracket(s, { x1: x, y1: y, x2: x, y2: y + 167, start: 1, });
-        s.br[0] = new Bracket(s, { x1: x + 137, y1: y + 167, x2: x + 137, y2: y, start: 1 });
-        s.bl[1] = new Bracket(s, { x1: x1, y1: y, x2: x1, y2: y + 167, start: 1, });
-        s.br[1] = new Bracket(s, { x1: x1 + 77, y1: y + 167, x2: x1 + 77, y2: y, start: 1 });
+        s.bl[0] = new Bracket(s, { x1: x, y1: y, x2: x, y2: y + 167, start: time.xy, });
+        s.br[0] = new Bracket(s, { x1: x + 137, y1: y + 167, x2: x + 137, y2: y, start: time.xy });
+        s.bl[1] = new Bracket(s, { x1: x1, y1: y, x2: x1, y2: y + 167, start: time.xy, });
+        s.br[1] = new Bracket(s, { x1: x1 + 77, y1: y + 167, x2: x1 + 77, y2: y, start: time.xy });
         s.x0 = new TextFade(s, {
-            x: x + 17, y: y, str: "1\n1\n1\n1\n", font: tnr, color: [255, 77, 97], size: 47
+            x: x + 17, y: y, str: "1\n1\n1\n1\n", font: tnr, color: [255, 77, 97], size: 47,
+            start: time.xy
         });
         s.x1 = new TextFade(s, {
-            x: x + 84, y: y, str: "-1\n 1\n 2\n 4\n", font: tnr, color: [77, 217, 77], size: 47
+            x: x + 84, y: y, str: "-1\n 1\n 2\n 4\n", font: tnr, color: [77, 217, 77], size: 47,
+            start: time.xy
         });
         s.y = new TextFade(s, {
-            x: x1 + 17, y: y, str: "-2\n 0\n 3\n 7\n", font: tnr, color: [77, 177, 255], size: 47
+            x: x1 + 17, y: y, str: "-2\n 0\n 3\n 7\n", font: tnr, color: [77, 177, 255], size: 47,
+            start: time.xy
         });
         s.box[0] = new Rect(s, {
             x: x + 20, w: 100, y: 400, h: 47, color: [0, 0, 0, 255], end: time.to4,
@@ -669,6 +673,35 @@ const Scene30 = function(s) {
     };
 };
 
-let p = new p5(Scene29);
+const SceneEnd = function(s) {
+    let time = {
+        brain: frames(1),
+        bubble: frames(2),
+    };
+    let emoji, comic;
+    s.preload = function() {
+        comic = s.loadFont('../lib/font/comic.ttf');
+        emoji = s.loadFont('../lib/font/emoji.ttf');
+    };
+    s.setup = function() {
+        setup2D(s);
+        s.brain = new ThoughtBrain(s, {
+            start: time.brain,
+            x: 67, y: 532, size: 267,
+            font: comic, str: "Don't forget to \nlike and subscribe!", font_size: 32,
+            bubbleStart: time.bubble,
+
+            emoji: emoji,
+           // bulbStart: time.bulb
+        });
+    };
+    s.draw = function() {
+        s.background(0);
+        s.brain.show();
+    }
+};
+
+
+let p = new p5(SceneEnd);
 
 // fixme: the audio volume doesn't change for 1+?
