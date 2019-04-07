@@ -1,7 +1,7 @@
 /**
  * 2018/11/14, 12/22
  *
- * Experiment of the class hierarchy of my animation library.
+ * Experiment of the class hierarchy of my animation library. [NOW DEPRECATED--SEE PointBase]
  *
  * The hierarchy is broken down into 4 layers.
  * 1. the Graphics class:    the base class for all objects; defines a transparent canvas with
@@ -168,5 +168,60 @@ class PointBase {
 
     show() {
 
+    }
+}
+
+/*** 2019-04-17
+ * Dragger
+ * Used to help adjust the coordinates of objects.
+ *
+ * You can pass in an array consisting of PointBase objects and/or PointBase arrays,
+ * and call show() in s.draw(). Then, the coordinates of each registered object
+ * will be shown on the screen. You can drag the objects to the desired locations and
+ * see the value of their new coordinates, so you can adjust them in the code.
+ *
+ * This can be seen as an implementation of the Observer-Reactor Design Pattern?
+ */
+class Dragger {
+    constructor(ctx, arr) {  // takes in an array of PointBase objects/arrays
+        this.s = ctx;
+        this.a = arr;
+    }
+
+    changePos(i) {
+        let px = this.s.pmouseX, py = this.s.pmouseY;  // previous frame mouse locations
+        let nx = this.s.mouseX, ny = this.s.mouseY;  // current frame mouse locations
+        if (i.x - px > -7 && i.x - px < 7 && i.y - py > -7 && i.y - py < 7) {
+            i.x = nx; // mouse is in the gray box, drag object to new position
+            i.y = ny;
+        }
+    }
+
+    showPos(i) {
+        this.s.noStroke();
+        this.s.fill(177);
+        this.s.rect(i.x - 7, i.y - 7, 14, 14);
+        this.s.textSize(17);
+        this.s.textAlign(this.s.LEFT, this.s.TOP);
+        this.s.text(i.x + ", " + i.y, i.x + 9, i.y + 6);
+    }
+
+    show() {
+        for (let i of this.a) {
+            if (i instanceof Array) {
+                for (let j of i)
+                    this.showPos(j);
+            } else
+                this.showPos(i);
+        }
+        if (this.s.mouseIsPressed) {
+            for (let i of this.a) {
+                if (i instanceof Array) {
+                    for (let j of i)
+                        this.changePos(j);
+                } else
+                    this.changePos(i);
+            }
+        }
     }
 }

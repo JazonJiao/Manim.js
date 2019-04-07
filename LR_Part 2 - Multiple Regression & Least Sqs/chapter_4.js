@@ -381,6 +381,8 @@ const Scene36 = function(s) {
         });
         s.kat[7] = new Katex(s, { x: 747, y: 527, text: "\\vec{b}=(X^T X)^{-1} X^T \\vec{y}",
             fadeIn: true, start: time.neq });
+
+        s.d = new Dragger(s, [s.keq, s.kat]);
     };
 
     s.draw = function () {
@@ -394,6 +396,7 @@ const Scene36 = function(s) {
         s.bl.show();
         s.br.show();
         s.txt.show();
+        s.d.show();
         showFR(s);
     };
 };
@@ -537,4 +540,4 @@ const Scene38 = function (s) {
     }
 };
 
-let p = new p5(Scene33);
+let p = new p5(Scene36);

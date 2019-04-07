@@ -115,3 +115,17 @@ function getT(t) {
         return t;
     }
 }
+
+/**
+ * 2D Starter Template
+ */
+const Scene00 = function(s) {
+    s.setup = function () {
+        setup2D(s);
+        s.h = new HelperGrid(s, {});
+    };
+    s.draw = function () {
+        s.background(0);
+        s.h.show();
+    };
+};

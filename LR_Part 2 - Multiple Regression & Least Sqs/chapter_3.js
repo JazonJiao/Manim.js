@@ -389,6 +389,7 @@ const Scene26 = function(s) {
 
 // scene 27
 const Scene27 = function(s) {
+    let SN = 1;  // used for thumbnail
     let time = {
         eqs: 1,
         empxtl: frames(10.7),
@@ -416,7 +417,10 @@ const Scene27 = function(s) {
     s.setup = function () {
         setup3D(s);
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);
-
+        if (SN === 1)
+            s.gd = new Grid3D(s, { numLines: 2, lineLen: 197, strokeweight: 4.7 });
+        if (SN === 1)
+            s.txt = new Text(s, { str: "Normal Equations", mode: 1, x: 627, y: 77, size: 97 });
         s.eqs = new Sys_3Eqs(s, {
             x: 387, y: 467,
             move1: 1, move2: 4,
@@ -425,7 +429,6 @@ const Scene27 = function(s) {
             font: tnr,
             start: time.eqs, //end: time.kat
         });
-
         s.pl = new Plane3D(s, {
             a: 0, b: 0, c: 0
         });
@@ -458,7 +461,6 @@ const Scene27 = function(s) {
 
     s.draw = function () {
         s.background(0);
-        s.grid.show();
         if (s.frameCount === time.moveCam) {
             s.axes.moveCam({
                 camRadius: 0.01,
@@ -471,6 +473,11 @@ const Scene27 = function(s) {
         s.eqs.show();
         s.arrs.show(g3);
         s.pl.showPlane(g3);
+        if (SN === 1) {
+            s.gd.showGrid(g3);
+            s.txt.show();
+        }
+        //s.grid.show();
         s.image(g3, 0, 0, cvw, cvh);
         //showFR(s);
     };
@@ -702,6 +709,6 @@ const SceneEnd = function(s) {
 };
 
 
-let p = new p5(SceneEnd);
+let p = new p5(Scene27);
 
 // fixme: the audio volume doesn't change for 1+?
