@@ -203,7 +203,7 @@ class Dragger {
         this.s.rect(i.x - 7, i.y - 7, 14, 14);
         this.s.textSize(17);
         this.s.textAlign(this.s.LEFT, this.s.TOP);
-        this.s.text(i.x + ", " + i.y, i.x + 9, i.y + 6);
+        this.s.text(i.x + ", " + i.y, i.x + 9, i.y - 7);
     }
 
     show() {

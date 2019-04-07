@@ -1022,6 +1022,35 @@ class MR_Plane extends Axes3D {
     }
 }
 
+class LRP_Scene36 extends Plot {  // used for Scene 37, copied from Chap1
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.Ys = this.ln(args.ys);
+        this.calcParams();
+        this.A = Math.exp(this.beta_0);
+        this.B = Math.exp(this.beta);
+        this.LSLine = new FcnPlot(this.s, {
+            axes: this, color: [77, 217, 77], start: this.startLSLine,
+            f: ((y) => { return (this.A * Math.pow(this.B, y)); })  // exponential best-fit
+        });
+        this.txts = [];
+        let i = 0;
+        this.txts[0] = new TextFade(this.s, { str: "'30", mode: 1,
+            x: this.centerX + i++ * this.stepX, y: this.centerY, start: 0 });
+    }
+    ln(a) {
+        let b = [];
+        for (let i = 0; i < a.length; i++) {
+            b[i] = Math.log(a[i]);
+        }
+        return b;
+    }
+    show() {
+        this.LSLine.show();
+    }
+}
+
+
 class LRP_Scene37 extends Plot {  // used for Scene 37, copied from Chap1
     constructor(ctx, args) {
         super(ctx, args);

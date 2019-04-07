@@ -238,7 +238,7 @@ const Scene33 = function(s) {
     }
 };
 
-const Scene35 = function (s) {
+const Scene34 = function (s) {
     let t = 2, dt = 1.5;
     let time = {
         x3: frames(t),
@@ -282,7 +282,7 @@ const Scene35 = function (s) {
     }
 };
 
-const Scene36 = function(s) {
+const Scene35 = function(s) {
     let time = {
         pts: frames(2),
         table: frames(1),
@@ -399,6 +399,66 @@ const Scene36 = function(s) {
         s.d.show();
         showFR(s);
     };
+};
+
+const Scene36 = function (s) {
+    let time = {
+        axes: frames(1),
+        pts: frames(2),
+        line: frames(3),
+        yabx: frames(2),
+        yLabel: frames(4),
+        xLabel: frames(3),
+        formula: frames(2),
+    };
+    // US population, 1920 to 2019
+    let xs = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 99];
+    let ys = [106, 123, 132, 151, 179, 203, 227, 248, 281, 309, 328];
+
+    let kat = [], txt = [];
+    let tnr;
+    s.preload = function () {
+        tnr = s.loadFont('../lib/font/times.ttf');
+    };
+    s.setup = function() {
+        setup2D(s);
+        s.plot = new Plot(s, {
+            startPt: time.pts, start: time.axes, ptLabel: true, font: tnr,
+            right: 1200, centerX: 67, centerY: 600, stepX: 10, stepY: 1.7,
+            xs: xs, ys: ys,
+        });
+        s.lin = new LRP_Scene36(s, {  /// CAUTION: DO NOT NAME IT LINE
+            startPt: 10, startLSLine: time.line,
+            right: 1200, centerX: 67, centerY: 600, stepX: 10, stepY: 1.7,
+            xs: xs, ys: ys, lineColor: s.color(247, 137, 27)
+        });
+        kat[0] = new Katex(s, {
+            text: "y=\\textcolor{f78747}{a}\\textcolor{77f777}{b}^x",
+            x: 832, y: 123, font_size: 37, fadeIn: true, start: time.yabx
+        });
+        kat[1] = new Katex(s, {
+            text: "y=ln(\\textcolor{f78747}{a})+ln(\\textcolor{77f777}{b})x",
+            x: 720, y: 107, font_size: 37, fadeIn: true, start: time.formula
+        });
+        txt[0] = new TextWriteIn(s, {
+            str: "U.S. Population (millions)", x: 80, y: 7, start: time.yLabel
+        });
+        txt[1] = new TextWriteIn(s, {
+            str: "Decades Since 1920", x: 877, y: 605, start: time.xLabel
+        });
+        this.d = new Dragger(s, [kat, txt]);
+    };
+    s.draw = function() {
+        s.background(0);
+        if (s.frameCount === time.formula) kat[1].shift(0, 100, 1, 1);
+        s.plot.showPoints();
+        s.plot.showAxes();
+        s.lin.show();
+        s.d.show();
+        for (let k of kat) k.show();
+        for (let t of txt) t.show();
+        showFR(s);
+    }
 };
 
 let xCoords = [10, 14, 20, 27, 33, 40];

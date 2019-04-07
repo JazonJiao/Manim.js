@@ -222,7 +222,8 @@ class Grid extends Axes {
  * Capable of calculating the least square line of the points, and displaying the line
  *
  * ---- args list parameters (in addition to axes) ----
- * xs, ys, startLSLine, startPt, lineColor
+ * xs, ys, startLSLine, startPt, lineColor,
+ * [If want to show labels:] ptLabel: true, font: tnr
  */
 class Plot extends Axes {
     // 2019-01-07: after refactoring, don't need to load a csv file, data is passed in as two arrays
@@ -246,15 +247,14 @@ class Plot extends Axes {
         this.calcCoords();
         this.points = [];
         for (let i = 0; i < this.numPts; i++) {
-            this.points[i] = new PlotPoint(this.s, {
-                x: this.ptXs[i],
-                y: this.ptYs[i],
-                radius: 12,
-                // display all points in 1 second
+            this.points[i] = args.ptLabel ? new PlotPoint(this.s, {
+                x: this.ptXs[i], y: this.ptYs[i], radius: 12, val: this.Ys[i], font: args.font,
                 start: this.startPt + i * frames(1) / this.numPts
-            })
+            }) : new Point(this.s, {
+                x: this.ptXs[i], y: this.ptYs[i], radius: 12,
+                start: this.startPt + i * frames(1) / this.numPts  // display all points in 1 second
+            });
         }
-
         // calculate the parameters for displaying the least squares line on the canvas
         this.calcParams();
 
@@ -292,7 +292,6 @@ class Plot extends Axes {
         return sum / this.numPts;
     }
 
-
     // calculate the parameters, and the coordinates of least squares line
     // formula: beta = (sum of xi * yi - n * coordX * coordY) / (sum of xi^2 - n * coordX^2)
     calcParams() {
@@ -313,7 +312,6 @@ class Plot extends Axes {
         this.coordX = this.centerX + this.avgX * this.stepX;
         this.coordY = this.centerY - this.avgY * this.stepY;
     }
-
 
     showPoints() {
         for (let i = 0; i < this.numPts; ++i) {
@@ -366,9 +364,18 @@ class Point {
     }
 }
 
+// extra args: val, font
 class PlotPoint extends Point {
     constructor(ctx, args) {
         super(ctx, args);
+        this.txt = new TextFade(ctx, {
+            str: args.val, font: args.font, mode: 1, size: 27,
+            x: this.x, y: this.y - 27, start: this.start
+        })
+    }
+    show() {
+        super.show();
+        this.txt.show();
     }
 }
 
