@@ -17,6 +17,12 @@ let matrix = [1, 1, 1, -1, 1, 2];
 let target = [-2, 0, 3];
 
 
+let Red = [255, 77, 97];
+let Green = [77, 217, 77];
+let Blue = [77, 177, 255];
+let Yellow = [247, 227, 47];
+let Orange = [247, 137, 27];
+
 /*** Refactored 3D scenes on 2019-01-17
  *
  * Transforms from standard coordinates into p5'o coordinates,

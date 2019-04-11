@@ -1,12 +1,5 @@
 // Chapter 4, Multiple Regression
 
-let Red = [255, 77, 97];
-let Green = [77, 217, 77];
-let Blue = [77, 177, 255];
-let Yellow = [247, 227, 47];
-let Orange = [247, 137, 27];
-
-
 let xCoords = [10, 14, 20, 27, 33, 40];
 let yCoords = [11, 17, 18, 29, 32, 37];
 
@@ -485,9 +478,9 @@ const Scene36 = function (s) {
         pts: frames(2),
         yLabel: frames(2),
         xLabel: frames(2),
-        yabx: frames(6),
-        line: frames(8),
-        formula: frames(10),
+        yabx: frames(5),
+        line: frames(7),
+        formula: frames(9.5),
     };
     // US population, 1920 to 2019
     let xs = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 99];
@@ -541,11 +534,11 @@ const Scene36 = function (s) {
 
 const Scene37a = function (s) {
     let t = {
-        txt0: frames(1),
-        txt1: frames(2),
-        arr: frames(2),
-        brain: frames(2),
-        bubble: frames(3),
+        arr: frames(2.7),
+        txt0: frames(5.4),
+        txt1: frames(6.7),
+        brain: frames(7),
+        bubble: frames(7.5),
     };
     let tnr, comic, emoji;
     s.preload = function() {
@@ -562,9 +555,6 @@ const Scene37a = function (s) {
         s.txt[1] = new TextWriteIn(s, {
             str: "deriving", x: 670, y: 50, start: t.txt1, font: tnr, size: 42
         });
-        // s.txt[2] = new Katex(s, {
-        //     str: "X^TX\\vec{b}=X^T\\vec{y}", x: 100, y: 300, start: t.bubble,
-        // });
         let len = 40;
         s.arr = new Arrow(s, {
             x1: 600 - len, x2: 600 + len, y1: 77, y2: 77, start: t.arr
@@ -577,33 +567,37 @@ const Scene37a = function (s) {
             emoji: emoji, question: true
             // bulbStart: time.bulb
         });
-        s.d = new Dragger(s, [s.txt]);
+        //s.d = new Dragger(s, [s.txt]);
     };
     s.draw = function () {
         s.background(0);
         for (let x of s.txt) x.show();
         s.arr.show();
         s.brain.show();
-        s.d.show();
+        //s.d.show();
     };
 }
 
 const Scene37 = function (s) {
     let time = {
-        move: frames(2),
+        plot: frames(1.7),
+        formula: frames(4),
+        move: frames(8),
+        xbar0: frames(16),
+        ybar0: frames(16.7),
         //show0: frames(2),
 
-    }
+    };
     let kat = [];
     s.setup = function() {
         setup2D(s);
         s.plot = new LRP_Scene37(s, {
-            startPt: 10, startLSLine: 10000000,
+            start: time.plot, startPt: time.plot + 7, startLSLine: 10000000,
             right: 600, centerX: 67, centerY: 550, stepX: 10, stepY: 10,
             xs: xCoords, ys: yCoords, lineColor: s.color(247, 137, 27)
         });
         s.axes = new AxesTransform(s, {
-            plot: s.plot,
+            plot: s.plot, start: time.plot,
             move: time.move,
         });
         let kx = 637, ky = 37;
@@ -611,12 +605,12 @@ const Scene37 = function (s) {
             text: "\\textstyle\\hat{\\beta}=\\frac{\\sum_{i=1}^n " +
                 "(\\textcolor{" + "#37c717" + "}{x_i}-~~~)(\\textcolor{#27a7f7}{y_i}-~~~)} " +
                 "{\\sum_{i=1}^n(\\textcolor{#37c717}{x_i}-~~~)^2}",
-            x: kx - 57, y: ky, font_size: 54,
+            x: kx - 57, y: ky, font_size: 54, start: time.formula
         });
         let x1 = 920, y1 = 50, x2 = 1065, x3 = 984, y3 = 107;
-        kat[1] = new Katex(s, { text: "\\bar{x}", x: x1, y: y1, fadeOut: true, end: time.move });
-        kat[2] = new Katex(s, { text: "\\bar{y}", x: x2, y: y1, fadeOut: true, end: time.move });
-        kat[3] = new Katex(s, { text: "\\bar{x}", x: x3, y: y3, fadeOut: true, end: time.move });
+        kat[1] = new Katex(s, { text: "\\bar{x}", x: x1, y: y1, start: time.formula, end: time.move });
+        kat[2] = new Katex(s, { text: "\\bar{y}", x: x2, y: y1, start: time.formula, end: time.move });
+        kat[3] = new Katex(s, { text: "\\bar{x}", x: x3, y: y3, start: time.formula, end: time.move });
         kat[4] = new Katex(s, {
             text: "0", color: '#f76737', x: x1, y: y1, fadeIn: true, start: time.move
         });
@@ -626,15 +620,21 @@ const Scene37 = function (s) {
         kat[6] = new Katex(s, {
             text: "0", color: '#f76737', x: x3, y: y3, fadeIn: true, start: time.move
         });
+        kat[7] = new Katex(s, { text: "\\bar{y}", x: 35, y: 237, start: time.plot, /*end: time.move */});
+        kat[8] = new Katex(s, { text: "\\bar{x}", x: 294, y: 510, start: time.plot,/* end: time.move */});
+        //s.d = new Dragger(s, [kat]);
     };
 
     s.draw = function() {
+        if (s.frameCount === time.xbar0) { kat[4].shake(21, 1); kat[6].shake(21, 1); }
+        if (s.frameCount === time.ybar0) kat[5].shake(21, 1);
         s.background(0);
         s.plot.show();
         s.plot.showPoints();
         s.axes.show();
+        //s.d.show();
         for (let k of kat) k.show();
-        showFR(s);
+        //showFR(s);
     }
 };
 
@@ -660,6 +660,7 @@ const Scene38 = function (s) {
         });
         s.axes = new AxesTransform(s, {
             plot: s.plot,
+            move: time.move,
         });
         s.brain = new ThoughtBrain(s, {
             str: "Since the data is\nre-centered, " +
@@ -724,4 +725,4 @@ const Scene38 = function (s) {
     }
 };
 
-let p = new p5(Scene37a);
+let p = new p5(Scene37);

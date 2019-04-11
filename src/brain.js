@@ -168,24 +168,39 @@ class Bubble {
     }
 }
 
-/*** 2019-02-18
- * After the bulb is in place, the rays glow outwards and stay for a second before fading
+/*** Refactored on2019-04-11
+ * Displays a user-defined emoji on the ThoughtBrain
+ * todo: for droplets 💧, it should go down instead of up when init
+ * Other proposed emojis: ❤ 👍 💢 💭 ❗
  *
  * ---- args list parameters ----
- * @mandatory x, y, (p5.Font) emoji
+ * @mandatory x, y, (string) str, (array) color, (p5.Font) emoji
  * @optional  start, end, size
  */
-class Bulb extends PointBase {
+class Emoji extends PointBase {
     constructor(ctx, args) {
         super(ctx, args);
         this.size = args.size || 47;
         this.txt = new TextFade(this.s, {
-            str: args.mode === 1 ? '❓' : "💡", font: args.emoji, mode: 1,
-            color: [247, 248, 7], size: this.size,
+            str: args.str, font: args.emoji, mode: 1,
+            color: args.color, size: this.size,
             start: this.start, end: this.end,
-            x: this.x,
-            y: this.y + this.size * 2,
+            x: this.x, y: this.y + this.size * 2,
         });
+    }
+    show() {
+        if (this.s.frameCount === this.start)
+            this.txt.move(this.x, this.y + this.size * 0.2, 1, 1); // fixme
+        this.txt.show();
+    }
+}
+
+/*** 2019-02-18
+ * After the bulb is in place, the rays glow outwards and stay for a second before fading
+ */
+class Bulb extends Emoji {
+    constructor(ctx, args) {
+        super(ctx, args);
 
         this.rays = [];
         let startScale = 0.57;
@@ -205,17 +220,8 @@ class Bulb extends PointBase {
         }
     }
     show() {
-        if (this.s.frameCount === this.start)
-            this.txt.move(this.x, this.y + this.size * 0.2, 1, 1); // fixme
-        this.txt.show();
+        super.show();
         for (let r of this.rays) r.show();
-    }
-}
-
-class QuestionMarks extends PointBase {
-    constructor(ctx, args) {
-        super(ctx, args);
-
     }
 }
 
@@ -226,7 +232,7 @@ class QuestionMarks extends PointBase {
  * @mandatory (number) x, y; (font) font; (string) str
  * @optional (number) start, duration, size, font_size, bubbleStart,
  *       [used for the light bulb:] (font) emoji; (number) bulbStart, bulbEnd
- *       [used for the question mark:] (bool) question
+ *       [used for the question mark:] (bool) question; (font) emoji; (number) qStart, qEnd
  */
 class ThoughtBrain extends BrainBase {
     constructor(ctx, args) {
@@ -234,8 +240,6 @@ class ThoughtBrain extends BrainBase {
         this.x = args.x || 170;
         this.y = args.y || 440;
         this.size = args.size || 400;  // when displaying, size of the brain (w is already defined)
-        this.bulbStart = args.bulbStart || this.start + frames(2);
-        this.bulbEnd = args.bulbEnd || this.start + frames(6);
 
         this.bubble = new Bubble(this.s, {
             x: this.x + this.size / 2,
@@ -247,18 +251,37 @@ class ThoughtBrain extends BrainBase {
             str: args.str,
             start: args.bubbleStart || this.start
         });
-        if (args.emoji) {
+        if (args.question) {
+            this.qStart = args.qStart || this.start + frames(2);
+            this.qEnd = args.qEnd || this.start + frames(6);
+
+            this.qm = [];  // create two question marks
+            this.qm[0] = new Emoji(this.s, {
+                emoji: args.emoji, str: '❔', color: Orange,
+                x: this.x - this.size * 0.027, y: this.y, size: this.size / 10,
+                start: this.qStart, end: this.qEnd
+            });
+            let dt = frames(0.3);
+            this.qm[1] = new Emoji(this.s, {
+                emoji: args.emoji, str: '❔', color: Orange,
+                x: this.x + this.size * 0.057, y: this.y, size: this.size / 10,
+                start: this.qStart + dt, end: this.qEnd + dt
+            });
+        } else if (args.emoji) {  // fixme: if args.bulb
+            this.bulbStart = args.bulbStart || this.start + frames(2);
+            this.bulbEnd = args.bulbEnd || this.start + frames(6);
             this.bulb = new Bulb(this.s, {
-                emoji: args.emoji, mode: args.question ? 1 : 0,
+                emoji: args.emoji, str: '💡', color: [247, 248, 7],
                 x: this.x, y: this.y, size: this.size / 10,
-                start: this.bulbStart,
-                end: this.bulbEnd
+                start: this.bulbStart, end: this.bulbEnd
             });
         }
     }
     show() {
         this.showBrain();
         this.bubble.show();
+        if (this.qm)
+            for (let q of this.qm) q.show();
         if (this.bulb)
             this.bulb.show();
         this.s.image(this.g, this.x, this.y, this.size, this.size);

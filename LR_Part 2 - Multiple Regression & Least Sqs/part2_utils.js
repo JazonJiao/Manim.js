@@ -1057,11 +1057,11 @@ class LRP_Scene37 extends Plot {  // used for Scene 37, copied from Chap1
         super(ctx, args);
         this.xBarLine = new DottedLine(this.s, {
             x1: this.coordX, x2: this.coordX, y1: this.top, y2: this.bottom,
-            color: this.s.color(247, 117, 117), strokeweight: 2, start: 1
+            color: this.s.color(247, 117, 117), strokeweight: 2, start: args.start
         });
         this.yBarLine = new DottedLine(this.s, {
             x1: this.left, x2: this.right, y1: this.coordY, y2: this.coordY,
-            color: this.s.color(247, 117, 117), strokeweight: 2, start: 1
+            color: this.s.color(247, 117, 117), strokeweight: 2, start: args.start
         });
     }
     show() {
@@ -1078,11 +1078,11 @@ class AxesTransform {   // used in Scene 37
         this.move = args.move; // time
         this.arrX = new Arrow(this.s, {
             x1: this.p.left, x2: this.p.right, y1: this.p.centerY, y2: this.p.centerY,
-            start: 1
+            start: args.start
         });
         this.arrY = new Arrow(this.s, {
             x1: this.p.centerX, x2: this.p.centerX, y1: this.p.bottom, y2: this.p.top,
-            start: 1
+            start: args.start
         })
     }
     show() {
