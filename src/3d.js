@@ -443,12 +443,11 @@ class Arrow3D {
  *
  * ---- args list parameters ----
  * @mandatory (array[6]) M  **OR**  (number) p,q,r,o  **OR** (number) a,b,c
- * @optional (number) size; (color) color
+ * @optional (number) size, start [in frames], duration [in seconds]; (color) color;
  */
 class Plane3D {
     constructor(ctx, args) {
         this.s = ctx;
-
         // an array in the form [a,b,c, d,e,f], representing 2 column vectors
         // coordinates should be in p5'o coordinate system
         if (args.mat) {
@@ -468,6 +467,11 @@ class Plane3D {
         this.size = args.size || 400; // defaults to half the length of each axis on each direction
 
         this.calcParams();
+        if (args.start !== undefined) {
+            this.start = args.start;
+            this.duration = args.duration || 1;
+            this.timer = new Timer0(frames(this.duration));
+        }
     }
 
     calcParams() {

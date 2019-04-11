@@ -968,6 +968,7 @@ class MR_Plane extends Axes3D {
 
         this.n = this.x1.length;
         this.step = 10;
+        this.start = args.startPlane;
 
         let ax1 = this.avg(this.x1);
         let ax2 = this.avg(this.x2);

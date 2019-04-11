@@ -660,17 +660,17 @@ const Scene29 = function(s) {
 
 const Scene30 = function(s) {
     let time = {
-        start: frames(2),
-        xT: frames(4),
-        inv: frames(6),
+        start: frames(0.1),
+        xT: frames(3),
+        inv: frames(5),
         emp: [frames(10), frames(12), frames(13)],
     };
     s.setup = function () {
         setup2D(s);
         //s.h = new HelperGrid(s, {});
         s.n = new Normal_Eqs(s, {
-            x: 507, y: 248,
-            start: time.start, move3: time.xT, move6: time.inv, emp: time.emp
+            x: 507, y: 147,
+            start: time.start, move3: time.xT, move6: time.inv, //emp: time.emp
         })
     };
     s.draw = function () {
@@ -709,6 +709,6 @@ const SceneEnd = function(s) {
 };
 
 
-let p = new p5(Scene27);
+let p = new p5(Scene30);
 
 // fixme: the audio volume doesn't change for 1+?

@@ -4,6 +4,7 @@ class TextBase extends PointBase {
         super(ctx, args);
         // I originally used the usual syntax of args.x || width / 2,
         // but this would not work if 0 is passed in as x
+        this.rotation = args.rotation || 0;
     }
 
     reset(args) {
@@ -151,18 +152,21 @@ class TextWriteIn extends Text {
  *
  * The color of the text defaults to white. To change color, use \\textcolor{}{...} inside args.text
  *
+ * Refactor on 2019-04-10: if need fade in/out animations, no longer need to pass in
+ * the bool values fadeIn and fadeOut
+ *
  * ----args list parameters----
- * @mandatory (string) text--the string to display;
- * @optional (bool) fadeIn, start--if display fade in animation, the frame to start animation;
+ * @mandatory (string) text/str--the string to display;
+ * @optional (number) start--if display fade in animation, the frame to start animation (nonzero);
  *           (number) font_size, x, y, id; (string) color--note it's a string starting with '#';
- *           (bool) fadeOut, end--if display fade out animation, the frame to start animation;
+ *           (number) end--if display fade out animation, the frame to start animation;
+ *           (number) rotation--in degrees
  */
 class Katex extends TextBase {
     constructor(ctx, args) {
-
         super(ctx, args);
 
-        this.text = args.text;
+        this.text = args.text || args.str;
         this.size = args.font_size || 37;
         this.color = args.color || '#fff';
         this.domId = args.id || 'KATEX-' + parseInt(Math.random().toString().substr(2)); // Rand ID
@@ -173,14 +177,12 @@ class Katex extends TextBase {
         this.k.style('font-size', this.size + 'px');
         this.k.id(this.domId);
 
-        this.fadeIn = args.fadeIn || false;
-        if (this.fadeIn) {
+        if (args.fadeIn === true || args.start !== undefined) {
             this.start = args.start || frames(1);
             this.timer = new Timer0(frames(0.7));
             this.k.style('opacity', 0);
         }
-        this.fadeOut = args.fadeOut || false;
-        if (this.fadeOut) {
+        if (args.fadeOut === true || args.end !== undefined) {
             this.end = args.end || frames(100);
             this.timer2 = new Timer0(frames(0.7));
         }
@@ -196,16 +198,17 @@ class Katex extends TextBase {
     show(x, y) {
         this.showMove();
         if (x !== undefined) {
-            this.k.position(x + this.canvasPos.x, y + this.canvasPos.y);
+            this.k.position(x + this.canvasPos.x, y + this.canvasPos.y);  // todo: refactor for chap 5
         } else {
             // Based on the canvas position in the DOM
             this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y);
         }
+        this.k.style('rotate', this.rotation);
 
-        if (this.fadeIn && this.s.frameCount > this.start) {
+        if ((this.timer !== undefined) && this.s.frameCount > this.start) {
             this.k.style('opacity', this.timer.advance());
         }
-        if (this.fadeOut && this.s.frameCount > this.end) {
+        if ((this.timer2 !== undefined) && this.s.frameCount > this.end) {
             this.k.style('opacity', 1 - this.timer2.advance());
         }
         katex.render(this.text, window[this.domId]);

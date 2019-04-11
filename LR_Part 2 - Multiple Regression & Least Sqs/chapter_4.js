@@ -10,7 +10,7 @@ let Orange = [247, 137, 27];
 let xCoords = [10, 14, 20, 27, 33, 40];
 let yCoords = [11, 17, 18, 29, 32, 37];
 
-const Scene31a = function(s) {
+const Scene32 = function(s) {
     let time = {
         axes: frames(1),
         pts: frames(2.7),
@@ -41,7 +41,7 @@ const Scene31a = function(s) {
         s.kat0.show(); s.kat1.show();
         //s.d.show();
     };
-}
+};
 
 const Scene31 = function(s) {
     let time = {
@@ -122,27 +122,29 @@ const Scene31 = function(s) {
 };
 
 const Scene33 = function(s) {
-    let SN = 0;
+    let SN = 1;
     let time = SN === 1 ? {
-        txt1: frames(3),
-        txt1e: frames(4),
-        txt2: frames(4),
-        txt3: frames(5),
-        txt3e: frames(7),
-        txt2e: frames(8),
+        jumpInput1: frames(2.5),
+        jumpInput2: frames(2.5) + 17,
+        b: frames(5),
+        y: frames(9),
 
-        jumpInput1: frames(2),
-        jumpInput2: frames(2) + 27,
-        jumpX1: frames(7),
-        jumpX2: frames(7) + 27,
-        jumpX0: frames(9),
-        jumpB0: frames(10),
-        x: frames(4),
-        b: frames(2),
-        y: frames(3),
-        emp: frames(5),
-        emE: frames(7),
-        neq: frames(6)
+        x: frames(13),
+        jumpX1: frames(17),
+        jumpX2: frames(17) + 27,
+        txt1: frames(17),
+        jumpX0: frames(22),
+        jumpB0: frames(27),
+        txt1e: frames(28),
+
+        emp: frames(30.7),
+        emE: frames(35),
+        txt2: frames(33),
+        n: frames(37.7),
+        txt2e: frames(41),
+        ne: frames(41),
+
+        neq: frames(45), // end at 54th second
     } : {
         x: frames(4),
         b: frames(2),
@@ -164,17 +166,14 @@ const Scene33 = function(s) {
         setup2D(s);
         s.hg = new HelperGrid(s, {});
 
-        if (SN === 0) s.txt[4] = new TextWriteIn(s, {
-            str: "Chapter 4: Multiple Regression—coming next month!",
-            x: 347, y: 617, start: 27, font: tnr, size: 27,
+        s.txt[4] = new TextFade(s, {
+            str: "Each column—\nall data for one\npredictor variable",
+            x: 62, y: 77, start: time.txt1, end: time.txt1e, font: tnr, size: 34,
         });
-        // s.txt[5] = new TextFade(s, {
-        //     str: "One entry", x: 797, y: 400, start: time.txt2, end: time.txt2e, font: tnr,
-        // });
-        // s.txt[6] = new TextFade(s, {
-        //     str: "...unless if you're a string theorist :)",
-        //     x: 847, y: 640, start: time.txt3, end: time.txt3e, size: 24, font: tnr,
-        // });
+        s.txt[5] = new TextFade(s, {
+            str: "Each row—\ndata for one sample",
+            x: 62, y: 77, start: time.txt2, end: time.txt2e, font: tnr, size: 34,
+        });
 
         let tx = 407, y = 177, ty = 317, tdy = 297;
         let x1 = 757;
@@ -214,6 +213,10 @@ const Scene33 = function(s) {
             fadeIn: true, start: time.x + 14, fadeOut: true, end: time.neq });
         s.kat[3] = new Katex(s, { x: x1 + 27, y: ky, text: "⋮", color: "#47b7f7",
             fadeIn: true, start: time.y, fadeOut: true, end: time.neq });
+        s.kat[4] = new Katex(s, {
+            text: "\\xleftrightarrow{~~~~~~~~~~~~~~~~n~~~~~~~~~~~~~~~~}", rotation: -90,
+            x: 197, y: 262, start: time.n, end: time.ne,
+        });
 
         let ny = 457;
         s.kne[0] = new Katex(s, { x: 450, y: ny, text: "X", fadeIn: true, start: time.x });
@@ -246,8 +249,9 @@ const Scene33 = function(s) {
         });
         s.arr = new Arrow(s, {
             x1: 787, x2: 727, y1: 422, y2: 422, start: time.txt2, end: time.txt2e,
-        })
-    }
+        });
+        //s.d = new Dragger(s, [s.txt, s.kat]);
+    };
 
     s.draw = function () {
         if (s.frameCount === time.jumpInput1)
@@ -274,7 +278,7 @@ const Scene33 = function(s) {
             s.kne[2].move(767, 247);
         }
         s.background(0);
-        //s.hg.show();
+        //showFR(s);
         for (let e of s.emp) e.show();
         for (let t of s.txt) t.show();
         for (let k of s.kat) k.show();
@@ -645,4 +649,4 @@ const Scene38 = function (s) {
     }
 };
 
-let p = new p5(Scene31);
+let p = new p5(Scene34);

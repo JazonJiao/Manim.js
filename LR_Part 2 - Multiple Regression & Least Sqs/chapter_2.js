@@ -1,6 +1,6 @@
 // Chapter 2, Overdetermined System of Equations
 
-function Scene12(s) {  // 3d multiple regression
+function Scene12(s) {  // 3d multiple regression; also used for scene 34
     let axes;
     let obj;
     let kat;
@@ -746,4 +746,4 @@ const Credit2 = function (s) {
     }
 };
 
-let p = new p5(Scene19);
+let p = new p5(Scene12);
