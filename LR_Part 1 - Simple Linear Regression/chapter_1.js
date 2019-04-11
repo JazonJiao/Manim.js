@@ -15,18 +15,18 @@ const Chap1Part1 = function (s) {
     // todo: 5. each trivial object should have a scene number associated with it, otherwise it gets messy in setup()
     // todo: 6. incorporate the frames() function into the getT() function (DISCARD)
 
-
+    scn = 1;
     // scene 1 -- paragraph 1
     switch (scn) {
         case 1:  // paragraph 1
-            t = frames(19);
+            t = frames(29);
             time = {
                 axes: frames(2),
-                leastSqLine: frames(5),
-                formula: frames(8),
-                emphasizeBhat: frames(11),
-                emphasizeBend: frames(12.5),
-                formulabeta: frames(13),
+                leastSqLine: frames(8),
+                formula: frames(5),
+                emphasizeBhat: t,//frames(11),
+                emphasizeBend: t,//frames(12.5),
+                formulabeta: t,//frames(13),
                 dottedlineX: t,
                 dottedlineY: t,
                 rect1: t + 50,
@@ -830,7 +830,7 @@ const Chap1Part1 = function (s) {
 
     s.draw = function () {
         s.background(0);
-        showFR(s);
+        //showFR(s);
         //hg.show();
         for (let e of emps) e.show();
 

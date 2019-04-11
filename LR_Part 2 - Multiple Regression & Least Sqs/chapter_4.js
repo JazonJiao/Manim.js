@@ -6,12 +6,53 @@ let Blue = [77, 177, 255];
 let Yellow = [247, 227, 47];
 let Orange = [247, 137, 27];
 
+
+let xCoords = [10, 14, 20, 27, 33, 40];
+let yCoords = [11, 17, 18, 29, 32, 37];
+
+const Scene31a = function(s) {
+    let time = {
+        axes: frames(1),
+        pts: frames(2.7),
+        kat: frames(4.7),
+        empx: frames(7.2),
+        line: frames(10.2)
+    };
+    s.setup = function () {
+        setup2D(s);
+        s.plot = new Plot(s, {
+            right: 675, centerX: 100, centerY: 550, stepX: 10, stepY: 10,
+            start: time.axes, startLSLine: time.line, startPt: time.pts,
+            xs: xCoords, ys: yCoords,
+        });
+        s.kat0 = new Katex(s, {
+            text: "\\hat{y}=\\hat{\\beta}~~+\\hat{\\beta_0}",
+            x: 789, y: 99, fadeIn: true, start: time.kat
+        });
+        s.kat1 = new Katex(s, {
+            text: "x", x: 901, y: 102, fadeIn: true, start: time.kat
+        });
+        //s.d = new Dragger(s, [s.kat0, s.kat1]);
+    };
+    s.draw = function () {
+        s.background(0);
+        if (s.frameCount === time.empx) s.kat1.shake(17, 1);
+        s.plot.showAxes(); s.plot.showPoints(); s.plot.LSLine.show();
+        s.kat0.show(); s.kat1.show();
+        //s.d.show();
+    };
+}
+
 const Scene31 = function(s) {
     let time = {
-        x: frames(1),  // light up x, y coords
-        xE: frames(2), // x, y unlit
-        y: frames(3),  // light up z coords
-        yE: frames(4), // z unlit
+        x: frames(4),  // light up x, y coords
+        xE: frames(5), // x, y unlit
+        y: frames(5.7),  // light up z coords
+        yE: frames(6.7), // z unlit
+        eq: [frames(9), frames(11), frames(12.5), frames(12.9),
+            frames(13.5), frames(14.4), frames(14.8), frames(15.4)],
+        emp: frames(18),
+        txt: frames(23)
     };
     let g3;
     let tnr;
@@ -38,16 +79,19 @@ const Scene31 = function(s) {
         s.arr[2] = new Arrow3D(s, {
             from: [0, 0, -400], to: [0, 0, -400], tipLen: 0.1, tipRadius: 5, radius: 5, color: Blue
         });
-
         let ex = 107, ey = 7;
-        s.keq[0] = new Katex(s, { x: ex, y: ey, text: "\\textcolor{#47b7f7}{y}=", });
-        s.keq[1] = new Katex(s, { x: ex + 87, y: ey, text: "\\beta_0", color: "#f75757", });
-        s.keq[2] = new Katex(s, { x: ex + 137, y: ey, text: "+", });
-        s.keq[3] = new Katex(s, { x: ex + 177, y: ey, text: "\\beta_1", color: "#47c747", });
-        s.keq[4] = new Katex(s, { x: ex + 227, y: ey, text: "x_1", color: "#47c747", });
-        s.keq[5] = new Katex(s, { x: ex + 277, y: ey, text: "+", });
-        s.keq[6] = new Katex(s, { x: ex + 317, y: ey, text: "\\beta_2", color: "#f7f717" });
-        s.keq[7] = new Katex(s, { x: ex + 367, y: ey, text: "x_2", color: "#f7f717" });
+        s.keq[0] = new Katex(s, { x: ex, y: ey, text: "\\textcolor{#47b7f7}{y}=", fadeIn: true, start: time.eq[0] });
+        s.keq[1] = new Katex(s, { x: ex + 87, y: ey, text: "\\beta_0", color: "#f75757", fadeIn: true, start: time.eq[1] });
+        s.keq[2] = new Katex(s, { x: ex + 137, y: ey, text: "+",  fadeIn: true, start: time.eq[2]});
+        s.keq[3] = new Katex(s, { x: ex + 177, y: ey, text: "\\beta_1", color: "#47c747",  fadeIn: true, start: time.eq[3]});
+        s.keq[4] = new Katex(s, { x: ex + 227, y: ey, text: "x_1", color: "#47c747",  fadeIn: true, start: time.eq[4]});
+        s.keq[5] = new Katex(s, { x: ex + 277, y: ey, text: "+",  fadeIn: true, start: time.eq[5]});
+        s.keq[6] = new Katex(s, { x: ex + 317, y: ey, text: "\\beta_2", color: "#f7f717", fadeIn: true, start: time.eq[6]});
+        s.keq[7] = new Katex(s, { x: ex + 367, y: ey, text: "x_2", color: "#f7f717", fadeIn: true, start: time.eq[7]});
+        s.txt = new TextWriteIn(s, {
+            x: 434, y: 502, str: "Normal Equations", start: time.txt, font: tnr, size: 47
+        });
+        //s.d = new Dragger(s, [s.txt]);
     };
 
     s.draw = function () {
@@ -63,8 +107,12 @@ const Scene31 = function(s) {
             s.arr[2].move({ to: [0, 0, 400], mode: 1, duration: 27 });
         if (s.frameCount === time.yE)
             s.arr[2].move({ from: [0, 0, 400], mode: 1, duration: 27 });
-
+        if (s.frameCount === time.emp) {
+            s.keq[1].jump(21, 1); s.keq[3].jump(21, 1); s.keq[6].jump(21, 1);
+        }
         s.background(0);
+        //s.d.show();
+        s.txt.show();
         s.axes.show(g3);
         for (let a of s.arr) a.show(g3);
         for (let k of s.keq) k.show();
@@ -437,8 +485,8 @@ const Scene36 = function (s) {
             x: 832, y: 123, font_size: 37, fadeIn: true, start: time.yabx
         });
         kat[1] = new Katex(s, {
-            text: "y=ln(\\textcolor{f78747}{a})+ln(\\textcolor{77f777}{b})x",
-            x: 720, y: 107, font_size: 37, fadeIn: true, start: time.formula
+            text: "ln(y)=ln(\\textcolor{f78747}{a})+ln(\\textcolor{77f777}{b})x",
+            x: 687, y: 107, font_size: 37, fadeIn: true, start: time.formula
         });
         txt[0] = new TextWriteIn(s, {
             str: "U.S. Population (millions)", x: 80, y: 7, start: time.yLabel
@@ -460,9 +508,6 @@ const Scene36 = function (s) {
         showFR(s);
     }
 };
-
-let xCoords = [10, 14, 20, 27, 33, 40];
-let yCoords = [11, 17, 18, 29, 32, 37];
 
 const Scene37 = function (s) {
     let time = {
@@ -600,4 +645,4 @@ const Scene38 = function (s) {
     }
 };
 
-let p = new p5(Scene36);
+let p = new p5(Scene31);
