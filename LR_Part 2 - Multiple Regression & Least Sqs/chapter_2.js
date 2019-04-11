@@ -1,7 +1,10 @@
 // Chapter 2, Overdetermined System of Equations
 
 function Scene12(s) {  // 3d multiple regression; also used for scene 34
-    let axes;
+    let time = {
+        eq: frames(8),
+        plane: frames(9.4)
+    };
     let obj;
     let kat;
     let g3;
@@ -14,20 +17,19 @@ function Scene12(s) {  // 3d multiple regression; also used for scene 34
         setup3D(s);
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);  // a square to be displayed to the left
 
-        axes = new MR_Plane(s, {
+        s.axes = new MR_Plane(s, {
             model: obj,
-            angle: 1.7
+            angle: 0, startPlane: time.plane
         });
         kat = new Katex(s, {
             text: "\\hat{y} = \\hat{\\beta_0} + \\hat{\\beta_1}x_1 + \\hat{\\beta_2}x_2",
-            x: 50,
-            y: 20
+            x: 50, y: 20, start: time.eq
         })
     };
 
     s.draw = function () {
         s.background(0);
-        axes.showPlane(g3);
+        s.axes.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
         //showFR(g2);
         kat.show();

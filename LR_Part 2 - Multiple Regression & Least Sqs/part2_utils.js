@@ -986,7 +986,7 @@ class MR_Plane extends Axes3D {
 
         this.plane = new Plane3D(this.s, {
             a: this.b1, b: this.b2, c: this.b0 * this.step,
-            color: this.s.color(27, 157, 237, 167)
+            start: this.start, duration: 2, color: this.s.color(27, 157, 237, 167)
         })
     }
 

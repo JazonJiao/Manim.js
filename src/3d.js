@@ -470,7 +470,7 @@ class Plane3D {
         if (args.start !== undefined) {
             this.start = args.start;
             this.duration = args.duration || 1;
-            this.timer = new Timer0(frames(this.duration));
+            this.timer = new Timer1(frames(this.duration));
         }
     }
 
@@ -490,7 +490,8 @@ class Plane3D {
         }
 
         // calculate the coordinates of vertices of this plane, in standard coordinate system
-        this.xs = [this.size, -this.size, -this.size, this.size];
+        this.xs = this.timer ? [this.size, this.size, this.size, this.size] :
+            [this.size, -this.size, -this.size, this.size];
         this.ys = [this.size, this.size, -this.size, -this.size];
         this.zs = [];
         for (let i = 0; i < 4; i++) {
@@ -504,6 +505,13 @@ class Plane3D {
         g.noStroke();
         g.fill(this.color);
         g.beginShape();
+        if (this.timer !== undefined) {
+            let t = this.s.frameCount > this.start ? this.timer.advance() : 0;
+            this.xs[1] = this.xs[2] = this.size - t * this.size * 2;   // growing from x-direction
+            for (let i = 0; i < 4; i++)
+                this.zs[i] =
+                    (this.a * this.xs[i] + this.b * this.ys[i] + this.c) * (this.M ? 1 : -1);
+        }
         for (let i = 0; i < 4; i++) {
             g.vertex(this.xs[i], this.zs[i], this.ys[i]);
         }
