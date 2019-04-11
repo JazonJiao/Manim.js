@@ -336,12 +336,16 @@ const Scene34 = function (s) {
 
 const Scene35 = function(s) {
     let time = {
-        pts: frames(2),
-        table: frames(1),
-        x: frames(2),
-        k1: frames(2),
-        fn: frames(3),
-        neq: frames(2)
+        table: frames(2),
+        axes: frames(5),
+        pts: frames(7),
+        l: frames(9),  // linear equation
+        graph: frames(12),
+        x: frames(15),
+        empX2: frames(19), // data mat
+        empx2: frames(24), // in lin rel
+        neq: frames(30),
+        fn: frames(32.7), // footnote
     };
     let tnr;
 
@@ -360,7 +364,7 @@ const Scene35 = function(s) {
 
         s.plot = new Plot(s, {
             xs: xs, ys: ys,
-            startPt: time.pts,
+            startPt: time.pts, start: time.axes,
             right: 675,
             centerX: 200, centerY: 500,
             labelX: "x", labelY: "y",
@@ -378,7 +382,7 @@ const Scene35 = function(s) {
             x1: xs, x2: x2, y: ys,
         });
         s.graph = new FcnPlot(s, {
-            axes: s.plot, color: Orange,
+            axes: s.plot, color: Orange, start: time.graph,
             f: ((x) => { return (x * x * s.b.b2 + x * s.b.b1 + s.b.b0); })  // quadratic best-fit
         });
 
@@ -387,21 +391,21 @@ const Scene35 = function(s) {
             start: time.fn, // end: time.txtEnd,
             size: 27,
             x: 267, y: 247,
-            str: "Note: Starting this chapter, x_1, x_2 ... \ndenote different predictor variables. \n" +
+            str: "Note: Previously, I've used x_1, x_2 ... \nto denote different predictor variables. \n" +
                 "So here I use x_a, x_b ... for individual\ndata points."
-        })
+        });
 
         // adapted (copied lol) from Scene 34
-        let ex = 167, ey = 7;
+        let ex = 167, ey = 7, dt = 4, i = 0;
         s.keq = []; s.kat = [];
-        s.keq[0] = new Katex(s, { x: ex, y: ey, text: "\\textcolor{#47b7f7}{y}=", });
-        s.keq[1] = new Katex(s, { x: ex + 87, y: ey, text: "\\beta_0", color: "#f75757", });
-        s.keq[2] = new Katex(s, { x: ex + 137, y: ey, text: "+", });
-        s.keq[3] = new Katex(s, { x: ex + 177, y: ey, text: "\\beta_1", color: "#47c747", });
-        s.keq[4] = new Katex(s, { x: ex + 227, y: ey, text: "x" });
-        s.keq[5] = new Katex(s, { x: ex + 267, y: ey, text: "+", });
-        s.keq[6] = new Katex(s, { x: ex + 307, y: ey, text: "\\beta_2", color: "#f7f717" });
-        s.keq[7] = new Katex(s, { x: ex + 357, y: ey, text: "x^2" });
+        s.keq[0] = new Katex(s, { x: ex, y: ey, text: "\\textcolor{#47b7f7}{y}=", start: time.l + dt * (i++)});
+        s.keq[1] = new Katex(s, { x: ex + 87, y: ey, text: "\\beta_0", color: "#f75757", start: time.l + dt * (i++)});
+        s.keq[2] = new Katex(s, { x: ex + 137, y: ey, text: "+", start: time.l + dt * (i++)});
+        s.keq[3] = new Katex(s, { x: ex + 177, y: ey, text: "\\beta_1", color: "#47c747", start: time.l + dt * (i++)});
+        s.keq[4] = new Katex(s, { x: ex + 227, y: ey, text: "x", start: time.l + dt * (i++)});
+        s.keq[5] = new Katex(s, { x: ex + 267, y: ey, text: "+", start: time.l + dt * (i++)});
+        s.keq[6] = new Katex(s, { x: ex + 307, y: ey, text: "\\beta_2", color: "#f7f717", start: time.l + dt * (i++)});
+        s.keq[7] = new Katex(s, { x: ex + 357, y: ey, text: "x^2", start: time.l + dt * (i++)});
 
         let sx = 477, sy = 47;
 
@@ -412,33 +416,30 @@ const Scene35 = function(s) {
         let nx = 390 + sx, ny = 140 + sy, dx = 67;
         s.kat[3] = new Katex(s, { x: nx + 10, y: ny,
             text: "1\\newline 1\\newline 1\\newline 1"
-            , color: "#f75757", fadeIn: true, start: time.k1, font_size: 39 });
+            , color: "#f75757", fadeIn: true, start: time.x, font_size: 39 });
         s.kat[4] = new Katex(s, { x: nx + dx, y: ny,
             text: "x_a\\newline x_b\\newline x_c\\newline x_d",
-            color: '#47c747', fadeIn: true, start: time.k1 + 7, });
+            color: '#47c747', fadeIn: true, start: time.x + 7, });
         s.kat[5] = new Katex(s, { x: nx + dx * 2, y: ny,
             text: "x_a^2\\newline x_b^2\\newline x_c^2\\newline x_d^2",
-            color: '#f7f717', fadeIn: true, start: time.k1 + 14, });
+            color: '#f7f717', fadeIn: true, start: time.x + 14, });
 
         let kx = 407 + sx, ky = 357 + sy;
-        s.kat[0] = new Katex(s, { x: kx, y: ky, text: "⋮", color: "#f75757",
-            fadeIn: true, start: time.k1, });
-        s.kat[1] = new Katex(s, { x: kx + dx, y: ky, text: "⋮", color: '#47c747',
-            fadeIn: true, start: time.k1 + 7,});
-        s.kat[2] = new Katex(s, { x: kx + dx * 2, y: ky, text: "⋮", color: '#f7f717',
-            fadeIn: true, start: time.k1 + 14, });
+        s.kat[0] = new Katex(s, { x: kx, y: ky, text: "⋮", color: "#f75757", start: time.x, });
+        s.kat[1] = new Katex(s, { x: kx + dx, y: ky, text: "⋮", color: '#47c747', start: time.x + 7,});
+        s.kat[2] = new Katex(s, { x: kx + dx * 2, y: ky, text: "⋮", color: '#f7f717', start: time.x + 14, });
 
         s.kat[6] = new Katex(s, {
-            x: 271 + sx, y: 260 + sy, text: "X=", fadeIn: true, start: time.k1,
+            x: 271 + sx, y: 260 + sy, text: "X=", fadeIn: true, start: time.x,
         });
         s.kat[7] = new Katex(s, { x: 747, y: 527, text: "\\vec{b}=(X^T X)^{-1} X^T \\vec{y}",
             fadeIn: true, start: time.neq });
-
-        s.d = new Dragger(s, [s.keq, s.kat]);
     };
 
     s.draw = function () {
         s.background(0);
+        if (s.frameCount === time.empX2) { s.kat[5].jump(24, 1); s.kat[2].jump(24, 1); }
+        if (s.frameCount === time.empx2) s.keq[7].shake(21, 1);
         s.plot.showAxes();
         s.plot.showPoints();
         s.graph.show();
@@ -448,20 +449,45 @@ const Scene35 = function(s) {
         s.bl.show();
         s.br.show();
         s.txt.show();
-        s.d.show();
-        showFR(s);
+        //showFR(s);
     };
 };
+
+const Scene36a = function(s) {
+    let t = {
+        txt0: frames(1),
+        txt1: frames(2)
+    };
+    let tnr;
+    s.preload = function() {
+        tnr = s.loadFont('../lib/font/times.ttf');
+    };
+    s.setup = function () {
+        setup2D(s);
+        s.txt = [];
+        s.txt[0] = new TextWriteIn(s, {
+            str: "describing", x: 200, y: 200, start: t.txt0
+        });
+        s.txt[1] = new TextWriteIn(s, {
+            str: "deriving", x: 300, y: 200, start: t.txt1
+        });
+        s.d = new Dragger(s, [s.txt]);
+    };
+    s.draw = function () {
+        s.background(0);
+        s.d.show();
+    };
+}
 
 const Scene36 = function (s) {
     let time = {
         axes: frames(1),
         pts: frames(2),
-        line: frames(3),
-        yabx: frames(2),
-        yLabel: frames(4),
-        xLabel: frames(3),
-        formula: frames(2),
+        yLabel: frames(2),
+        xLabel: frames(2),
+        yabx: frames(6),
+        line: frames(8),
+        formula: frames(10),
     };
     // US population, 1920 to 2019
     let xs = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 99];
@@ -498,7 +524,7 @@ const Scene36 = function (s) {
         txt[1] = new TextWriteIn(s, {
             str: "Decades Since 1920", x: 877, y: 605, start: time.xLabel
         });
-        this.d = new Dragger(s, [kat, txt]);
+        //this.d = new Dragger(s, [kat, txt]);
     };
     s.draw = function() {
         s.background(0);
@@ -506,12 +532,61 @@ const Scene36 = function (s) {
         s.plot.showPoints();
         s.plot.showAxes();
         s.lin.show();
-        s.d.show();
+        //s.d.show();
         for (let k of kat) k.show();
         for (let t of txt) t.show();
-        showFR(s);
+        //showFR(s);
     }
 };
+
+const Scene37a = function (s) {
+    let t = {
+        txt0: frames(1),
+        txt1: frames(2),
+        arr: frames(2),
+        brain: frames(2),
+        bubble: frames(3),
+    };
+    let tnr, comic, emoji;
+    s.preload = function() {
+        tnr = s.loadFont('../lib/font/times.ttf');
+        comic = s.loadFont('../lib/font/comic.ttf');
+        emoji = s.loadFont('../lib/font/emoji.ttf');
+    };
+    s.setup = function () {
+        setup2D(s);
+        s.txt = [];
+        s.txt[0] = new TextWriteIn(s, {
+            str: "describing", x: 357, y: 50, start: t.txt0, font: tnr, size: 42
+        });
+        s.txt[1] = new TextWriteIn(s, {
+            str: "deriving", x: 670, y: 50, start: t.txt1, font: tnr, size: 42
+        });
+        // s.txt[2] = new Katex(s, {
+        //     str: "X^TX\\vec{b}=X^T\\vec{y}", x: 100, y: 300, start: t.bubble,
+        // });
+        let len = 40;
+        s.arr = new Arrow(s, {
+            x1: 600 - len, x2: 600 + len, y1: 77, y2: 77, start: t.arr
+        });
+        s.brain = new ThoughtBrain(s, {
+            start: t.brain,
+            x: 217, y: 487, size: 327,
+            font: comic, str: "How are the\nnormal equations\nderived?", font_size: 37,
+            bubbleStart: t.bubble,
+            emoji: emoji, question: true
+            // bulbStart: time.bulb
+        });
+        s.d = new Dragger(s, [s.txt]);
+    };
+    s.draw = function () {
+        s.background(0);
+        for (let x of s.txt) x.show();
+        s.arr.show();
+        s.brain.show();
+        s.d.show();
+    };
+}
 
 const Scene37 = function (s) {
     let time = {
@@ -649,4 +724,4 @@ const Scene38 = function (s) {
     }
 };
 
-let p = new p5(Scene34);
+let p = new p5(Scene37a);

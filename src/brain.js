@@ -180,7 +180,7 @@ class Bulb extends PointBase {
         super(ctx, args);
         this.size = args.size || 47;
         this.txt = new TextFade(this.s, {
-            str: '💡', font: args.emoji, mode: 1,
+            str: args.mode === 1 ? '❓' : "💡", font: args.emoji, mode: 1,
             color: [247, 248, 7], size: this.size,
             start: this.start, end: this.end,
             x: this.x,
@@ -212,6 +212,13 @@ class Bulb extends PointBase {
     }
 }
 
+class QuestionMarks extends PointBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+
+    }
+}
+
 /*** 2019-01-05
  * A brain with a thought bubble
  *
@@ -219,6 +226,7 @@ class Bulb extends PointBase {
  * @mandatory (number) x, y; (font) font; (string) str
  * @optional (number) start, duration, size, font_size, bubbleStart,
  *       [used for the light bulb:] (font) emoji; (number) bulbStart, bulbEnd
+ *       [used for the question mark:] (bool) question
  */
 class ThoughtBrain extends BrainBase {
     constructor(ctx, args) {
@@ -241,7 +249,7 @@ class ThoughtBrain extends BrainBase {
         });
         if (args.emoji) {
             this.bulb = new Bulb(this.s, {
-                emoji: args.emoji,
+                emoji: args.emoji, mode: args.question ? 1 : 0,
                 x: this.x, y: this.y, size: this.size / 10,
                 start: this.bulbStart,
                 end: this.bulbEnd
