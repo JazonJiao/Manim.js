@@ -668,12 +668,18 @@ const Scene37 = function (s) {
 
 const Scene38 = function (s) {
     let time = {
-        move: 7,
-        line: frames(4),
-        exp1: frames(1),
-        exp2: frames(2),
-        exp3: frames(3),
-        remove0: frames(5)
+        move: 1,
+        remove0: 1,
+        vecx: frames(7),
+        vecy: frames(7.7),
+        exp1: frames(11),
+        exp2: frames(13.2),
+        exp3: frames(14.6),
+        emp: frames(16),
+        empE: frames(19),
+        line: frames(22),
+        brain: frames(27),
+        empX: frames(29),
     };
     let kat = [];
     let comic;
@@ -692,10 +698,8 @@ const Scene38 = function (s) {
             move: time.move,
         });
         s.brain = new ThoughtBrain(s, {
-            str: "Since the data is\nre-centered, " +
-                "the line must\nto go through the origin, " +
-                "so we\nhave only 1 degree of freedom\n—the slope.",
-            font: comic, font_size: 24, x: 37, y: 537, size: 277,
+            str: "We have only 1\ndegree of freedom\n—the slope.",
+            font: comic, font_size: 32, x: 37, y: 537, size: 277, start: time.brain
         });
         kat[0] = new Katex(s, {
             text: "\\textcolor{#37f717}{\\vec{x} = \\scriptsize {\\begin{bmatrix}" +
@@ -705,13 +709,13 @@ const Scene38 = function (s) {
                 "3\\\\" +
                 "9\\\\" +
                 "16\\end{bmatrix}}}",
-            start: 1, x: 637, y: 327
+            start: time.vecx, x: 637, y: 327
         });
         kat[1] = new Katex(s, {
             text: "\\textcolor{#27c7ff}{\\vec{y} = \\scriptsize {\\begin{bmatrix}" +
                 "-13\\\\-7\\\\-6\\\\5\\\\8\\\\13" +
                 "\\end{bmatrix}}}",
-            start: 1, x: 887, y: 327
+            start: time.vecy, x: 887, y: 327
         });
 
         let kx = 637, ky = 37;
@@ -739,17 +743,25 @@ const Scene38 = function (s) {
             x: kx + 181, y: ky + 167, font_size: 37,
             fadeIn: true, start: time.exp3
         });
+        s.emp = new Emphasis(s, {
+            x: 862, y: 239, w: 240, h: 57, start: time.emp, end: time.empE
+        });
+        //s.d = new Dragger(s, [s.emp]);
     };
 
     s.draw = function() {
+        if (s.frameCount === time.empX)
+            kat[0].jump(25, 1);
         s.background(0);
         s.plot.show();
         s.plot.showPoints();
         s.axes.show();
+        s.emp.show();
+        //s.d.show();
         s.brain.show();
         for (let k of kat) k.show();
-        showFR(s);
+        //showFR(s);
     }
 };
 
-let p = new p5(Scene36a);
+let p = new p5(Scene38);
