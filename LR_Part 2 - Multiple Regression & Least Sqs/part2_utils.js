@@ -1023,7 +1023,7 @@ class MR_Plane extends Axes3D {
     }
 }
 
-class LRP_Scene36 extends Plot {  // used for Scene 37, copied from Chap1
+class LRP_Scene36 extends Plot {
     constructor(ctx, args) {
         super(ctx, args);
         this.Ys = this.ln(args.ys);

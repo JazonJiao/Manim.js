@@ -448,29 +448,59 @@ const Scene35 = function(s) {
 
 const Scene36a = function(s) {
     let t = {
-        txt0: frames(1),
-        txt1: frames(2)
+        axes: frames(1),
+        pt: frames(2),
+        txt0: frames(4),
+        txt1: frames(6),
+        cir: frames(10),
     };
     let tnr;
+    let xs = [0.1, 1.7, 3.3, 4.9, 6.6, 7.5, 7.4, 5.9, 3.7, 0.3, -0.4, -0.7];
+    let ys = [5.9, 7.2, 7.7, 7.2, 6.3, 4.3, 2.9, 0.9, -0.4, 1.3, 2.7, 4.3];
+    let zs = [];
+    for (let i = 0; i < xs.length; i++)
+        zs[i] = xs[i] * xs[i] + ys[i] * ys[i];
+
     s.preload = function() {
         tnr = s.loadFont('../lib/font/times.ttf');
     };
     s.setup = function () {
         setup2D(s);
+        let centerX = 177, stepX = 57, centerY = 567, stepY = 57;
+        s.plot = new Plot(s, {
+            centerX: centerX, stepX: stepX, centerY: centerY, stepY: stepY,
+            labelX: "x", labelY: "y",
+            xs: xs, ys: ys, startLSLine: 1000000, start: t.axes, startPt: t.pt
+        });
+        s.coef = new MR_Plane(s, {
+            x1: vector_multiply(xs, 2), x2: vector_multiply(ys, 2), y: zs
+        });
+        s.x = s.coef.b1;
+        s.y = s.coef.b2;
+        s.r = Math.sqrt(s.coef.b0 + s.coef.b1 * s.coef.b1 + s.coef.b2 * s.coef.b2);
+        s.cir = new Circle(s, {
+            x: centerX + s.x * stepX, y: centerY - s.y * stepY,
+            r: s.r * stepX * 2,   // assuming stepX == stepY  // why multiply by 2??
+            start: t.cir, color: Blue
+        });
         s.txt = [];
         s.txt[0] = new TextWriteIn(s, {
-            str: "describing", x: 200, y: 200, start: t.txt0
+            str: "Finding the best fit circle", x: 707, y: 77, start: t.txt0, font: tnr
         });
-        s.txt[1] = new TextWriteIn(s, {
-            str: "deriving", x: 300, y: 200, start: t.txt1
+        s.txt[1] = new Katex(s, {
+            str: "(x-c_1)^2+(y-c_2)^2=r^2", x: 646, y: 107, start: t.txt1, size: 32
         });
-        s.d = new Dragger(s, [s.txt]);
+        //s.d = new Dragger(s, [s.txt]);
     };
     s.draw = function () {
         s.background(0);
-        s.d.show();
+        for (let t of s.txt) t.show();
+        s.plot.showAxes();
+        s.plot.showPoints();
+        s.cir.show();
+        //s.d.show();
     };
-}
+};
 
 const Scene36 = function (s) {
     let time = {
@@ -585,8 +615,6 @@ const Scene37 = function (s) {
         move: frames(8),
         xbar0: frames(16),
         ybar0: frames(16.7),
-        //show0: frames(2),
-
     };
     let kat = [];
     s.setup = function() {
@@ -644,7 +672,8 @@ const Scene38 = function (s) {
         line: frames(4),
         exp1: frames(1),
         exp2: frames(2),
-        exp3: frames(3)
+        exp3: frames(3),
+        remove0: frames(5)
     };
     let kat = [];
     let comic;
@@ -676,15 +705,13 @@ const Scene38 = function (s) {
                 "3\\\\" +
                 "9\\\\" +
                 "16\\end{bmatrix}}}",
-            fadeIn: true, start: 1,
-            x: 637, y: 327
+            start: 1, x: 637, y: 327
         });
         kat[1] = new Katex(s, {
             text: "\\textcolor{#27c7ff}{\\vec{y} = \\scriptsize {\\begin{bmatrix}" +
                 "-13\\\\-7\\\\-6\\\\5\\\\8\\\\13" +
                 "\\end{bmatrix}}}",
-            fadeIn: true, start: 1,
-            x: 887, y: 327
+            start: 1, x: 887, y: 327
         });
 
         let kx = 637, ky = 37;
@@ -725,4 +752,4 @@ const Scene38 = function (s) {
     }
 };
 
-let p = new p5(Scene37);
+let p = new p5(Scene36a);

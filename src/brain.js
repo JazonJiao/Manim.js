@@ -157,7 +157,7 @@ class Bubble {
         this.s.strokeWeight(this.strokeweight);
         this.s.fill(0, 177);           // the bubble is semi-transparent
 
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 4; i++) { // NOTE ON 2019-04-11: could actually use the new Circle class
             if (this.s.frameCount - this.start > i * frames(0.2)) {
                 // somehow the constant TWO_PI would not work here
                 this.s.arc(this.c[i][0], this.c[i][1], this.c[i][2], this.c[i][3],
@@ -168,7 +168,7 @@ class Bubble {
     }
 }
 
-/*** Refactored on2019-04-11
+/*** Refactored on 2019-04-11
  * Displays a user-defined emoji on the ThoughtBrain
  * todo: for droplets 💧, it should go down instead of up when init
  * Other proposed emojis: ❤ 👍 💢 💭 ❗

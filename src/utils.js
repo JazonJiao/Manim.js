@@ -924,7 +924,32 @@ class Table {
     }
 }
 
-
+/*** 2019-04-11
+ * Circle
+ * Draws a circle with init animation (draws clockwise) and end animation (fade out)
+ *
+ * ---- args list parameters ----
+ * @mandatory (number) x, y, r
+ * @optional (number) start, end, duration, strokeweight, (array) color
+ */
+class Circle extends PointBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.r = args.r || 100;
+        this.timer = new Timer1(frames(this.duration));
+        this.color = args.color || [255, 255, 255];
+        this.strokeweight = args.strokeweight || 3;
+        this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
+    }
+    show() {
+        if (this.s.frameCount > this.start) {
+            this.s.noFill();
+            this.s.stroke(this.color);
+            this.timer_sw.advance();
+            this.s.arc(this.x, this.y, this.r, this.r, 0, 6.283 * this.timer.advance());
+        }
+    }
+}
 
 /*** 2019-01-20
  * Bracket, '['
