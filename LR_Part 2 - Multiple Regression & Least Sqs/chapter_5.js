@@ -192,7 +192,7 @@ const Chap2Part1 = function (s) {
         s.image(g3, 600, 0, 600, cvh);
 
         for (let k of kats) k.show();
-        showFR(s);
+        //showFR(s);
     };
 };
 

@@ -6,11 +6,12 @@ function Scene12(s) {  // 3d multiple regression; also used for scene 34
         plane: frames(9.4)
     };
     let obj;
-    let kat;
+    let kat, tnr;
     let g3;
 
     s.preload = function () {
         obj = s.loadModel('../lib/obj/axes.obj');
+        tnr = s.loadFont('../lib/font/times.ttf');
     };
 
     s.setup = function () {
@@ -24,13 +25,20 @@ function Scene12(s) {  // 3d multiple regression; also used for scene 34
         kat = new Katex(s, {
             text: "\\hat{y} = \\hat{\\beta_0} + \\hat{\\beta_1}x_1 + \\hat{\\beta_2}x_2",
             x: 50, y: 20, start: time.eq
-        })
+        });
+        s.txt = new Text(s, {  // for Ch. 4 thumbnail
+            str: "Multiple Regression", font: tnr,
+            x: 77, y: 237, size: 127
+        });
+        //s.d = new Dragger(s, [s.txt]);
     };
 
     s.draw = function () {
         s.background(0);
         s.axes.showPlane(g3);
         s.image(g3, 0, 0, cvw, cvh);
+        s.txt.show();
+        //s.d.show();
         //showFR(g2);
         kat.show();
     }

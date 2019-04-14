@@ -606,7 +606,7 @@ const Scene37a = function (s) {
         s.brain.show();
         //s.d.show();
     };
-}
+};
 
 const Scene37 = function (s) {
     let time = {
@@ -764,4 +764,44 @@ const Scene38 = function (s) {
     }
 };
 
-let p = new p5(Scene38);
+const Scene39 = function(s) {
+    let t = {
+        ch5: frames(8),
+        ch6: frames(9.5),
+    };
+    let tnr;
+    s.preload = function() {
+        tnr = s.loadFont('../lib/font/times.ttf');
+    };
+    s.setup = function () {
+        setup2D(s);
+        s.txt = [];
+        s.txt[0] = new Katex(s, { str: "X^TX\\vec{b}=X^T\\vec{y}", x: 457, y: 7, });
+        s.txt[1] = new Text(s, { str: "Chapter 5", x: 237, y: 157, font: tnr });
+        s.txt[2] = new Text(s, { str: "Chapter 6", x: 817, y: 157, font: tnr });
+        s.txt[3] = new TextWriteIn(s, {
+            str: "Least Squares", x: 207, y: 207, font: tnr, start: t.ch5
+        });
+        s.txt[4] = new TextWriteIn(s, {
+            str: "Projection Matrix", x: 752, y: 207, font: tnr, start: t.ch6
+        });
+        s.rec = [];  // 16:9
+        s.rec[0] = new Rect(s, { x: 102, y: 277, w: 432, h: 243, color: [207, 207, 7, 255] });
+        s.rec[1] = new Rect(s, { x: 674, y: 277, w: 432, h: 243, color: [27, 167, 247, 255] });
+        s.d = new Dragger(s, [s.txt, s.rec]);
+    };
+    s.draw = function () {
+        s.background(0);
+        for (let x of s.txt) x.show();
+        s.strokeWeight(2);
+        s.noFill();
+        s.stroke(207, 207, 7);
+        s.rect(102, 277, 432, 243);
+        s.stroke(27, 167, 247);
+        s.rect(674, 277, 432, 243);
+        //for (let r of s.rec) r.show();
+        //s.d.show();
+    };
+};
+
+let p = new p5(Scene39);

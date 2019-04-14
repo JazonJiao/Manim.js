@@ -174,6 +174,7 @@ class PointBase {
 /*** 2019-04-17
  * Dragger
  * Used to help adjust the coordinates of objects.
+ * todo: extend this to line-based objects, will make animating matrix transformations simpler
  *
  * You can pass in an array consisting of PointBase objects and/or PointBase arrays,
  * and call show() in s.draw(). Then, the coordinates of each registered object

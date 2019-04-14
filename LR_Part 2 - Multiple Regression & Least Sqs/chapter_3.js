@@ -695,7 +695,7 @@ const SceneEnd = function(s) {
         s.brain = new ThoughtBrain(s, {
             start: time.brain,
             x: 67, y: 532, size: 267,
-            font: comic, str: "Don't forget to \nlike and subscribe!", font_size: 32,
+            font: comic, str: "Thanks for watching!\nPlease like and subscribe!", font_size: 28,
             bubbleStart: time.bubble,
 
             emoji: emoji,
@@ -709,6 +709,6 @@ const SceneEnd = function(s) {
 };
 
 
-let p = new p5(Scene30);
+let p = new p5(SceneEnd);
 
 // fixme: the audio volume doesn't change for 1+?

@@ -5,9 +5,9 @@ class LT_Grid extends Grid {  // a grid capable of doing eloa-style linear trans
         let time = {
             grid: frames(1),
             i_hat: frames(3),
-            j_hat: frames(4.2),
-            u_hat: frames(5.6),
-            transform: frames(7)
+            j_hat: frames(5),
+            u_hat: frames(7),
+            transform: frames(9.5)
         };
 
         super(ctx, {
