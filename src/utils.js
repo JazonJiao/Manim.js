@@ -461,7 +461,7 @@ class Emphasis extends Rect {
  *
  * ----args list parameters----
  * @mandatory (number) x1, y1, x2, y2;
- * @optional (color) color;
+ * @optional (array) color;
  *           (number) start, duration, end, strokeweight, mode [defines which timer to use]
  */
 class Line {
@@ -471,15 +471,15 @@ class Line {
         this.y1 = args.y1 || 0;
         this.x2 = args.x2 || 0;
         this.y2 = args.y2 || 0;
-        this.duration = args.duration || frames(1);
+        this.duration = args.duration || 1;
         //this.mode = args.mode || 2;
 
         // starting frame for initialization animation
         this.start = args.start || 1;
         this.strokeweight = args.strokeweight || 3;
-        this.color = args.color || this.s.color(255);
+        this.color = args.color || [255, 255, 255];
 
-        this.timer = timerFactory(this.duration, args.mode);
+        this.timer = timerFactory(frames(this.duration), args.mode);
 
         this.end = args.end || 100000;
         this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
@@ -495,7 +495,7 @@ class Line {
     }
 
     // ----args list----
-    // x1, x2, y1, y2, duration (in seconds)
+    // x1, x2, y1, y2, duration (in seconds), color (array)
     // in draw(), use: if (s.frameCount === getT(time.xxx)) s.variable.move();
     move(args) {
         this.x1o = this.x1;
@@ -510,6 +510,10 @@ class Line {
         let t = args.duration || 1;
 
         this.move_timer = new Timer2(frames(t));
+    }
+
+    moveColor() {
+
     }
 
     moving() {
@@ -648,14 +652,14 @@ class DottedLine extends Line {
 class Arrow extends Line {
     constructor(ctx, args) {
         super(ctx, args);
-        this.duration = args.duration || frames(1);
+        this.duration = args.duration || 1;
 
         this.fadeIn = args.fadeIn || false;
         if (this.fadeIn) {
             this.colorArr = args.colorArr || [255, 255, 255];
-            this.timer = new Timer0(this.duration);
+            this.timer = new Timer0(frames(this.duration));
         } else {
-            this.timer = new Timer2(this.duration);
+            this.timer = new Timer2(frames(this.duration));
         }
         //this.fadeOut = args.fadeOut || false;
 
@@ -744,6 +748,10 @@ class Arrow extends Line {
 
         }
     }
+}
+
+class Arc extends Line {
+
 }
 
 /*** 2019-03-19
@@ -930,7 +938,7 @@ class Table {
  *
  * ---- args list parameters ----
  * @mandatory (number) x, y, r
- * @optional (number) start, end, duration, strokeweight, (array) color
+ * @optional (number) start, end, duration, strokeweight, (array) color, fill
  */
 class Circle extends PointBase {
     constructor(ctx, args) {
@@ -939,11 +947,16 @@ class Circle extends PointBase {
         this.timer = new Timer1(frames(this.duration));
         this.color = args.color || [255, 255, 255];
         this.strokeweight = args.strokeweight || 3;
+        this.fill = args.fill || undefined;
         this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
     }
     show() {
         if (this.s.frameCount > this.start) {
-            this.s.noFill();
+            if (this.fill) {
+                this.s.fill(this.fill);
+            } else {
+                this.s.noFill();
+            }
             this.s.stroke(this.color);
             this.timer_sw.advance();
             this.s.arc(this.x, this.y, this.r, this.r, 0, 6.283 * this.timer.advance());

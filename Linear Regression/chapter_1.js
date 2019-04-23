@@ -855,4 +855,104 @@ const Chap1Part1 = function (s) {
     };
 };
 
+function Chap1Part2(s) {
+    let time = {
+        brain: frames(0),
+        bubble: frames(5),
+        text: [frames(11), frames(12.5), frames(14)]
+    };
+
+    let hg;
+    let texts = [];
+    let font;
+    let brain;
+
+    s.preload = function() {
+        font = s.loadFont('../lib/font/comic.ttf');
+    };
+
+    s.setup = function() {
+        s.createCanvas(1200, 675);
+
+        hg = new HelperGrid(s);
+
+        brain = new ThoughtBrain(s, {
+            start: time.brain,
+            font: font,
+            size: 400,
+            str: "Multiple Regression",
+            bubbleStart: time.bubble
+        });
+        texts[0] = new TextWriteIn(s, {
+            font: font,
+            str: "Statistics",
+            x: 700,
+            y: 450,
+            start: time.text[0]
+        });
+        texts[1] = new TextWriteIn(s, {
+            font: font,
+            str: "Linear Algebra",
+            x: 700,
+            y: 500,
+            start: time.text[1]
+        });
+        texts[2] = new TextWriteIn(s, {
+            font: font,
+            str: "Machine Learning",
+            x: 700,
+            y: 550,
+            start: time.text[2]
+        });
+    };
+
+    s.draw = function() {
+        s.background(0);
+        //hg.show();
+        //text1.show();
+        //bubble.show();
+        brain.show();
+        for (let t of texts) t.show();
+    }
+}
+
+
+const Chap1Credits = function (s) {
+    let txts = [];
+    let comic;
+
+    s.preload = function () {
+        comic = s.loadFont('../lib/font/comic.ttf');
+    };
+
+    s.setup = function() {
+        s.frameRate(fr);
+        s.createCanvas(1200, cvh);
+        s.background(0);
+
+        txts[0] = new TextWriteIn(s, {
+            str: "Inspired By: 3Blue1Brown, The Coding Train, and so many other wonderful YouTubers\n" +
+                "Source Code (written in p5.js): https://github.com/JazonJiao/Essence-Linear-Regression\n" +
+                "",
+            x: 37, y: 277,
+            size: 27,
+            font: comic,
+            start: frames(2)
+        });
+        txts[1] = new TextWriteIn(s, {
+            str: "P.S. they are not my sponsor... yet",
+            x: 841,
+            y: 637,
+            size: 22,
+            font: comic,
+            start: frames(2)
+        })
+    };
+
+    s.draw = function() {
+        txts[0].show();
+    }
+};
+
+
 let p = new p5(Chap1Part1);

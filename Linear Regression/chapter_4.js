@@ -289,12 +289,25 @@ const Scene34 = function (s) {
         x3: frames(t),
         x4: frames(t += dt),
         x5: frames(t += dt),
-        x6: frames(t += dt)
+        x6: frames(t += dt),
+        fn: frames(3.7)
     };
-    let kat = [];
+    let kat = [], txt, tnr;
     let ex = 677, ey = 248, dx = 72, sx = 72, sy = 100;
+    s.preload = function() {
+        tnr = s.loadFont('../lib/font/times.ttf');
+    };
     s.setup = function() {
         setup2D(s);
+        txt = new TextFade(s, {
+            str: "Side note: In the context of machine learning, " +
+                "trying to fit data into a higher-degree polynomial\n" +
+                "(or a model with more parameters) will decrease the " +
+                "bias of the model but increase the variance,\n" +
+                "and it's important to find a balance between " +
+                "overfitting and underfitting.",
+            x: 137, y: 457, start: time.fn, font: tnr, size: 24, color: [177, 177, 177]
+        });
         kat[0] = new Katex(s, { x: ex - 277, y: ey, text: "y=\\beta_0+\\beta_1 x_1 + \\beta_2 x_2",});
         kat[1] = new Katex(s, { x: ex + dx, y: ey - sy, text: "+~\\beta_3 x_3", fadeIn: true, start: time.x3 });
         kat[2] = new Katex(s, { x: ex + 2 * dx, y: ey - sy, text: "+~\\beta_4 x_4", fadeIn: true, start: time.x4 });
@@ -323,6 +336,7 @@ const Scene34 = function (s) {
             kat[4].shift(0, sy);
         }
         s.background(0);
+        txt.show();
         for (let k of kat) k.show();
     }
 };
@@ -804,4 +818,4 @@ const Scene39 = function(s) {
     };
 };
 
-let p = new p5(Scene39);
+let p = new p5(Scene34);
