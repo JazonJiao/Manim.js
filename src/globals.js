@@ -16,7 +16,7 @@ let scn = 2;  // scene number
 let matrix = [1, 1, 1, -1, 1, 2];
 let target = [-2, 0, 3];
 
-
+let White = [255, 255, 255];
 let Red = [255, 77, 97];
 let Green = [77, 217, 77];
 let Blue = [77, 177, 255];

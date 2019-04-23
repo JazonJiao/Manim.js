@@ -102,7 +102,7 @@ class Timer2 extends Timer {
  * This Factory function is responsible for constructing the appropriate timer class
  * Default is return Timer2
  */
-function timerFactory(frames, mode) {
+function TimerFactory(frames, mode) {
     if (mode === 0) {
         return new Timer0(frames);
     } else if (mode === 1) {

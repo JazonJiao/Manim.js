@@ -376,7 +376,7 @@ class Arrow3D {
         let t = args.duration || frames(2);
         let m = args.mode === undefined ? 2 : args.mode;
 
-        this.timer = new timerFactory(t, m);
+        this.timer = new TimerFactory(t, m);
     }
 
     moving() {

@@ -479,7 +479,7 @@ class Line {
         this.strokeweight = args.strokeweight || 3;
         this.color = args.color || [255, 255, 255];
 
-        this.timer = timerFactory(frames(this.duration), args.mode);
+        this.timer = TimerFactory(frames(this.duration), args.mode);
 
         this.end = args.end || 100000;
         this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
@@ -495,25 +495,24 @@ class Line {
     }
 
     // ----args list----
-    // x1, x2, y1, y2, duration (in seconds), color (array)
+    // x1, x2, y1, y2, duration (in seconds), mode (for timer), color (array)
     // in draw(), use: if (s.frameCount === getT(time.xxx)) s.variable.move();
     move(args) {
         this.x1o = this.x1;
         this.x2o = this.x2;
         this.y1o = this.y1;
         this.y2o = this.y2;
+        this.co = this.color;
         this.x1d = args.x1 || this.x1;
         this.x2d = args.x2 || this.x2;
         this.y1d = args.y1 || this.y1;
         this.y2d = args.y2 || this.y2;
+        this.cd = args.color || this.color;
         this.moved = true;
         let t = args.duration || 1;
+        let m = args.mode === undefined ? 2 : args.mode;
 
-        this.move_timer = new Timer2(frames(t));
-    }
-
-    moveColor() {
-
+        this.move_timer = new TimerFactory(frames(t), m);
     }
 
     moving() {
@@ -521,6 +520,9 @@ class Line {
         this.reset({
             x1: this.x1o + t * (this.x1d - this.x1o), x2: this.x2o + t * (this.x2d - this.x2o),
             y1: this.y1o + t * (this.y1d - this.y1o), y2: this.y2o + t * (this.y2d - this.y2o),
+            color: [this.co[0] + t * (this.cd[0] - this.co[0]),
+                this.co[1] + t * (this.cd[1] - this.co[1]),
+                this.co[2] + t * (this.cd[2] - this.co[2])],
         })
     }
 
@@ -529,6 +531,7 @@ class Line {
         this.y1 = args.y1 || this.y1;
         this.x2 = args.x2 || this.x2;
         this.y2 = args.y2 || this.y2;
+        this.color = args.color || this.color;
     }
 
     showSetup() {
@@ -777,7 +780,7 @@ class FcnPlot {
         this.sw = args.strokeweight || 3;
         this.color = args.color || [77, 177, 77];
 
-        this.timer = timerFactory(frames(this.duration), this.mode);
+        this.timer = TimerFactory(frames(this.duration), this.mode);
 
         this.xs = [];
         this.ys = [];

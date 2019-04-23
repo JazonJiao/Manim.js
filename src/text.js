@@ -29,7 +29,7 @@ class TextBase extends PointBase {
  *
  * ---- args list parameters ----
  * @mandatory (string) str; (number) x, y; (p5.Font) font
- * @optional (number) mode, size, start, end; (array) color [should be an array]
+ * @optional (number) mode, size, start, end, strokeweight; (array) color, stroke
  */
 class Text extends TextBase {
     constructor(ctx, args) {
@@ -39,11 +39,13 @@ class Text extends TextBase {
         this.str = args.str;
         this.mode = args.mode || 0;
         this.color = args.color || [255, 255, 255];
+        this.stroke = args.stroke || undefined;
+        this.sw = args.strokeweight || 1.7;
 
         this.size = args.size || 37;
 
         this.start = args.start || 1;
-        this.end = args.end || frames(300);
+        this.end = args.end || 100000;
     }
 
     reset(args) {
@@ -65,7 +67,11 @@ class Text extends TextBase {
         }
         this.s.textSize(this.size);
 
-        this.s.noStroke();
+        if (this.stroke) {
+            this.s.strokeWeight(this.sw);
+            this.s.stroke(this.stroke);
+        } else
+            this.s.noStroke();
         this.showMove();
     }
 

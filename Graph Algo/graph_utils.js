@@ -1,13 +1,16 @@
 /*** 2019-04-22
  * A graph that serves as the base class for classes that trace the graph algorithms
+ * The input must have no self-edges, duplicate edges, etc.
  *
  * V is an array of arrays, each entry consisting of 2 integer fields about the vertex:
  * [0] x-coord, [1] y-coord
+ * The vertices are numbered based on the array index; array length will be the number of vertices.
  *
  * E is an array of arrays, each entry consisting of 2 to 4 integer fields about the edge:
  * [0] vertex-from, [1] vertex-to, [2] arc-radius, [3] weight
  * Among them, [2] is set to 0 if the edge is to be displayed as a straight line,
- * or a positive/negative number specifying the radius and orientation of the arc
+ * or a positive/negative number specifying the radius and orientation of the arc.
+ * The ordering of these edges will be the sequence they're shown in the init animation.
  *
  * @mandatory (2D array) V, E, (p5.Font) font
  * @optional (number) radius [for nodes], duration [in seconds],
@@ -30,7 +33,7 @@ class Graph extends PointBase {
         }
 
         this.dur = args.duration || 1.7;
-        this.yOffset = args.yOffset === undefined ? -4 : args.yOffset;
+        this.yOffset = args.yOffset === undefined ? -5 : args.yOffset;   // offset for node text
         this.radius = args.radius || 57;  // node radius
         this.nodes = [];
         for (let i = 0; i < this.n; i++) {
@@ -43,12 +46,13 @@ class Graph extends PointBase {
         }
     }
     show() {
-        for (let n of this.nodes) n.show();
-
-        for (let i = 0; i < this.n; i++)
-            for (let j = 0; j < this.n; j++)
+        // decrement to avoid the label being overwritten in undirected weighted graphs
+        for (let i = this.n - 1; i >= 0; i--)
+            for (let j = this.n - 1; j >= 0; j--)
                 if (this.A[i][j])
                     this.A[i][j].show();
+
+        for (let n of this.nodes) n.show();
     }
 }
 
@@ -65,7 +69,7 @@ class Node extends PointBase {
         this.r = args.r || 57;
         this.sw = args.strokeweight || 2;
         this.color = args.color || [255, 247, 7];
-        this.fill = args.fill || [this.color[0] * 0.17, this.color[1] * 0.17, this.color[2] * 0.17];
+        this.fill = args.fill || [this.color[0] * .14, this.color[1] * .14, this.color[2] * .14];
 
         this.c = new Circle(this.s, {
             x: this.x, y: this.y, r: this.r, start: this.start, end: this.end,
@@ -73,7 +77,7 @@ class Node extends PointBase {
         });
 
         this.txt = new TextFade(this.s, {
-            x: this.x, y: this.y + args.yOffset,
+            x: this.x, y: this.y + args.yOffset, size: 42,
             start: this.start, font: args.font, mode: 1, str: args.str,
         })
     }
@@ -84,53 +88,95 @@ class Node extends PointBase {
     }
 }
 
-
-/***
- * Draws a straight line from one node to another
- * given the positions and radii of two nodes.
+/*** 2019-04-23
+ * Draws a line/arc from one node to another given the positions and radii of two nodes.
+ * Could pass in a string str to add a label the edge in the middle, if so, pass in label: true.
+ * If need an arc, pass in its radius as r.
+ * r must be greater than half the distance of the two nodes.
+ * It's show() needs to be called after nodes'.
+ *
  * --- args list ---
- * x1, x2, y1, y2, start, (bool) directed
+ * @mandatory x1, x2, y1, y2, start, node_r, (bool) directed,
+ * @optional r [arc radius], weight, (array) color, txtColor
  */
-class Edge_S extends Line {
+class Edge extends Line {
     constructor(ctx, args) {
         super(ctx, args);
-        this.emp = new Line(this.s, {
-            x1: args.x1, x2: args.x2,
-        });
+        this.node_r = args.node_r || 57;
 
-        this.r = args.r || 57;
         let dx = args.x2 - args.x1;
         let dy = args.y2 - args.y1;
         let len = Math.sqrt(dx * dx + dy * dy);
-        this.x1 = args.x1 + dx * args.r / len * 0.5;
-        this.x2 = args.x2 - dx * args.r / len * 0.54;
-        this.y1 = args.y1 + dy * args.r / len * 0.5;
-        this.y2 = args.y2 - dy * args.r / len * 0.54;
 
-        this.c = args.color || Green;
-        this.l = args.directed ? new Arrow(this.s, {
-            x1: this.x1, x2: this.x2, y1: this.y1, y2: this.y2, start: args.start,
-            duration: args.duration, color: this.c,
-            tipAngle: 0.37, tipLen: 9
-        }) : new Line(this.s, {
-            x1: this.x1, x2: this.x2, y1: this.y1, y2: this.y2, start: args.start,
-            duration: args.duration, color: this.c,
-        });
+        if (args.r) {
+            this.r = args.r;
+        } else {
+            let x1 = args.x1 + dx * this.node_r / len * 0.5;
+            // 0.54, to account for the node's ring thickness
+            let x2 = args.x2 - dx * this.node_r / len * 0.54;
+            let y1 = args.y1 + dy * this.node_r / len * 0.5;
+            let y2 = args.y2 - dy * this.node_r / len * 0.54;
+
+            this.color = args.color || Green;
+            this.txtColor = args.txtColor || [236, 255, 197];
+            this.stroke = args.stroke || [0, 0, 0]; //[17, 47, 127];
+            this.l = args.directed ? new Arrow(this.s, {
+                x1: x1, x2: x2, y1: y1, y2: y2, start: args.start,
+                duration: args.duration, color: this.color,
+                tipAngle: 0.37, tipLen: 9
+            }) : new Line(this.s, {
+                x1: x1, x2: x2, y1: y1, y2: y2, start: args.start,
+                duration: args.duration, color: this.color,
+            });
+
+            if (args.weight !== undefined) {
+                this.str = "" + args.weight;
+                this.txt = new TextFade(this.s, {
+                    str: args.str, x: args.x1 + dx / 2, y: args.y1 + dy / 2, mode: 1,
+                    start: args.start, color: this.txtColor,
+                    stroke: [0, 0, 0],    // black stroke
+                    strokeweight: 7, size: 29
+                });
+            }
+        }
     }
 
     show() {
         this.l.show();
+        if (this.txt)
+            this.txt.show();
     }
 }
 
-
-
 /**
  * Undirected Graph
+ * Assumes that args.E go from small-index vertices to big-index vertices (actually doesn't matter)
  */
 class Graph_U extends Graph {
     constructor(ctx, args) {
         super(ctx, args);
+        for (let i = 0; i < this.m; i++) {
+            let a = this.E[i][0], b = this.E[i][1];  // two connecting nodes
+            let r = this.E[i][2], c = this.E[i][3];  // radius and cost
+
+            this.A[a][b] = new Edge(this.s, {
+                x1: this.V[a][0], y1: this.V[a][1],
+                x2: this.V[b][0], y2: this.V[b][1],
+                start: this.start + frames(this.dur) * i / this.m, r: r,
+                duration: 0.8, node_r: this.radius, directed: false, weight: c,
+            });
+
+            // for an undirected graph, set the converse of an input edge to another Edge object
+            // they will be displayed at the same location as the other edge,
+            // and start time is set to after all edges are displayed.
+            // We do this so that edge highlight functionality works both ways
+            this.A[b][a] = new Edge(this.s, {
+                x1: this.V[b][0], y1: this.V[b][1],
+                x2: this.V[a][0], y2: this.V[a][1],
+                start: this.start + frames(this.dur) + 1, r: r,
+                duration: 0.8, node_r: this.radius, directed: false, label: false
+            });
+        }
     }
 }
 
@@ -142,19 +188,15 @@ class Graph_D extends Graph {
     constructor(ctx, args) {
         super(ctx, args);
         for (let i = 0; i < this.m; i++) {
-            let x = this.E[i][0], y = this.E[i][1];  // two connecting nodes
-            let r = this.E[i][2];
-            let c = this.E[i][3];
-            if (r) {  // needs an arc to show as the edge
+            let a = this.E[i][0], b = this.E[i][1];  // two connecting nodes
+            let r = this.E[i][2], c = this.E[i][3];  // radius and cost
 
-            } else {  // needs a straight line to show as the edge
-                this.A[x][y] = new Edge_S(this.s, {
-                    x1: this.V[x][0], y1: this.V[x][1],
-                    x2: this.V[y][0], y2: this.V[y][1],
-                    start: this.start + frames(this.dur) * i / this.m, // fixme
-                    duration: 0.8, r: this.radius, directed: true,
-                });
-            }
+            this.A[a][b] = new Edge(this.s, {
+                x1: this.V[a][0], y1: this.V[a][1],
+                x2: this.V[b][0], y2: this.V[b][1],
+                start: this.start + frames(this.dur) * i / this.m, r: r,
+                duration: 0.8, node_r: this.radius, directed: true, weight: c,
+            });
         }
     }
 }

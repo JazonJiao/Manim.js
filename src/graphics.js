@@ -91,7 +91,7 @@ class PointBase {
             this.move_duartion = frames(duration);
 
         this.f = 0;
-        this.move_timer = timerFactory(this.move_duartion, timerNum);
+        this.move_timer = TimerFactory(this.move_duartion, timerNum);
     }
 
     moving() {
