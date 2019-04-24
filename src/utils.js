@@ -664,13 +664,21 @@ class Arrow extends Line {
         this.tipLen = args.tipLen || 15;
         this.tipAngle = args.tipAngle || 0.4;  // this is in radians
 
-        this.setArrow();
+        let t = Arrow.setArrow(this.x1, this.y1, this.x2, this.y2, this.tipLen, this.tipAngle);
+        this.x3 = t[0];
+        this.y3 = t[1];
+        this.x4 = t[2];
+        this.y4 = t[3];
     }
 
     // reset the start and end points of the arrow
     reset(args) {
         super.reset(args);
-        this.setArrow();
+        let t = Arrow.setArrow(this.x1, this.y1, this.x2, this.y2, this.tipLen, this.tipAngle);
+        this.x3 = t[0];
+        this.y3 = t[1];
+        this.x4 = t[2];
+        this.y4 = t[3];
     }
 
 
@@ -678,27 +686,27 @@ class Arrow extends Line {
     // angle of the two line segments, and finally get their coordinates.
     // However, arctan() will discard information about how the arrow is oriented (domain -90 ~ 90)
     // so I use another strategy: first scale the original line, then apply the rotation matrix.
-    setArrow() {
-
-        let dx = this.x1 - this.x2;    // note it'o x1 - x2
-        let dy = this.y1 - this.y2;
+    static setArrow(x1, y1, x2, y2, tipLen, tipAngle) {
+        let dx = x1 - x2;    // note it's x1 - x2
+        let dy = y1 - y2;
 
         let len = Math.sqrt(dx * dx + dy * dy);
 
         // calculate the position
-        let x = dx / len * this.tipLen;
-        let y = dy / len * this.tipLen;
+        let x = dx / len * tipLen;
+        let y = dy / len * tipLen;
 
-        let sin_theta = Math.sin(this.tipAngle);
-        let cos_theta = Math.cos(this.tipAngle);
+        let sin_theta = Math.sin(tipAngle);
+        let cos_theta = Math.cos(tipAngle);
 
         // x1, x2 are the coordinates of start point and end point; arrow points from x1 to x2.
         // x3, x4 are the endpoints of the two lines originating from x2 that draw the arrow.
         // Ditto for y3 and y4.
-        this.x3 = this.x2 + cos_theta * x - sin_theta * y;
-        this.y3 = this.y2 + sin_theta * x + cos_theta * y;
-        this.x4 = this.x2 + cos_theta * x + sin_theta * y;
-        this.y4 = this.y2 + cos_theta * y - sin_theta * x;
+        let x3 = x2 + cos_theta * x - sin_theta * y;
+        let y3 = y2 + sin_theta * x + cos_theta * y;
+        let x4 = x2 + cos_theta * x + sin_theta * y;
+        let y4 = y2 + cos_theta * y - sin_theta * x;
+        return [x3, y3, x4, y4];
     }
 
     showFadeIn() {
@@ -711,6 +719,16 @@ class Arrow extends Line {
         this.s.line(this.x2, this.y2, this.x4, this.y4);
     }
 
+    static showArrow(obj, t) {  // // show the two line segments at the tip; also used by ArcArrow
+        let dx3 = obj.x3 - obj.x2;
+        let dy3 = obj.y3 - obj.y2;
+        obj.s.line(obj.x2, obj.y2, obj.x2 + t * dx3, obj.y2 + t * dy3);
+
+        let dx4 = obj.x4 - obj.x2;
+        let dy4 = obj.y4 - obj.y2;
+        obj.s.line(obj.x2, obj.y2, obj.x2 + t * dx4, obj.y2 + t * dy4);
+    }
+    
     showGrow() {
         // show the main line
         let dx2 = this.x2 - this.x1;
@@ -722,15 +740,7 @@ class Arrow extends Line {
 
         this.s.line(this.x1, this.y1, this.x1 + t * dx2, this.y1 + t * dy2);
 
-        // show the two line segments at the tip
-        // strokeWeight(this.strokeweight);
-        let dx3 = this.x3 - this.x2;
-        let dy3 = this.y3 - this.y2;
-        this.s.line(this.x2, this.y2, this.x2 + t * dx3, this.y2 + t * dy3);
-
-        let dx4 = this.x4 - this.x2;
-        let dy4 = this.y4 - this.y2;
-        this.s.line(this.x2, this.y2, this.x2 + t * dx4, this.y2 + t * dy4);
+        Arrow.showArrow(this, t);
     }
 
     show() {
@@ -978,7 +988,7 @@ class Pie extends PointBase {
 class Arc extends Pie {
     constructor(ctx, args) {
         super(ctx, args);
-        this.n = args.detail || 70;  // number of segments
+        this.n = args.detail || 57;  // number of segments - 1
         this.p = [];
         let a = this.a1;
         let da = (this.a2 - this.a1) / (this.n - 1);  // number of anchor points = # segment + 1
@@ -988,16 +998,46 @@ class Arc extends Pie {
             this.p[i] = [x, y];
         }
     }
+    
+    showArc(t) {
+        this.s.beginShape();
+        this.showSetup();
+        for (let i = 0; i < this.n * t; i++) {
+            this.s.vertex(this.p[i][0], this.p[i][1]);
+        }
+        this.s.endShape();
+    }
+    
+    show() {
+        if (this.s.frameCount > this.start) {
+            let t = this.timer.advance();
+            this.showArc(t);
+        }
+    }
+}
+
+class ArcArrow extends Arc {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.tipLen = args.tipLen || 12;
+        this.tipAngle = args.tipAngle || 0.3;
+        
+        this.x2 = this.p[this.n - 1][0];
+        this.y2 = this.p[this.n - 1][1] - 1;  // fixme
+        let dx = this.x2 - this.x, dy = this.y2 - this.y;
+        let t = Arrow.setArrow(this.x2 - dy, this.y2 + dx - this.strokeweight,
+            this.x2, this.y2, this.tipLen, this.tipAngle);
+        this.x3 = t[0];
+        this.y3 = t[1];
+        this.x4 = t[2];
+        this.y4 = t[3];
+    }
 
     show() {
         if (this.s.frameCount > this.start) {
-            this.s.beginShape();
-            this.showSetup();
             let t = this.timer.advance();
-            for (let i = 0; i < this.n * t; i++) {
-                this.s.vertex(this.p[i][0], this.p[i][1]);
-            }
-            this.s.endShape();
+            this.showArc(t);
+            Arrow.showArrow(this, t);
         }
     }
 }

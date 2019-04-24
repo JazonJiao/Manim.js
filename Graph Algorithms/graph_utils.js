@@ -149,18 +149,19 @@ class Edge extends Line {
             this.r = Math.sqrt(x1d * x1d + y1d * y1d);
 
             // calculate start and end angles
-            this.a2 = Math.atan2(y1d, x1d);  // NOTICE: acos does NOT work here!!!
+            this.a1 = Math.atan2(y1d, x1d);  // NOTICE: acos does NOT work here!!!
             let x2d = this.x2 - this.xc, y2d = this.y2 - this.yc;
-            this.a1 = Math.atan2(y2d, x2d);
-            if (this.a2 < this.a1) {
-                this.a1 -= this.s.TWO_PI;
+            this.a2 = Math.atan2(y2d, x2d);
+            if (this.a2 > this.a1) {   // don't yet know why I need to do this
+                this.a1 += this.s.TWO_PI;
             }
 
-            console.log(this.a1,this.a2);
+            // start and end angles, after "subtracting" the radius of two nodes from the curve
+            let half_a = Math.asin(this.node_r / 2 / this.r);  // guaranteed to be in [0, PI/4]
+            this.la1 = this.a1 - half_a;  // it's supposed to be +, but p5 has a weird coord system
+            this.la2 = this.a2 + half_a;  // it's supposed to be - ...
 
-            // start and end angles, after considering the radius of the node
-            this.la1 = this.a2;
-            this.la2 = this.a1;
+            //console.log(this.la1, this.la2);
 
             this.l = this.createLine();
 
@@ -197,10 +198,13 @@ class Edge extends Line {
     }
 
     createLine(){
-        return this.r ? new Arc(this.s, {  // arc undirected
+        return this.r ? (this.directed ? new ArcArrow(this.s, {   // arc directed
             r: this.r, x: this.xc, y: this.yc, a1: this.la1, a2: this.la2,
             start: this.start, duration: this.duration, color: this.color,
-        }) : (this.directed ? new Arrow(this.s, {  // straight directed
+        }) : new Arc(this.s, {  // arc undirected
+            r: this.r, x: this.xc, y: this.yc, a1: this.la1, a2: this.la2,
+            start: this.start, duration: this.duration, color: this.color,
+        })) : (this.directed ? new Arrow(this.s, {  // straight directed
             x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
             duration: this.duration, color: this.color,
             tipAngle: 0.37, tipLen: 9
