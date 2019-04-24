@@ -747,8 +747,14 @@ class Arrow extends Line {
     }
 }
 
+/*** 2019-04-24
+ *
+ */
 class Arc extends Line {
-
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.a1 = 0;
+    }
 }
 
 /*** 2019-03-19
@@ -929,17 +935,20 @@ class Table {
     }
 }
 
-/*** 2019-04-11
- * Circle
- * Draws a circle with init animation (draws clockwise) and end animation (fade out)
+/*** 2019-04-24
+ * For an arc defined by start and end point, @see class Arc, which inherits Line
  *
  * ---- args list parameters ----
- * @mandatory (number) x, y, r
+ * @mandatory (number) x, y, r, a1, a2 (start/end angle in radians)
  * @optional (number) start, end, duration, strokeweight, (array) color, fill
  */
-class Circle extends PointBase {
+class Pie extends PointBase {
     constructor(ctx, args) {
         super(ctx, args);
+        this.a1 = args.a1 || 0;
+        this.a2 = args.a2 || 6.283;
+        this.ccw = this.a2 < this.a1;
+
         this.r = args.r || 100;
         this.timer = new Timer1(frames(this.duration));
         this.st = new StrokeChanger(this.s, args.color);
@@ -960,8 +969,20 @@ class Circle extends PointBase {
 
             this.st.advance();
             this.timer_sw.advance();
-            this.s.arc(this.x, this.y, this.r, this.r, 0, 6.283 * this.timer.advance());
+            this.s.arc(this.x, this.y, this.r, this.r,
+                this.a1, this.a1 + (this.a2 - this.a1) * this.timer.advance(), this.ccw);
         }
+    }
+}
+
+/*** 2019-04-11
+ * Circle
+ * Draws a circle with init animation (draws clockwise) and end animation (fade out)
+ * args list: @see class Pie
+ */
+class Circle extends Pie {
+    constructor(ctx, args) {
+        super(ctx, args);
     }
 }
 

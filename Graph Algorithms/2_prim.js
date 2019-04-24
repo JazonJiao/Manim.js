@@ -161,7 +161,7 @@ class Graph_Prim extends Graph_U {
                         this.finished = false;
             }
         }
-        if (this.finished && s.frameCount % this.f === 0) {
+        if (this.finished && s.frameCount % this.f === 29) {
             this.arr.reset({ x1: 597, y1: 430, x2: 637, y2: 430 });
         }
     }
@@ -170,7 +170,7 @@ class Graph_Prim extends Graph_U {
 const Graph02 = function(s) {
     let t = {
         start: frames(1),
-        trace: frames(18),
+        trace: frames(21),
         txt: [frames(5), frames(8), frames(10), frames(12), frames(15), frames(17), frames(19)],
     };
     let tnr;

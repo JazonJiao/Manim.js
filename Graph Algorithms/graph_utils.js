@@ -101,16 +101,16 @@ class Node extends PointBase {
     }
 }
 
-/*** 2019-04-23
+/*** 2019-04-23, 04-24
  * Draws a line/arc from one node to another given the positions and radii of two nodes.
  * Could pass in a string str to add a label the edge in the middle, if so, pass in label: true.
- * If need an arc, pass in its radius as r.
- * r must be greater than half the distance of the two nodes.
+ * If need an arc, pass in the distance from the midpoint to the arc as d.
+ * d should not be greater than half the distance between the two nodes.
  * It's show() needs to be called after nodes'.
  *
  * --- args list ---
  * @mandatory x1, x2, y1, y2, start, node_r, (bool) directed,
- * @optional r [arc radius], weight, (array) color, txtColor
+ * @optional d [arc curvature], weight, x3, y3 [text coordinates]; (array) color, txtColor
  */
 class Edge extends Line {
     constructor(ctx, args) {
@@ -123,12 +123,52 @@ class Edge extends Line {
 
         let dx = args.x2 - args.x1;
         let dy = args.y2 - args.y1;
+        let xm = this.x1 + dx / 2, ym = this.y1 + dy / 2;
         let len = Math.sqrt(dx * dx + dy * dy);
 
-        if (args.r) {
-            this.r = args.r;
+        if (args.d) {  // needs an arc
+            this.d = args.d;
+            // this.y1 = cvh - this.y1;
+            // this.y2 = cvh - this.y2;
+
+            // calculate center of arc, also will be where the text lies
+            this.x3 = xm + dy * this.d / len;
+            this.y3 = ym - dx * this.d / len;
+
+            // calculate the centroid of the arc
+            // (intersection of perpendicular bisectors for 1,3 and 2,3)
+            let p1 = this.getPB(this.x1, this.y1, this.x3, this.y3);
+            let p2 = this.getPB(this.x2, this.y2, this.x3, this.y3);
+            let a1 = p1[0], b1 = p1[1], c1 = p1[2], a2 = p2[0], b2 = p2[1], c2 = p2[2];
+            let det = a1 * b2 - b1 * a2;
+            console.log( det);
+            this.xc = (c1 * b2 - b1 * c2) / det;  // 2d Cramer's Rule
+            this.yc = (a1 * c2 - c1 * a2) / det;
+
+            // calculate the radius of the arc
+            let x1d = this.xc - this.x1, y1d = this.yc - this.y1;
+            this.r = Math.sqrt(x1d * x1d + y1d * y1d);
+
+            // calculate start and end angles
+            this.a1 = Math.acos(x1d / this.r);
+            let x2d = this.xc - this.x1, y2d = this.yc - this.y1;
+            this.a2 = Math.asin(y1d / this.r);
+
+            console.log(this.a1, this.a2);
+
+            // start and end angles, after considering the radius of the node
+            this.la1 = this.a1;
+            this.la2 = this.a2;
+
+            // this.y1 = cvh - this.y1;
+            // this.y2 = cvh - this.y2;
+            // this.y3 = cvh - this.y3;
+            // this.yc = cvh - this.yc;
+
             this.l = this.createLine();
+
         } else {
+            // the coordinates for line segment; it's shorter than the distance between node centers
             this.lx1 = args.x1 + dx * this.node_r / len * 0.5;
             // 0.54, to account for the node's ring thickness
             this.lx2 = args.x2 - dx * this.node_r / len * 0.54;
@@ -136,26 +176,38 @@ class Edge extends Line {
             this.ly2 = args.y2 - dy * this.node_r / len * 0.54;
 
             this.l = this.createLine();
-
-            if (args.weight !== undefined) {
-                this.str = "" + args.weight;
-                this.txt = new TextFade(this.s, {
-                    str: this.str, x: args.x1 + dx / 2, y: args.y1 + dy / 2, mode: 1,
-                    start: args.start, color: this.txtColor,
-                    stroke: [0, 0, 0],    // black stroke
-                    strokeweight: 7, size: 29
-                });
-            }
+            this.x3 = args.x3 || xm;
+            this.y3 = args.y3 || ym;
+        }
+        // add label
+        if (args.weight !== undefined) {
+            this.str = "" + args.weight;
+            this.txt = new TextFade(this.s, {
+                str: this.str, x: this.x3, y: this.y3, mode: 1,
+                start: args.start, color: this.txtColor,
+                stroke: [0, 0, 0],    // black stroke
+                strokeweight: 7, size: 29
+            });
         }
     }
 
+    // calculates perpendicular bisector, returns [a, b, c] for line ax + by = c
+    getPB(x1, y1, x2, y2) {
+        let a = x2 - x1;  // a = dx
+        let b = y2 - y1;  // b = dy
+        let xm = x1 + a / 2, ym = y1 + b / 2;  // midpoint
+        return [a, b, a * xm + b * ym];
+    }
+
     createLine(){
-        return this.r ? null
-            : (this.directed ? new Arrow(this.s, {
+        return this.r ? new Pie(this.s, {  // arc undirected
+            r: this.r, x: this.xc, y: this.yc, a1: this.la1, a2: this.la2,
+            start: this.start, duration: this.duration, color: this.color,
+        }) : (this.directed ? new Arrow(this.s, {  // straight directed
             x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
             duration: this.duration, color: this.color,
             tipAngle: 0.37, tipLen: 9
-        }) : new Line(this.s, {
+        }) : new Line(this.s, {  // straight undirected
             x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
             duration: this.duration, color: this.color,
         }));
@@ -221,7 +273,7 @@ class Graph_U extends Graph {
         super(ctx, args);
         for (let i = 0; i < this.m; i++) {
             let a = this.E[i][0], b = this.E[i][1];  // two connecting nodes
-            let r = this.E[i][2], c = this.E[i][3];  // radius and cost
+            let d = this.E[i][2], c = this.E[i][3];  // radius and cost
             if (c !== undefined)
                 this.A[a][b] = this.A[b][a] = c;
             else
@@ -230,7 +282,7 @@ class Graph_U extends Graph {
             this.edges[a][b] = new Edge(this.s, {
                 x1: this.V[a][0], y1: this.V[a][1],
                 x2: this.V[b][0], y2: this.V[b][1],
-                start: this.start + frames(this.dur) * i / this.m, r: r,
+                start: this.start + frames(this.dur) * i / this.m, d: d,
                 duration: 0.8, node_r: this.radius, directed: false, weight: c,
             });
 
@@ -241,7 +293,7 @@ class Graph_U extends Graph {
             this.edges[b][a] = new Edge(this.s, {
                 x1: this.V[b][0], y1: this.V[b][1],
                 x2: this.V[a][0], y2: this.V[a][1],
-                start: this.start + frames(this.dur) + 1, r: r,
+                start: this.start + frames(this.dur) + 1, d: d,
                 duration: 0.8, node_r: this.radius, directed: false, label: false
             });
         }
@@ -257,7 +309,7 @@ class Graph_D extends Graph {
         super(ctx, args);
         for (let i = 0; i < this.m; i++) {
             let a = this.E[i][0], b = this.E[i][1];  // two connecting nodes
-            let r = this.E[i][2], c = this.E[i][3];  // radius and cost
+            let d = this.E[i][2], c = this.E[i][3];  // radius and cost
             if (c !== undefined)
                 this.A[a][b] = c;
             else
@@ -266,7 +318,7 @@ class Graph_D extends Graph {
             this.edges[a][b] = new Edge(this.s, {
                 x1: this.V[a][0], y1: this.V[a][1],
                 x2: this.V[b][0], y2: this.V[b][1],
-                start: this.start + frames(this.dur) * i / this.m, r: r,
+                start: this.start + frames(this.dur) * i / this.m, d: d,
                 duration: 0.8, node_r: this.radius, directed: true, weight: c,
             });
         }
