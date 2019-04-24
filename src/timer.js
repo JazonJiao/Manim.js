@@ -155,6 +155,13 @@ class ColorChanger {
         this.color = initColor || [255, 255, 255, 255];
     }
 
+    fadeOut(duration) {
+        let c = deep_copy(this.color);
+        this.color[3] = this.color[3] !== undefined ? this.color[3] : 255;
+        c[3] = 0;
+        this.change(c, duration);
+    }
+
     change(newColor, duration) {
         this.co = this.color;
         this.cd = newColor;

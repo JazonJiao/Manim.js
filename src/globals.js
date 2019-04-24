@@ -106,7 +106,6 @@ function showFR(s) {
     s.textAlign(s.LEFT, s.TOP);
     s.noStroke();
     s.text("FPS: " + fps.toFixed(1), pos, 10);
-
 }
 
 function deep_copy(x) {

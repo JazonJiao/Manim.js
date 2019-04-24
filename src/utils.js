@@ -952,6 +952,7 @@ class Circle extends PointBase {
     }
     show() {
         if (this.s.frameCount > this.start) {
+            this.showMove();
             if (this.fill) {
                 this.ft.advance();
             } else

@@ -71,7 +71,6 @@ class Node extends PointBase {
         this.r = args.r || 57;
         this.sw = args.strokeweight || 2;
         this.color = args.color || Blue;
-        this.sc = new StrokeChanger(this.s, this.color);
         this.fill = args.fill || vector_multiply(this.color, 0.14);
 
         this.c = new Circle(this.s, {
@@ -90,8 +89,10 @@ class Node extends PointBase {
     }
 
     change(newColor, duration) {
-        this.shake(7, 1);
-        this.sc.change(newColor, duration);
+        this.c.shake(7, 0.8);
+        this.txt.shake(7, 0.8);
+        this.c.st.change(newColor, duration);
+        this.c.ft.change(vector_multiply(newColor, 0.2), duration);
     }
 
     show() {
@@ -115,6 +116,10 @@ class Edge extends Line {
     constructor(ctx, args) {
         super(ctx, args);
         this.node_r = args.node_r || 57;
+        this.color = args.color || [127, 47, 147];
+        this.txtColor = args.txtColor || [167, 236, 227];
+        this.stroke = args.stroke || [0, 0, 0]; //[17, 47, 127];
+        this.directed = args.directed;
 
         let dx = args.x2 - args.x1;
         let dy = args.y2 - args.y1;
@@ -122,24 +127,15 @@ class Edge extends Line {
 
         if (args.r) {
             this.r = args.r;
+            this.l = this.createLine();
         } else {
-            let x1 = args.x1 + dx * this.node_r / len * 0.5;
+            this.lx1 = args.x1 + dx * this.node_r / len * 0.5;
             // 0.54, to account for the node's ring thickness
-            let x2 = args.x2 - dx * this.node_r / len * 0.54;
-            let y1 = args.y1 + dy * this.node_r / len * 0.5;
-            let y2 = args.y2 - dy * this.node_r / len * 0.54;
+            this.lx2 = args.x2 - dx * this.node_r / len * 0.54;
+            this.ly1 = args.y1 + dy * this.node_r / len * 0.5;
+            this.ly2 = args.y2 - dy * this.node_r / len * 0.54;
 
-            this.color = args.color || [127, 47, 147];
-            this.txtColor = args.txtColor || [177, 255, 236];
-            this.stroke = args.stroke || [0, 0, 0]; //[17, 47, 127];
-            this.l = args.directed ? new Arrow(this.s, {
-                x1: x1, x2: x2, y1: y1, y2: y2, start: args.start,
-                duration: args.duration, color: this.color,
-                tipAngle: 0.37, tipLen: 9
-            }) : new Line(this.s, {
-                x1: x1, x2: x2, y1: y1, y2: y2, start: args.start,
-                duration: args.duration, color: this.color,
-            });
+            this.l = this.createLine();
 
             if (args.weight !== undefined) {
                 this.str = "" + args.weight;
@@ -153,16 +149,59 @@ class Edge extends Line {
         }
     }
 
+    createLine(){
+        return this.r ? null
+            : (this.directed ? new Arrow(this.s, {
+            x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
+            duration: this.duration, color: this.color,
+            tipAngle: 0.37, tipLen: 9
+        }) : new Line(this.s, {
+            x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
+            duration: this.duration, color: this.color,
+        }));
+    }
+
+    addEdge(color) {  // shows a line/arc growing on top of previous edge
+        this.color = color;
+        this.start = this.s.frameCount + 1;
+        this.l2 = this.createLine();
+    }
+
     change(newColor, duration) {
         this.l.colorTimer.change(newColor, duration);
     }
 
-    highlight() {
+    highlight(color, duration, thickness) {
+        this.hi = true;
+        this.h_color = color || [255, 107, 17];
+        this.h_dur = duration || 1;
+        this.h_fr = frames(this.h_dur);
+        this.thickness = thickness || 24;
+        this.f = 0;
+        this.h_timer = new Timer2(this.h_fr * 0.67);
+        this.s_timer = new StrokeChanger(this.s, this.h_color);
+    }
 
+    highlighting() {
+        if (this.f < this.h_fr) {
+            this.f++;
+            this.s_timer.advance();
+            if (this.f === Math.floor(this.h_fr * 0.74)) {
+                this.s_timer.fadeOut(this.h_dur * 0.27);
+            }
+            let t = this.h_timer.advance();
+            this.s.line(this.x1, this.y1,
+                this.x1 + t * (this.x2 - this.x1), this.y1 + t * (this.y2 - this.y1));
+        } else
+            this.hi = false;
     }
 
     show() {
+        if (this.hi)
+            this.highlighting();
         this.l.show();
+        if (this.l2)
+            this.l2.show();
         if (this.txt)
             this.txt.show();
     }
