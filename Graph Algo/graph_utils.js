@@ -116,7 +116,7 @@ class Edge extends Line {
     constructor(ctx, args) {
         super(ctx, args);
         this.node_r = args.node_r || 57;
-        this.color = args.color || [127, 47, 147];
+        this.color = args.color || [97, 7, 117];
         this.txtColor = args.txtColor || [167, 236, 227];
         this.stroke = args.stroke || [0, 0, 0]; //[17, 47, 127];
         this.directed = args.directed;
@@ -167,16 +167,20 @@ class Edge extends Line {
         this.l2 = this.createLine();
     }
 
+    shake(amp) {  // shake the text
+        this.txt.shake(amp, 0.9);
+    }
+
     change(newColor, duration) {
         this.l.colorTimer.change(newColor, duration);
     }
 
     highlight(color, duration, thickness) {
         this.hi = true;
-        this.h_color = color || [255, 107, 17];
+        this.h_color = color || [255, 67, 7];
         this.h_dur = duration || 1;
         this.h_fr = frames(this.h_dur);
-        this.thickness = thickness || 24;
+        this.thickness = thickness || 14;
         this.f = 0;
         this.h_timer = new Timer2(this.h_fr * 0.67);
         this.s_timer = new StrokeChanger(this.s, this.h_color);
@@ -186,6 +190,7 @@ class Edge extends Line {
         if (this.f < this.h_fr) {
             this.f++;
             this.s_timer.advance();
+            this.s.strokeWeight(this.thickness);
             if (this.f === Math.floor(this.h_fr * 0.74)) {
                 this.s_timer.fadeOut(this.h_dur * 0.27);
             }
