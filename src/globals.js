@@ -109,17 +109,36 @@ function showFR(s) {
 
 }
 
-/** [DEPRECATED]
- * For scenes that requires repetition of many similar scenes that will be rendered separately,
- * such as chapter_1, this function returns 10000, representing
- * "forever (actually 5 minutes) later", for animations that I don't want to show for a given scene.]
- */
-function getT(t) {
-    if (t === undefined) {
-        return 10000;
-    } else {
-        return t;
+function deep_copy(x) {
+    let y = [];
+    for (let i = 0; i < x.length; i++) {
+        y[i] = x[i];
     }
+    return y;
+}
+
+function vector_multiply(x, mult) {
+    let v = deep_copy(x);
+    for (let i = 0; i < v.length; i++) {
+        v[i] *= mult;
+    }
+    return v;
+}
+
+function vector_add(x, y) {
+    let v = [];
+    for (let i = 0; i < x.length; i++) {
+        v[i] = x[i] + y[i];
+    }
+    return v;
+}
+
+function vector_subtract(x, y) {
+    let v = [];
+    for (let i = 0; i < x.length; i++) {
+        v[i] = x[i] - y[i];
+    }
+    return v;
 }
 
 /**

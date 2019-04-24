@@ -24,18 +24,20 @@ class Graph extends PointBase {
         this.E = args.E;
         this.m = this.E.length;  // m - number of edges
 
-        this.A = [];   // adjacency list that stores the Edge objects
+        // value is undefined if no edge, true for unweighted graphs, a number for weighted graph
+        this.A = [];   // 2D adjacency list;
+
+        this.edges = [];  // stores the Edge objects
         // init adjacency list to all null, actual initialization deferred to subclasses
         for (let i = 0; i < this.n; i++) {
             this.A[i] = [];
-            for (let j = 0; j < this.n; j++)
-                this.A[i][j] = null;
+            this.edges[i] = [];
         }
-
         this.dur = args.duration || 1.7;
         this.yOffset = args.yOffset === undefined ? -5 : args.yOffset;   // offset for node text
         this.radius = args.radius || 57;  // node radius
-        this.nodes = [];
+
+        this.nodes = [];  // stores Node objects
         for (let i = 0; i < this.n; i++) {
             this.nodes[i] = new Node(this.s, {
                 x: this.V[i][0], y: this.V[i][1], yOffset: this.yOffset, duration: 0.37,
@@ -49,8 +51,8 @@ class Graph extends PointBase {
         // decrement to avoid the label being overwritten in undirected weighted graphs
         for (let i = this.n - 1; i >= 0; i--)
             for (let j = this.n - 1; j >= 0; j--)
-                if (this.A[i][j])
-                    this.A[i][j].show();
+                if (this.edges[i][j])
+                    this.edges[i][j].show();
 
         for (let n of this.nodes) n.show();
     }
@@ -68,8 +70,9 @@ class Node extends PointBase {
         super(ctx, args);
         this.r = args.r || 57;
         this.sw = args.strokeweight || 2;
-        this.color = args.color || [255, 247, 7];
-        this.fill = args.fill || [this.color[0] * .14, this.color[1] * .14, this.color[2] * .14];
+        this.color = args.color || Blue;
+        this.sc = new StrokeChanger(this.s, this.color);
+        this.fill = args.fill || vector_multiply(this.color, 0.14);
 
         this.c = new Circle(this.s, {
             x: this.x, y: this.y, r: this.r, start: this.start, end: this.end,
@@ -80,6 +83,15 @@ class Node extends PointBase {
             x: this.x, y: this.y + args.yOffset, size: 42,
             start: this.start, font: args.font, mode: 1, str: args.str,
         })
+    }
+
+    highlight() {
+
+    }
+
+    change(newColor, duration) {
+        this.shake(7, 1);
+        this.sc.change(newColor, duration);
     }
 
     show() {
@@ -117,8 +129,8 @@ class Edge extends Line {
             let y1 = args.y1 + dy * this.node_r / len * 0.5;
             let y2 = args.y2 - dy * this.node_r / len * 0.54;
 
-            this.color = args.color || Green;
-            this.txtColor = args.txtColor || [236, 255, 197];
+            this.color = args.color || [127, 47, 147];
+            this.txtColor = args.txtColor || [177, 255, 236];
             this.stroke = args.stroke || [0, 0, 0]; //[17, 47, 127];
             this.l = args.directed ? new Arrow(this.s, {
                 x1: x1, x2: x2, y1: y1, y2: y2, start: args.start,
@@ -132,13 +144,21 @@ class Edge extends Line {
             if (args.weight !== undefined) {
                 this.str = "" + args.weight;
                 this.txt = new TextFade(this.s, {
-                    str: args.str, x: args.x1 + dx / 2, y: args.y1 + dy / 2, mode: 1,
+                    str: this.str, x: args.x1 + dx / 2, y: args.y1 + dy / 2, mode: 1,
                     start: args.start, color: this.txtColor,
                     stroke: [0, 0, 0],    // black stroke
                     strokeweight: 7, size: 29
                 });
             }
         }
+    }
+
+    change(newColor, duration) {
+        this.l.colorTimer.change(newColor, duration);
+    }
+
+    highlight() {
+
     }
 
     show() {
@@ -158,8 +178,12 @@ class Graph_U extends Graph {
         for (let i = 0; i < this.m; i++) {
             let a = this.E[i][0], b = this.E[i][1];  // two connecting nodes
             let r = this.E[i][2], c = this.E[i][3];  // radius and cost
+            if (c !== undefined)
+                this.A[a][b] = this.A[b][a] = c;
+            else
+                this.A[a][b] = this.A[b][a] = true;
 
-            this.A[a][b] = new Edge(this.s, {
+            this.edges[a][b] = new Edge(this.s, {
                 x1: this.V[a][0], y1: this.V[a][1],
                 x2: this.V[b][0], y2: this.V[b][1],
                 start: this.start + frames(this.dur) * i / this.m, r: r,
@@ -170,7 +194,7 @@ class Graph_U extends Graph {
             // they will be displayed at the same location as the other edge,
             // and start time is set to after all edges are displayed.
             // We do this so that edge highlight functionality works both ways
-            this.A[b][a] = new Edge(this.s, {
+            this.edges[b][a] = new Edge(this.s, {
                 x1: this.V[b][0], y1: this.V[b][1],
                 x2: this.V[a][0], y2: this.V[a][1],
                 start: this.start + frames(this.dur) + 1, r: r,
@@ -190,8 +214,12 @@ class Graph_D extends Graph {
         for (let i = 0; i < this.m; i++) {
             let a = this.E[i][0], b = this.E[i][1];  // two connecting nodes
             let r = this.E[i][2], c = this.E[i][3];  // radius and cost
+            if (c !== undefined)
+                this.A[a][b] = c;
+            else
+                this.A[a][b] = true;
 
-            this.A[a][b] = new Edge(this.s, {
+            this.edges[a][b] = new Edge(this.s, {
                 x1: this.V[a][0], y1: this.V[a][1],
                 x2: this.V[b][0], y2: this.V[b][1],
                 start: this.start + frames(this.dur) * i / this.m, r: r,

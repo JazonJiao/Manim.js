@@ -129,13 +129,6 @@ function matrix_multiply(A, B) {
     }
 }
 
-function deep_copy(x) {
-    let y = [];
-    for (let i = 0; i < x.length; i++) {
-        y[i] = x[i];
-    }
-    return y;
-}
 
 function transpose(A) {
     let T = [];
@@ -159,13 +152,7 @@ function vector_subtract(x, y) {
     return v;
 }
 
-function vector_multiply(x, mult) {
-    let v = deep_copy(x);
-    for (let i = 0; i < v.length; i++) {
-        v[i] *= mult;
-    }
-    return v;
-}
+
 
 function dot_product(x, y) { // x, y are arrays with the same size
     let s = 0;

@@ -756,4 +756,11 @@ const Credit2 = function (s) {
     }
 };
 
+function getT(t) {
+    if (t === undefined) {
+        return 10000;
+    } else
+        return t;
+}
+
 let p = new p5(Scene12);

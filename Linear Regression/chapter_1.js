@@ -1,3 +1,10 @@
+function getT(t) {
+    if (t === undefined) {
+        return 10000;
+    } else
+        return t;
+}
+
 // S is the p5.js sketh variable
 const Chap1Part1 = function (s) {
     //let orange = s.color(247, 137, 27);  // fixme: why doesn't it work?

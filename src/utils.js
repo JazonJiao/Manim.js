@@ -477,9 +477,9 @@ class Line {
         // starting frame for initialization animation
         this.start = args.start || 1;
         this.strokeweight = args.strokeweight || 3;
-        this.color = args.color || [255, 255, 255];
+        this.colorTimer = new StrokeChanger(this.s, args.color);
 
-        this.timer = TimerFactory(frames(this.duration), args.mode);
+        this.timer = new TimerFactory(frames(this.duration), args.mode);
 
         this.end = args.end || 100000;
         this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
@@ -502,12 +502,10 @@ class Line {
         this.x2o = this.x2;
         this.y1o = this.y1;
         this.y2o = this.y2;
-        this.co = this.color;
         this.x1d = args.x1 || this.x1;
         this.x2d = args.x2 || this.x2;
         this.y1d = args.y1 || this.y1;
         this.y2d = args.y2 || this.y2;
-        this.cd = args.color || this.color;
         this.moved = true;
         let t = args.duration || 1;
         let m = args.mode === undefined ? 2 : args.mode;
@@ -520,9 +518,6 @@ class Line {
         this.reset({
             x1: this.x1o + t * (this.x1d - this.x1o), x2: this.x2o + t * (this.x2d - this.x2o),
             y1: this.y1o + t * (this.y1d - this.y1o), y2: this.y2o + t * (this.y2d - this.y2o),
-            color: [this.co[0] + t * (this.cd[0] - this.co[0]),
-                this.co[1] + t * (this.cd[1] - this.co[1]),
-                this.co[2] + t * (this.cd[2] - this.co[2])],
         })
     }
 
@@ -531,11 +526,10 @@ class Line {
         this.y1 = args.y1 || this.y1;
         this.x2 = args.x2 || this.x2;
         this.y2 = args.y2 || this.y2;
-        this.color = args.color || this.color;
     }
 
     showSetup() {
-        this.s.stroke(this.color);
+        this.colorTimer.advance();
         this.timer_sw.advance();
         if (this.moved)
             this.moving();
@@ -948,19 +942,22 @@ class Circle extends PointBase {
         super(ctx, args);
         this.r = args.r || 100;
         this.timer = new Timer1(frames(this.duration));
-        this.color = args.color || [255, 255, 255];
-        this.strokeweight = args.strokeweight || 3;
+        this.st = new StrokeChanger(this.s, args.color);
         this.fill = args.fill || undefined;
+        if (this.fill)
+            this.ft = new FillChanger(this.s, args.fill);
+
+        this.strokeweight = args.strokeweight || 3;
         this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
     }
     show() {
         if (this.s.frameCount > this.start) {
             if (this.fill) {
-                this.s.fill(this.fill);
-            } else {
+                this.ft.advance();
+            } else
                 this.s.noFill();
-            }
-            this.s.stroke(this.color);
+
+            this.st.advance();
             this.timer_sw.advance();
             this.s.arc(this.x, this.y, this.r, this.r, 0, 6.283 * this.timer.advance());
         }
