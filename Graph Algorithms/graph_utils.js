@@ -132,8 +132,8 @@ class Edge extends Line {
             // this.y2 = cvh - this.y2;
 
             // calculate center of arc, also will be where the text lies
-            this.x3 = xm + dy * this.d / len;
-            this.y3 = ym - dx * this.d / len;
+            this.x3 = xm - dy * this.d / len;
+            this.y3 = ym + dx * this.d / len;
 
             // calculate the centroid of the arc
             // (intersection of perpendicular bisectors for 1,3 and 2,3)
@@ -141,29 +141,26 @@ class Edge extends Line {
             let p2 = this.getPB(this.x2, this.y2, this.x3, this.y3);
             let a1 = p1[0], b1 = p1[1], c1 = p1[2], a2 = p2[0], b2 = p2[1], c2 = p2[2];
             let det = a1 * b2 - b1 * a2;
-            console.log( det);
             this.xc = (c1 * b2 - b1 * c2) / det;  // 2d Cramer's Rule
             this.yc = (a1 * c2 - c1 * a2) / det;
 
             // calculate the radius of the arc
-            let x1d = this.xc - this.x1, y1d = this.yc - this.y1;
+            let x1d = this.x1 - this.xc, y1d = this.y1 - this.yc;
             this.r = Math.sqrt(x1d * x1d + y1d * y1d);
 
             // calculate start and end angles
-            this.a1 = Math.acos(x1d / this.r);
-            let x2d = this.xc - this.x1, y2d = this.yc - this.y1;
-            this.a2 = Math.asin(y1d / this.r);
+            this.a2 = Math.atan2(y1d, x1d);  // NOTICE: acos does NOT work here!!!
+            let x2d = this.x2 - this.xc, y2d = this.y2 - this.yc;
+            this.a1 = Math.atan2(y2d, x2d);
+            if (this.a2 < this.a1) {
+                this.a1 -= this.s.TWO_PI;
+            }
 
-            console.log(this.a1, this.a2);
+            console.log(this.a1,this.a2);
 
             // start and end angles, after considering the radius of the node
-            this.la1 = this.a1;
-            this.la2 = this.a2;
-
-            // this.y1 = cvh - this.y1;
-            // this.y2 = cvh - this.y2;
-            // this.y3 = cvh - this.y3;
-            // this.yc = cvh - this.yc;
+            this.la1 = this.a2;
+            this.la2 = this.a1;
 
             this.l = this.createLine();
 
@@ -193,14 +190,14 @@ class Edge extends Line {
 
     // calculates perpendicular bisector, returns [a, b, c] for line ax + by = c
     getPB(x1, y1, x2, y2) {
-        let a = x2 - x1;  // a = dx
-        let b = y2 - y1;  // b = dy
-        let xm = x1 + a / 2, ym = y1 + b / 2;  // midpoint
+        let a = x1 - x2;  // a = -dx
+        let b = y1 - y2;  // b = -dy
+        let xm = x1 - a / 2, ym = y1 - b / 2;  // midpoint
         return [a, b, a * xm + b * ym];
     }
 
     createLine(){
-        return this.r ? new Pie(this.s, {  // arc undirected
+        return this.r ? new Arc(this.s, {  // arc undirected
             r: this.r, x: this.xc, y: this.yc, a1: this.la1, a2: this.la2,
             start: this.start, duration: this.duration, color: this.color,
         }) : (this.directed ? new Arrow(this.s, {  // straight directed

@@ -26,11 +26,13 @@ const Graph01 = function(s) {
             V: G.V, E: G.E, font: tnr
         });
         s.d = new Dragger(s, []);
+        // s.a = new Arc(s, {
+        //     a1: 0, a2: -2, x: 322, y: 332, r: 32
+        // })
     };
     s.draw = function () {
         s.background(0);
         s.g.show();
-
         s.d.show();
     };
 };

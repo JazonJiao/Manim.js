@@ -747,16 +747,6 @@ class Arrow extends Line {
     }
 }
 
-/*** 2019-04-24
- *
- */
-class Arc extends Line {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.a1 = 0;
-    }
-}
-
 /*** 2019-03-19
  * FcnPlot
  * Plots a function on a 2D axes
@@ -936,8 +926,6 @@ class Table {
 }
 
 /*** 2019-04-24
- * For an arc defined by start and end point, @see class Arc, which inherits Line
- *
  * ---- args list parameters ----
  * @mandatory (number) x, y, r, a1, a2 (start/end angle in radians)
  * @optional (number) start, end, duration, strokeweight, (array) color, fill
@@ -947,7 +935,6 @@ class Pie extends PointBase {
         super(ctx, args);
         this.a1 = args.a1 || 0;
         this.a2 = args.a2 || 6.283;
-        this.ccw = this.a2 < this.a1;
 
         this.r = args.r || 100;
         this.timer = new Timer1(frames(this.duration));
@@ -959,18 +946,58 @@ class Pie extends PointBase {
         this.strokeweight = args.strokeweight || 3;
         this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
     }
+    showSetup() {
+        this.showMove();
+        if (this.fill) {
+            this.ft.advance();
+        } else
+            this.s.noFill();
+
+        this.st.advance();
+        this.timer_sw.advance();
+    }
+
     show() {
         if (this.s.frameCount > this.start) {
-            this.showMove();
-            if (this.fill) {
-                this.ft.advance();
-            } else
-                this.s.noFill();
-
-            this.st.advance();
-            this.timer_sw.advance();
+            this.showSetup();
             this.s.arc(this.x, this.y, this.r, this.r,
-                this.a1, this.a1 + (this.a2 - this.a1) * this.timer.advance(), this.ccw);
+                this.a1, this.a1 + (this.a2 - this.a1) * this.timer.advance());
+        }
+    }
+}
+
+/*** 2019-04-24
+ * Since p5.js cannot display an arc in the counterclockwise direction,
+ * I have to write my own Arc class that behaves similarly to FcnPlot.
+ * Maybe refactor this later to inherit Line.
+ *
+ * ---- args list parameters ----
+ * (see Arc)
+ * @optional (number) detail, // todo: x1, y1, x2, y2
+ */
+class Arc extends Pie {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.n = args.detail || 70;  // number of segments
+        this.p = [];
+        let a = this.a1;
+        let da = (this.a2 - this.a1) / (this.n - 1);  // number of anchor points = # segment + 1
+        for (let i = 0; i < this.n; i++) {
+            let x = this.x + this.r * Math.cos(a), y = this.y + this.r * Math.sin(a);
+            a += da;
+            this.p[i] = [x, y];
+        }
+    }
+
+    show() {
+        if (this.s.frameCount > this.start) {
+            this.s.beginShape();
+            this.showSetup();
+            let t = this.timer.advance();
+            for (let i = 0; i < this.n * t; i++) {
+                this.s.vertex(this.p[i][0], this.p[i][1]);
+            }
+            this.s.endShape();
         }
     }
 }
@@ -983,6 +1010,12 @@ class Pie extends PointBase {
 class Circle extends Pie {
     constructor(ctx, args) {
         super(ctx, args);
+    }
+    show() {
+        if (this.s.frameCount > this.start) {
+            this.showSetup();
+            this.s.arc(this.x, this.y, this.r, this.r, 0, 6.283 * this.timer.advance());
+        }
     }
 }
 
