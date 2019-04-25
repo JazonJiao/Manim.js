@@ -6,7 +6,7 @@ let G = {
         [120, 270],  // 3
         [420, 270],  // T (n-1)
     ],
-    E: [[0, 2, 0, 3],// last entry stores capacity
+    E: [[0, 2, 0, 3],// last entry stores capacity, should be integer
         [0, 3, 0, 7],
         [1, 0, 0, 4],
         [2, 1, 0, 5],
@@ -121,8 +121,10 @@ class Graph_Flow extends Graph {
         this.F = [];  // flow for edge i-j; F[j][i] is residual, i.e. F[i,j] + F[j,i] = cap(i,j)
         this.rnodes = [];  // residual graph nodes
         this.redges = [];  // residual graph edges
-        for (let i = 0; i < this.n; i++)
+        for (let i = 0; i < this.n; i++) {
             this.redges[i] = [];
+            this.F[i] = [];
+        }
 
         this.dy = 300;  // the location of the residual graph relative to the network graph
         this.d = 14;   // the curvature of edges
@@ -140,7 +142,6 @@ class Graph_Flow extends Graph {
         this.btl = [255, 236, 177];
 
         for (let i = 0; i < this.n; i++) {
-            this.F[i] = [];
             this.rnodes[i] = new Node(this.s, {
                 x: this.V[i][0], y: this.V[i][1] + this.dy, yOffset: this.yOffset, duration: 0.37,
                 start: this.resStart + frames(this.dur) * i / this.n, str: "" + i, font: args.font,
@@ -149,6 +150,7 @@ class Graph_Flow extends Graph {
             for (let j = 0; j < this.n; j++) {
                 if (this.A[i][j] !== undefined) {
                     this.F[i][j] = 0;
+                    this.F[j][i] = this.A[i][j];
                     this.redges[i][j] = new Edge(this.s, {  // residual, forward edge
                         x1: this.edges[i][j].x1, y1: this.edges[i][j].y1 + this.dy,
                         x2: this.edges[i][j].x2, y2: this.edges[i][j].y2 + this.dy,
@@ -174,8 +176,43 @@ class Graph_Flow extends Graph {
         this.rnodes[this.n - 1].relabel("T");
 
         this.state = 0;
-
+        this.reset();
     }
+
+    reset() {
+        this.visits = []; // array that stores whether a vertex is in current path from S to T
+        this.path = [];  // 2D array that stores the edges in path from S to T in residual graph
+        this.visited = [];  // used for DFS
+        for (let i = 0; i < this.n; i++) {
+            this.visits[i] = i === this.n - 1;
+            this.visited[i] = false;
+        }
+        this.min_w = 10000000;
+        this.found = false;   // found a path from S to T
+    }
+
+    DFS(node, destination) {
+        let i;  // the node from the previous recursive call
+        for (i = 0; i < this.n; i++) {
+            if (this.F[i][node] > 0 && !this.visited[i]) {
+                if (i === destination) {
+                    this.rnodes[destination].highlight();
+                    this.found = true;
+                    break;
+                }
+                this.visited[i] = true;
+                this.DFS(i, destination);
+                if (this.found)
+                    break;
+            }
+        }
+        if (this.found) {
+            console.log(node, i);
+            this.rnodes[node].highlight(); //(Yellow, this.f / fr * 3.77, 12);
+            this.redges[node][i].highlight(); //(Yellow, this.f / fr * 3.9, 12);
+        }
+    }
+
     show() {
         super.show();
         for (let t of this.txt) t.show();
@@ -184,6 +221,12 @@ class Graph_Flow extends Graph {
                 if (this.redges[i][j])
                     this.redges[i][j].show();
         for (let r of this.rnodes) r.show();
+
+        if (! this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
+            if (this.state === 0) {
+                this.DFS(0, this.n - 1);
+            }
+        }
     }
 }
 

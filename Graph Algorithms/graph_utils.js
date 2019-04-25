@@ -95,8 +95,29 @@ class Node extends PointBase {
         this.txt.reset({ str: txt });
     }
 
-    highlight() {
+    highlight(color, duration, thickness) {
+        this.hi = true;
+        this.h_color = color || [255, 67, 7];
+        this.h_dur = duration || 1;
+        this.h_fr = frames(this.h_dur);
+        this.thickness = thickness || 24;
+        this.f = 0;
+        this.h_timer = new Timer2(frames(0.67));
+        this.s_timer = new FillChanger(this.s, this.h_color);
+    }
 
+    highlighting() {
+        if (this.f < this.h_fr) {
+            this.f++;
+            this.s_timer.advance();
+            if (this.f === this.h_fr - frames(0.27)) {
+                this.s_timer.fadeOut(0.27);  // fade out .27 seconds before duration ends
+            }
+            let t = this.h_timer.advance();
+            this.s.ellipse(this.x, this.y,
+                this.r + this.thickness * t, this.r + this.thickness * t);
+        } else
+            this.hi = false;
     }
 
     change(newColor, duration) {
@@ -107,6 +128,8 @@ class Node extends PointBase {
     }
 
     show() {
+        if (this.hi)
+            this.highlighting();
         this.c.show();
         this.txt.show();
     }
@@ -141,8 +164,6 @@ class Edge extends Line {
 
         if (args.d) {  // needs an arc
             this.d = args.d;
-            // this.y1 = cvh - this.y1;
-            // this.y2 = cvh - this.y2;
 
             // calculate center of arc, also will be where the text lies
             this.x3 = xm - dy * this.d / len;
@@ -165,7 +186,7 @@ class Edge extends Line {
             this.a1 = Math.atan2(y1d, x1d);  // NOTICE: acos does NOT work here!!!
             let x2d = this.x2 - this.xc, y2d = this.y2 - this.yc;
             this.a2 = Math.atan2(y2d, x2d);
-            if (this.a2 > this.a1) {   // don't yet know why I need to do this
+            if (this.a2 > this.a1 && this.d > 0) {   // don't yet know why I need to do this
                 this.a1 += this.s.TWO_PI;
             }
 
@@ -178,6 +199,15 @@ class Edge extends Line {
 
             this.l = this.createLine();
 
+            this.numPts = 67;   // this is used for highlighting, code copied from Arc class
+            this.p = [];
+            let a = this.a1;
+            let da = (this.a2 - this.a1) / (this.numPts - 1);
+            for (let i = 0; i < this.numPts; i++) {
+                let x = this.xc + this.r * Math.cos(a), y = this.yc + this.r * Math.sin(a);
+                a += da;
+                this.p[i] = [x, y];
+            }
         } else {
             // the coordinates for line segment; it's shorter than the distance between node centers
             this.lx1 = args.x1 + dx * this.node_r / len * 0.5;
@@ -248,7 +278,7 @@ class Edge extends Line {
         this.h_fr = frames(this.h_dur);
         this.thickness = thickness || 14;
         this.f = 0;
-        this.h_timer = new Timer2(this.h_fr * 0.67);
+        this.h_timer = new Timer2(frames(0.67));
         this.s_timer = new StrokeChanger(this.s, this.h_color);
     }
 
@@ -257,12 +287,20 @@ class Edge extends Line {
             this.f++;
             this.s_timer.advance();
             this.s.strokeWeight(this.thickness);
-            if (this.f === Math.floor(this.h_fr * 0.74)) {
-                this.s_timer.fadeOut(this.h_dur * 0.27);
+            if (this.f === this.h_fr - frames(0.27)) {
+                this.s_timer.fadeOut(0.27);  // fade out .27 seconds before duration ends
             }
             let t = this.h_timer.advance();
-            this.s.line(this.x1, this.y1,
-                this.x1 + t * (this.x2 - this.x1), this.y1 + t * (this.y2 - this.y1));
+            if (!this.d)
+                this.s.line(this.x1, this.y1,
+                    this.x1 + t * (this.x2 - this.x1), this.y1 + t * (this.y2 - this.y1));
+            else {
+                this.s.noFill();
+                this.s.beginShape();
+                for (let i = 0; i < this.numPts * t; i++)
+                    this.s.vertex(this.p[i][0], this.p[i][1]);
+                this.s.endShape();
+            }
         } else
             this.hi = false;
     }

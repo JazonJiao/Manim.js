@@ -165,7 +165,7 @@ class Graph_Prim extends Graph_U {
 const Graph02 = function(s) {
     let t = {
         start: frames(1),
-        trace: frames(21),
+        trace: frames(2),//frames(21),
         txt: [frames(5), frames(8), frames(10), frames(12), frames(15), frames(17), frames(19)],
     };
     let tnr;
