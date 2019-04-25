@@ -1,11 +1,11 @@
-let G = {
-    V: [[90, 170],
+let G2 = {
+    V: [[90, 170],  // S = 0
         [190, 70],
         [190, 270],
         [270, 170],
         [350, 70],
         [350, 270],
-        [450, 170],
+        [450, 170], // T = 6
     ],
     E: [[0, 1, 0, 7],
         [0, 2, 0, 9],  // last entry stores capacity, should be positive integer
@@ -22,7 +22,7 @@ let G = {
     ],
 };
 
-let G2 = {
+let G = {
     V: [[120, 70],  // S (0)
         [420, 70],  // 1
         [270, 170],  // 2
@@ -64,7 +64,7 @@ class Label_04 extends PointBase {  // shows an edge's flow | capacity
         });
         this.txt.shift(0, 54 * (sign ? -1 : 1), 1, 1);
         this.flow.reset({ str: "" + newFlow });
-        this.flow.jump(17);
+        this.flow.jump(17 * (sign ? 1 : -1));
     }
     resetting() {
         if (this.f < frames(1.2)) {
@@ -182,12 +182,12 @@ class Graph_Flow extends Graph {
         this.feu = [0, 17, 47];  // color for forward edge unlit
         this.fel = [17, 97, 197];  // color for forward edge lit
         this.beu = [37, 17, 0];  // color for backward edge unlit
-        this.bel = [177, 127, 17];
+        this.bel = [147, 97, 7];  // color for backward edge lit
 
-        this.ftu = [7, 27, 77];
-        this.ftl = [177, 236, 255];
-        this.btu = [67, 37, 7];
-        this.btl = [255, 236, 177];
+        this.ftu = [7, 27, 77, 255];  // this is called
+        this.ftl = [177, 236, 255, 255];
+        this.btu = [67, 37, 7, 255];
+        this.btl = [255, 236, 177, 255];  // this is called
 
         for (let i = 0; i < this.n; i++) {
             this.rnodes[i] = new Node(this.s, {
@@ -270,7 +270,7 @@ class Graph_Flow extends Graph {
     }
 
     show() {  // trace the algorithm
-        for (let t of this.txt) t.show();
+        //for (let t of this.txt) t.show();
         for (let i = this.n - 1; i >= 0; i--)
             for (let j = this.n - 1; j >= 0; j--)
                 if (this.redges[i][j])
@@ -303,17 +303,32 @@ class Graph_Flow extends Graph {
             } else if (this.state === 4) {
                 for (let i = 0; i < this.path.length; i++) {
                     let x = this.path[i][0], y = this.path[i][1];
+
                     this.R[x][y] -= this.min_w;
                     this.redges[x][y].reset(this.R[x][y]);
 
-                    if (this.R[x][y] === 0)
-                        this.redges[x][y].reColor(this.feu, this.ftu);
-
                     this.R[y][x] += this.min_w;
                     this.redges[y][x].reset(this.R[y][x]);
-                    this.redges[y][x].reColor(this.bel, this.btl);
 
+                    let c = this.A[x][y];  // capacity
+                    let r = this.R[x][y];  // new residual
+                    let f = c - r;  // new flow (capacity - residual) = this.R[y][x]
 
+                    if (this.A[x][y] === undefined) {   // this is a backward edge, swap x and y
+                        let t1 = x;
+                        r = f;
+                        y = t1;
+                    }
+
+                    if (r === 0)  // forward edge fades out
+                        this.redges[x][y].reColor(this.feu, this.ftu);
+                    else if (r === this.min_w)   // forward edge fades in
+                        this.redges[y][x].reColor(this.fel, this.ftl);
+
+                    if (f === 0)  // backward edge fades out
+                        this.redges[x][y].reColor(this.beu, this.btu);
+                    else if (f === this.min_w)   // backward edge fades in
+                        this.redges[y][x].reColor(this.bel, this.btl);
                 }
 
                 this.reset();

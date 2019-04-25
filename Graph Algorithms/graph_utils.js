@@ -276,8 +276,10 @@ class Edge extends Line {
 
     reColor(lineColor, txtColor, duration) {
         this.l.colorTimer.reColor(lineColor, duration);
-        if (this.txt && txtColor)
+        if (this.txt !== undefined) {
+            console.log(txtColor);
             this.txt.reColor(txtColor, duration);
+        }
     }
 
     highlight(color, duration, thickness) {
