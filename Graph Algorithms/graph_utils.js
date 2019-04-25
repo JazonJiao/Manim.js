@@ -150,6 +150,7 @@ class Node extends PointBase {
 class Edge extends Line {
     constructor(ctx, args) {
         super(ctx, args);
+        this.size = args.size || 29;
         this.node_r = args.node_r || 57;
         this.color = args.color || [97, 7, 117];
         this.txtColor = args.txtColor || [167, 236, 227];
@@ -200,7 +201,7 @@ class Edge extends Line {
 
             this.l = this.createLine();
 
-            this.numPts = 57;   // this is used for highlighting, code copied from Arc class
+            this.numPts = 27;   // this is used for highlighting, code copied from Arc class
             this.pts = [];
             let a = this.a1;
             let da = (this.a2 - this.a1) / (this.numPts - 1);
@@ -228,7 +229,7 @@ class Edge extends Line {
                 str: this.str, x: this.x3, y: this.y3, mode: 1,
                 start: args.start, color: this.txtColor,
                 stroke: [0, 0, 0],    // black stroke
-                strokeweight: 7, size: 29
+                strokeweight: 7, size: this.size
             });
         }
     }

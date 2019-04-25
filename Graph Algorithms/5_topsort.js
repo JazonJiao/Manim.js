@@ -12,7 +12,7 @@ let G = {
 };
 
 
-const Graph01 = function(s) {
+const Graph05 = function(s) {
     let t = {
 
     };
@@ -37,4 +37,4 @@ const Graph01 = function(s) {
     };
 };
 
-let p = new p5(Graph01);
+let p = new p5(Graph05);

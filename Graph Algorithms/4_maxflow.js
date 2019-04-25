@@ -1,6 +1,29 @@
 let G = {
-    V: [
-        [120, 70],  // S (0)
+    V: [[90, 170],
+        [190, 70],
+        [190, 270],
+        [270, 170],
+        [350, 70],
+        [350, 270],
+        [450, 170],
+    ],
+    E: [[0, 1, 0, 7],
+        [0, 2, 0, 9],  // last entry stores capacity, should be positive integer
+        [0, 3, 0, 3],
+        [1, 3, 0, 4],
+        [1, 4, 0, 2],
+        [2, 3, 0, 4],
+        [2, 5, 0, 5],
+        [3, 4, 0, 9],
+        [3, 6, 0, 7],
+        [4, 6, 0, 9],
+        [5, 3, 0, 6],
+        [5, 6, 0, 1],
+    ],
+};
+
+let G2 = {
+    V: [[120, 70],  // S (0)
         [420, 70],  // 1
         [270, 170],  // 2
         [120, 270],  // 3
@@ -22,11 +45,11 @@ class Label_04 extends PointBase {  // shows an edge's flow | capacity
         super(ctx, args);
         this.flow = new TextFade(this.s, {
             str: "0", x: this.x - 10, y: this.y, mode: 4, start: args.start, color: [177, 255, 237],
-            stroke: [0, 0, 0], strokeweight: 7, size: 29
+            stroke: [0, 0, 0], strokeweight: 7, size: 27
         });
         this.cap = new TextFade(this.s, {
             x: this.x - 2, y: this.y, mode: 3, start: args.start, color: [255, 237, 177],
-            str: "| " + args.cap, stroke: [0, 0, 0], strokeweight: 7, size: 29
+            str: "| " + args.cap, stroke: [0, 0, 0], strokeweight: 7, size: 27
         });
     }
     reset(addedFlow, newFlow) {
@@ -156,7 +179,7 @@ class Graph_Flow extends Graph {
 
         this.resStart = args.resStart;
 
-        this.feu = [0, 7, 37];  // color for forward edge unlit
+        this.feu = [0, 17, 47];  // color for forward edge unlit
         this.fel = [17, 97, 197];  // color for forward edge lit
         this.beu = [37, 17, 0];  // color for backward edge unlit
         this.bel = [177, 127, 17];
@@ -177,7 +200,7 @@ class Graph_Flow extends Graph {
                     this.R[j][i] = 0;
                     this.R[i][j] = this.A[i][j];  // R[i,j] + R[j,i] = cap(i,j)
                     this.redges[i][j] = new Edge(this.s, {  // residual, forward edge
-                        x1: this.edges[i][j].x1, y1: this.edges[i][j].y1 + this.dy,
+                        x1: this.edges[i][j].x1, y1: this.edges[i][j].y1 + this.dy, size: 27,
                         x2: this.edges[i][j].x2, y2: this.edges[i][j].y2 + this.dy,
                         start: this.resStart + frames(this.dur) * i / this.m,
                         duration: 0.8, node_r: this.radius, directed: true, weight: this.A[i][j],
@@ -186,7 +209,7 @@ class Graph_Flow extends Graph {
                         txtColor: this.ftl,
                     });
                     this.redges[j][i] = new Edge(this.s, {  // flow, backward edge
-                        x2: this.edges[i][j].x1, y2: this.edges[i][j].y1 + this.dy,
+                        x2: this.edges[i][j].x1, y2: this.edges[i][j].y1 + this.dy, size: 27,
                         x1: this.edges[i][j].x2, y1: this.edges[i][j].y2 + this.dy,
                         start: this.resStart + frames(this.dur) * i / this.m,
                         duration: 0.8, node_r: this.radius, directed: true, weight: 0,
@@ -247,7 +270,6 @@ class Graph_Flow extends Graph {
     }
 
     show() {  // trace the algorithm
-        super.show();
         for (let t of this.txt) t.show();
         for (let i = this.n - 1; i >= 0; i--)
             for (let j = this.n - 1; j >= 0; j--)
@@ -300,6 +322,7 @@ class Graph_Flow extends Graph {
                 this.finished = true;
             }
         }
+        super.show();
     }
 }
 
@@ -322,9 +345,6 @@ const Graph04 = function (s) {
             start: t.start, resStart: t.resStart, time: t.txt,
         });
         s.d = new Dragger(s, [s.g.txt]);
-        // s.a = new Arc(s, {
-        //     a1: 0, a2: -2, x: 322, y: 332, r: 32
-        // })
     };
     s.draw = function () {
         s.background(0);

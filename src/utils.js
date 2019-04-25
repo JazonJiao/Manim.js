@@ -988,7 +988,7 @@ class Pie extends PointBase {
 class Arc extends Pie {
     constructor(ctx, args) {
         super(ctx, args);
-        this.n = args.detail || 57;  // number of segments - 1
+        this.n = args.detail || 27;  // number of segments - 1
         this.p = [];
         let a = this.a1;
         let da = (this.a2 - this.a1) / (this.n - 1);  // number of anchor points = # segment + 1
