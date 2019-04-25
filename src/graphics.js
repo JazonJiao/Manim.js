@@ -65,8 +65,10 @@ class PointBase {
         this.x = args.x || 0;
         this.y = args.y || 0;
         this.start = args.start || 30;
+        this.start = Math.floor(this.start);
         this.duration = args.duration || 1;  // fixme
         this.end = args.end || 100000;
+        this.end = Math.floor(this.end);
     }
 
     shift(x, y, duration, timerNum) {
@@ -136,7 +138,7 @@ class PointBase {
     }
 
     shaking() {
-        if (this.f < this.move_duartion) {
+        if (this.f <= this.move_duartion) {
             let t = this.move_timer.advance() * this.s.TWO_PI;
             this.y = this.yo - this.amp * Math.sin(t);
             this.f++;
@@ -146,7 +148,7 @@ class PointBase {
     }
 
     jumping() {
-        if (this.f < this.move_duartion) {
+        if (this.f <= this.move_duartion) {
             let t = this.move_timer.advance() * this.s.PI;
             this.y = this.yo - this.amp * Math.sin(t);
             this.f++;

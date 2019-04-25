@@ -29,10 +29,33 @@ class Label_04 extends PointBase {  // shows an edge's flow | capacity
             str: "| " + args.cap, stroke: [0, 0, 0], strokeweight: 7, size: 29
         });
     }
-    reset(flow) {
-        this.flow.reset({ str: "" + flow });
+    reset(addedFlow, newFlow) {
+        console.log(addedFlow);
+        this.resetted = true;
+        this.f = 0;
+        let sign = addedFlow > 0;
+        this.txt = new TextFade(this.s, {
+            str: (sign ? "+" : "-") + addedFlow,
+            x: this.x - 17, y: this.y, mode: 1, color: sign ? [255, 255, 57] : [57, 127, 255],
+            size: 24, start: this.s.frameCount + 1,
+            duration: 0.4, end: this.s.frameCount + frames(0.6),
+        });
+        this.txt.shift(0, 54 * (sign ? -1 : 1), 1, 1);
+        this.flow.reset({ str: "" + newFlow });
+        this.flow.jump(17);
+    }
+    resetting() {
+        if (this.f < frames(1.2)) {
+            this.txt.show();
+            this.f++;
+        } else {
+            this.resetted = false;
+            this.txt = null;
+        }
     }
     show() {
+        if (this.resetted)
+            this.resetting();
         this.flow.show();
         this.cap.show();
     }
@@ -44,6 +67,9 @@ class Edge_04 extends Edge {  // override Edge so that
         this.txt = new Label_04(this.s, {
             cap: args.weight, x: this.x3, y: this.y3, start: args.start
         });
+    }
+    reset(addedFlow, newFlow) {
+        this.txt.reset(addedFlow, newFlow);
     }
 }
 
@@ -118,12 +144,12 @@ class Graph_Flow extends Graph {
             x1: 597, y1: 140, x2: 637, y2: 140, tipLen: 10, color: Orange, start: args.begin,
         });
 
-        this.F = [];  // flow for edge i-j; F[j][i] is residual, i.e. F[i,j] + F[j,i] = cap(i,j)
+        this.R = [];  // residual for edge i-j; F[j][i] (backward edge, undefined in E) is flow
         this.rnodes = [];  // residual graph nodes
         this.redges = [];  // residual graph edges
         for (let i = 0; i < this.n; i++) {
             this.redges[i] = [];
-            this.F[i] = [];
+            this.R[i] = [];
         }
 
         this.dy = 300;  // the location of the residual graph relative to the network graph
@@ -149,8 +175,8 @@ class Graph_Flow extends Graph {
             });
             for (let j = 0; j < this.n; j++) {
                 if (this.A[i][j] !== undefined) {
-                    this.F[i][j] = 0;
-                    this.F[j][i] = this.A[i][j];
+                    this.R[j][i] = 0;
+                    this.R[i][j] = this.A[i][j];  // R[i,j] + R[j,i] = cap(i,j)
                     this.redges[i][j] = new Edge(this.s, {  // residual, forward edge
                         x1: this.edges[i][j].x1, y1: this.edges[i][j].y1 + this.dy,
                         x2: this.edges[i][j].x2, y2: this.edges[i][j].y2 + this.dy,
@@ -175,7 +201,7 @@ class Graph_Flow extends Graph {
         this.rnodes[0].relabel("S");
         this.rnodes[this.n - 1].relabel("T");
 
-        this.state = 0;
+        this.state = 1;  // corresponds to the step in the algorithm
         this.reset();
     }
 
@@ -185,16 +211,17 @@ class Graph_Flow extends Graph {
         this.visited = [];  // used for DFS
         for (let i = 0; i < this.n; i++) {
             this.visits[i] = i === this.n - 1;
-            this.visited[i] = false;
+            // ERROR LOG: forgot to set starting point as visited, took me 1+ hours to debug...
+            this.visited[i] = i === 0;
         }
         this.min_w = 10000000;
         this.found = false;   // found a path from S to T
     }
 
-    DFS(node, destination) {
+    DFS(node, destination) {  // terminates when T is found
         let i;  // the node from the previous recursive call
         for (i = 0; i < this.n; i++) {
-            if (this.F[i][node] > 0 && !this.visited[i]) {
+            if (this.R[node][i] > 0 && !this.visited[i]) {
                 if (i === destination) {
                     this.rnodes[destination].highlight();
                     this.found = true;
@@ -207,7 +234,13 @@ class Graph_Flow extends Graph {
             }
         }
         if (this.found) {
-            console.log(node, i);
+            if (this.min_w > this.R[node][i]) {
+                this.min_w = this.R[node][i];
+                this.min_e = [node, i];
+            }
+            this.visits[i] = true;
+            this.path.push([node, i]);
+
             this.rnodes[node].highlight(); //(Yellow, this.f / fr * 3.77, 12);
             this.redges[node][i].highlight(); //(Yellow, this.f / fr * 3.9, 12);
         }
@@ -223,8 +256,35 @@ class Graph_Flow extends Graph {
         for (let r of this.rnodes) r.show();
 
         if (! this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
-            if (this.state === 0) {
+            if (this.state === 1) {
                 this.DFS(0, this.n - 1);
+                if (this.found === false)
+                    this.state = 5;   // max flow achieved, terminate program
+                this.reset();
+
+                this.state = 2;
+            } else if (this.state === 2) {
+                let x = this.min_e[0], y = this.min_e[1];
+                this.redges[x][y].shake(24);
+
+                this.state = 3;
+            } else if (this.state === 3) {
+                for (let i = 0; i < this.path.length; i++) {
+                    let x = this.path[i][0], y = this.path[i][1];
+                    this.edges[x][y].reset(this.min_w, this.R[y][x] + this.min_w);
+                }
+                this.state = 4;
+            } else if (this.state === 4) {
+                for (let i = 0; i < this.path.length; i++) {
+                    let x = this.path[i][0], y = this.path[i][1];
+                    this.R[y][x] += this.min_w;
+                    this.redges[y][x].change(this.bel);
+
+                    this.R[x][y] -= this.min_w;
+                }
+                this.state = 1;
+            } else if (this.state === 5) {
+
             }
         }
     }

@@ -109,6 +109,7 @@ class Node extends PointBase {
     highlighting() {
         if (this.f < this.h_fr) {
             this.f++;
+            this.s.noStroke();
             this.s_timer.advance();
             if (this.f === this.h_fr - frames(0.27)) {
                 this.s_timer.fadeOut(0.27);  // fade out .27 seconds before duration ends
@@ -199,14 +200,14 @@ class Edge extends Line {
 
             this.l = this.createLine();
 
-            this.numPts = 67;   // this is used for highlighting, code copied from Arc class
-            this.p = [];
+            this.numPts = 57;   // this is used for highlighting, code copied from Arc class
+            this.pts = [];
             let a = this.a1;
             let da = (this.a2 - this.a1) / (this.numPts - 1);
             for (let i = 0; i < this.numPts; i++) {
                 let x = this.xc + this.r * Math.cos(a), y = this.yc + this.r * Math.sin(a);
                 a += da;
-                this.p[i] = [x, y];
+                this.pts[i] = [x, y];
             }
         } else {
             // the coordinates for line segment; it's shorter than the distance between node centers
@@ -264,11 +265,11 @@ class Edge extends Line {
     }
 
     shake(amp) {  // shake the text
-        this.txt.shake(amp, 0.9);
+        this.txt.shake(amp, 1);
     }
 
-    change(newColor, duration) {
-        this.l.colorTimer.change(newColor, duration);
+    change(lineColor, txtColor, duration) {
+        this.l.colorTimer.change(lineColor, txtColor, duration);
     }
 
     highlight(color, duration, thickness) {
@@ -297,8 +298,9 @@ class Edge extends Line {
             else {
                 this.s.noFill();
                 this.s.beginShape();
-                for (let i = 0; i < this.numPts * t; i++)
-                    this.s.vertex(this.p[i][0], this.p[i][1]);
+                for (let i = 0; i < this.numPts * t - 1; i++) {
+                    this.s.vertex(this.pts[i][0], this.pts[i][1]);
+                }
                 this.s.endShape();
             }
         } else

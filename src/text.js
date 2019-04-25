@@ -39,13 +39,16 @@ class Text extends TextBase {
         this.str = args.str;
         this.mode = args.mode || 0;
         this.color = args.color || [255, 255, 255];
+        this.ft = new FillChanger(ctx, this.color);
         this.stroke = args.stroke || undefined;
         this.sw = args.strokeweight || 1.7;
 
         this.size = args.size || 37;
+    }
 
-        this.start = args.start || 1;
-        this.end = args.end || 100000;
+    // works the same way as move()
+    change(color, duration) {
+        this.ft.change(color, duration);
     }
 
     reset(args) {
@@ -55,9 +58,9 @@ class Text extends TextBase {
     }
 
     showSetup() {
-        if (this.font) {
+        if (this.font)
             this.s.textFont(this.font);
-        }
+
         if (this.mode === 0) {
             this.s.textAlign(this.s.LEFT, this.s.TOP);
         } else if (this.mode === 1) {
@@ -70,6 +73,7 @@ class Text extends TextBase {
             this.s.textAlign(this.s.RIGHT, this.s.CENTER);
         }
         this.s.textSize(this.size);
+        this.ft.advance();  // show color
 
         if (this.stroke) {
             this.s.strokeWeight(this.sw);
@@ -90,36 +94,37 @@ class Text extends TextBase {
     }
 }
 
-// needs to pass in extra parameters in frames, start and/or duration
-/**
+/** Refactored on 2019-04-25
  * TextFade
  *
  * Capable of displaying Fade-In and/or Fade-Out animations
  *
  * ---- args list parameters ----
  * @mandatory (string) str; (number) x, y; (p5.Font) font
- * @optional (number) mode, size, start [in frames, not seconds], duration [in frames];
+ * @optional (number) mode, size, start [in frames, not seconds], duration [in seconds];
  *           (array) color [should be an array]
  */
 class TextFade extends Text {
     constructor(ctx, args) {
         super(ctx, args);
-        this.start = args.start || frames(1);
-        this.duration = args.duration || frames(0.7);
-        this.timer = new Timer0(this.duration);
-        this.timer2 = new Timer0(this.duration);
+        this.initC = deep_copy(this.color);
+        this.initC[3] = 0;
+        if (this.color[3] === undefined)
+            this.color[3] = 255;
+        this.ft = new FillChanger(ctx, this.initC);
+
+        this.duration = args.duration || 0.7;
+        this.timer = new Timer0(frames(this.duration));
     }
 
     show() {
-        if (this.s.frameCount >= this.start) {
+        if (this.s.frameCount >= this.start - 1) {
+            if (this.s.frameCount === this.start)
+                this.ft.change(this.color, this.duration);
+            else if (this.s.frameCount === this.end)
+                this.ft.fadeOut(this.duration);
+
             this.showSetup();
-            if (this.s.frameCount >= this.end) {
-                this.s.fill(
-                    this.color[0], this.color[1], this.color[2], 255 * (1 - this.timer2.advance()));
-            } else {
-                this.s.fill(
-                    this.color[0], this.color[1], this.color[2], 255 * this.timer.advance());
-            }
             this.s.text(this.str, this.x, this.y);
         }
 
@@ -127,7 +132,6 @@ class TextFade extends Text {
 
 }
 
-// needs to pass in an extra parameter in frames, start
 // does not yet support fade out
 class TextWriteIn extends Text {
     constructor(ctx, args) {
@@ -139,7 +143,6 @@ class TextWriteIn extends Text {
     show() {
         if (this.s.frameCount >= this.start) {
             this.showSetup();
-            this.s.fill(this.color);
             if (this.frCount < this.len) {
                 this.txt += this.str[this.frCount];
                 this.frCount++;
