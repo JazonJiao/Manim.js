@@ -64,6 +64,10 @@ class Text extends TextBase {
             this.s.textAlign(this.s.CENTER, this.s.CENTER);
         } else if (this.mode === 2) {
             this.s.textAlign(this.s.RIGHT, this.s.TOP);
+        } else if (this.mode === 3) {  // center-right
+            this.s.textAlign(this.s.LEFT, this.s.CENTER);
+        } else if (this.mode === 4) {  // center-right
+            this.s.textAlign(this.s.RIGHT, this.s.CENTER);
         }
         this.s.textSize(this.size);
 

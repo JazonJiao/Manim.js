@@ -47,11 +47,6 @@ let G = {
 class Graph_Prim extends Graph_U {
     constructor(ctx, args) {
         super(ctx, args);
-        this.f = 47;   // how many frames for advancing one step of the algorithm
-        this.begin = args.begin;
-
-        // variables used to keep track of the algorithm's progress
-        this.finished = false;
         this.state = 0;  // 0 for searching edges, 1 for adding vertex/edge
         this.added = 0;  // the vertex (starts at 0)
         this.curEdge = [-1, -1];  // the edge that's newly added

@@ -13,12 +13,19 @@
  * The ordering of these edges will be the sequence they're shown in the init animation.
  *
  * @mandatory (2D array) V, E, (p5.Font) font
- * @optional (number) radius [for nodes], duration [in seconds],
+ * @optional (number) radius [for nodes], duration [in seconds], begin,
  *           yOffset [for adjusting location of the node number],
+ *           (array) color_v, color_e
  */
 class Graph extends PointBase {
     constructor(ctx, args) {
         super(ctx, args);
+        this.f = 47;   // how many frames for advancing one step of the algorithm
+        this.begin = args.begin || 100;
+
+        // variables used to keep track of the algorithm's progress
+        this.finished = false;
+
         this.V = args.V;
         this.n = this.V.length;  // n - number of nodes
         this.E = args.E;
@@ -43,7 +50,7 @@ class Graph extends PointBase {
                 x: this.V[i][0], y: this.V[i][1], yOffset: this.yOffset, duration: 0.37,
                 // display all nodes in this.dur seconds
                 start: this.start + frames(this.dur) * i / this.n,
-                str: "" + i, font: args.font,
+                str: "" + i, font: args.font, color: args.color_v,
             });
         }
     }
@@ -84,6 +91,10 @@ class Node extends PointBase {
         })
     }
 
+    relabel(txt) {
+        this.txt.reset({ str: txt });
+    }
+
     highlight() {
 
     }
@@ -106,7 +117,7 @@ class Node extends PointBase {
  * Could pass in a string str to add a label the edge in the middle, if so, pass in label: true.
  * If need an arc, pass in the distance from the midpoint to the arc as d.
  * d should not be greater than half the distance between the two nodes.
- * It's show() needs to be called after nodes'.
+ * It's show() needs to be called after nodes'.  // todo: negative d
  *
  * --- args list ---
  * @mandatory x1, x2, y1, y2, start, node_r, (bool) directed,
@@ -120,6 +131,8 @@ class Edge extends Line {
         this.txtColor = args.txtColor || [167, 236, 227];
         this.stroke = args.stroke || [0, 0, 0]; //[17, 47, 127];
         this.directed = args.directed;
+        if (this.directed)
+            this.tipLen = 12;
 
         let dx = args.x2 - args.x1;
         let dy = args.y2 - args.y1;
@@ -157,7 +170,7 @@ class Edge extends Line {
             }
 
             // start and end angles, after "subtracting" the radius of two nodes from the curve
-            let half_a = Math.asin(this.node_r / 2 / this.r);  // guaranteed to be in [0, PI/4]
+            let half_a = Math.asin(this.node_r / 2 / this.r) * 1.07;  // guaranteed in [0, PI/4]
             this.la1 = this.a1 - half_a;  // it's supposed to be +, but p5 has a weird coord system
             this.la2 = this.a2 + half_a;  // it's supposed to be - ...
 
@@ -200,14 +213,14 @@ class Edge extends Line {
     createLine(){
         return this.r ? (this.directed ? new ArcArrow(this.s, {   // arc directed
             r: this.r, x: this.xc, y: this.yc, a1: this.la1, a2: this.la2,
-            start: this.start, duration: this.duration, color: this.color,
+            start: this.start, duration: this.duration, color: this.color, tipLen: this.tipLen
         }) : new Arc(this.s, {  // arc undirected
             r: this.r, x: this.xc, y: this.yc, a1: this.la1, a2: this.la2,
             start: this.start, duration: this.duration, color: this.color,
         })) : (this.directed ? new Arrow(this.s, {  // straight directed
             x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
             duration: this.duration, color: this.color,
-            tipAngle: 0.37, tipLen: 9
+            tipAngle: 0.37, tipLen: this.tipLen,
         }) : new Line(this.s, {  // straight undirected
             x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
             duration: this.duration, color: this.color,
@@ -283,7 +296,7 @@ class Graph_U extends Graph {
             this.edges[a][b] = new Edge(this.s, {
                 x1: this.V[a][0], y1: this.V[a][1],
                 x2: this.V[b][0], y2: this.V[b][1],
-                start: this.start + frames(this.dur) * i / this.m, d: d,
+                start: this.start + frames(this.dur) * i / this.m, d: d, color: args.color_e,
                 duration: 0.8, node_r: this.radius, directed: false, weight: c,
             });
 
@@ -293,8 +306,8 @@ class Graph_U extends Graph {
             // We do this so that edge highlight functionality works both ways
             this.edges[b][a] = new Edge(this.s, {
                 x1: this.V[b][0], y1: this.V[b][1],
-                x2: this.V[a][0], y2: this.V[a][1],
-                start: this.start + frames(this.dur) + 1, d: d,
+                x2: this.V[a][0], y2: this.V[a][1], color: args.color_e,
+                start: this.start + frames(this.dur) + 1, d: -d,  // notice d is inverted
                 duration: 0.8, node_r: this.radius, directed: false, label: false
             });
         }
@@ -319,7 +332,7 @@ class Graph_D extends Graph {
             this.edges[a][b] = new Edge(this.s, {
                 x1: this.V[a][0], y1: this.V[a][1],
                 x2: this.V[b][0], y2: this.V[b][1],
-                start: this.start + frames(this.dur) * i / this.m, d: d,
+                start: this.start + frames(this.dur) * i / this.m, d: d, color: args.color_e,
                 duration: 0.8, node_r: this.radius, directed: true, weight: c,
             });
         }
