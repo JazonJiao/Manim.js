@@ -30,13 +30,12 @@ class Label_04 extends PointBase {  // shows an edge's flow | capacity
         });
     }
     reset(addedFlow, newFlow) {
-        console.log(addedFlow);
         this.resetted = true;
         this.f = 0;
         let sign = addedFlow > 0;
         this.txt = new TextFade(this.s, {
-            str: (sign ? "+" : "-") + addedFlow,
-            x: this.x - 17, y: this.y, mode: 1, color: sign ? [255, 255, 57] : [57, 127, 255],
+            str: (sign ? "+" : "") + addedFlow,
+            x: this.x - 17, y: this.y, mode: 1, color: sign ? [255, 255, 57] : [57, 197, 255],
             size: 24, start: this.s.frameCount + 1,
             duration: 0.4, end: this.s.frameCount + frames(0.6),
         });
@@ -200,6 +199,7 @@ class Graph_Flow extends Graph {
         }
         this.rnodes[0].relabel("S");
         this.rnodes[this.n - 1].relabel("T");
+        this.hl_time = 2.77;
 
         this.state = 1;  // corresponds to the step in the algorithm
         this.reset();
@@ -223,7 +223,7 @@ class Graph_Flow extends Graph {
         for (i = 0; i < this.n; i++) {
             if (this.R[node][i] > 0 && !this.visited[i]) {
                 if (i === destination) {
-                    this.rnodes[destination].highlight();
+                    this.rnodes[destination].highlight(Yellow, this.f / fr * this.hl_time, 9);
                     this.found = true;
                     break;
                 }
@@ -241,12 +241,12 @@ class Graph_Flow extends Graph {
             this.visits[i] = true;
             this.path.push([node, i]);
 
-            this.rnodes[node].highlight(); //(Yellow, this.f / fr * 3.77, 12);
-            this.redges[node][i].highlight(); //(Yellow, this.f / fr * 3.9, 12);
+            this.rnodes[node].highlight(Yellow, this.f / fr * this.hl_time, 9);
+            this.redges[node][i].highlight([227, 197, 27], this.f / fr * this.hl_time, 14);
         }
     }
 
-    show() {
+    show() {  // trace the algorithm
         super.show();
         for (let t of this.txt) t.show();
         for (let i = this.n - 1; i >= 0; i--)
@@ -255,12 +255,11 @@ class Graph_Flow extends Graph {
                     this.redges[i][j].show();
         for (let r of this.rnodes) r.show();
 
-        if (! this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
+        if (!this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
             if (this.state === 1) {
                 this.DFS(0, this.n - 1);
                 if (this.found === false)
-                    this.state = 5;   // max flow achieved, terminate program
-                this.reset();
+                    this.finished = true;   // max flow achieved, terminate program
 
                 this.state = 2;
             } else if (this.state === 2) {
@@ -271,20 +270,34 @@ class Graph_Flow extends Graph {
             } else if (this.state === 3) {
                 for (let i = 0; i < this.path.length; i++) {
                     let x = this.path[i][0], y = this.path[i][1];
-                    this.edges[x][y].reset(this.min_w, this.R[y][x] + this.min_w);
+                    if (this.A[x][y] !== undefined) {   // this is a forward edge
+                        this.edges[x][y].reset(this.min_w, this.R[y][x] + this.min_w);
+                    } else {   // this is a backward edge
+                        this.edges[y][x].reset(-this.min_w, this.R[x][y] - this.min_w);
+                    }
                 }
+
                 this.state = 4;
             } else if (this.state === 4) {
                 for (let i = 0; i < this.path.length; i++) {
                     let x = this.path[i][0], y = this.path[i][1];
-                    this.R[y][x] += this.min_w;
-                    this.redges[y][x].change(this.bel);
-
                     this.R[x][y] -= this.min_w;
-                }
-                this.state = 1;
-            } else if (this.state === 5) {
+                    this.redges[x][y].reset(this.R[x][y]);
 
+                    if (this.R[x][y] === 0)
+                        this.redges[x][y].reColor(this.feu, this.ftu);
+
+                    this.R[y][x] += this.min_w;
+                    this.redges[y][x].reset(this.R[y][x]);
+                    this.redges[y][x].reColor(this.bel, this.btl);
+
+
+                }
+
+                this.reset();
+                this.state = 1;
+            } else if (this.state === 5) {  // terminated
+                this.finished = true;
             }
         }
     }

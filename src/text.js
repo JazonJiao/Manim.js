@@ -47,8 +47,8 @@ class Text extends TextBase {
     }
 
     // works the same way as move()
-    change(color, duration) {
-        this.ft.change(color, duration);
+    reColor(color, duration) {
+        this.ft.reColor(color, duration);
     }
 
     reset(args) {
@@ -120,7 +120,7 @@ class TextFade extends Text {
     show() {
         if (this.s.frameCount >= this.start - 1) {
             if (this.s.frameCount === this.start)
-                this.ft.change(this.color, this.duration);
+                this.ft.reColor(this.color, this.duration);
             else if (this.s.frameCount === this.end)
                 this.ft.fadeOut(this.duration);
 
@@ -159,7 +159,7 @@ class TextWriteIn extends Text {
  * so I cannot do any animations on them except moving the position, changing the opacity, etc.
  * Requires the p5.dom.js and katex.js libraries.
  *
- * The color of the text defaults to white. To change color, use \\textcolor{}{...} inside args.text
+ * The color of the text defaults to white. To reColor color, use \\textcolor{}{...} inside args.text
  *
  * Refactor on 2019-04-10: if need fade in/out animations, no longer need to pass in
  * the bool values fadeIn and fadeOut

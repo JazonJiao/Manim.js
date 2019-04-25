@@ -121,11 +121,11 @@ class Node extends PointBase {
             this.hi = false;
     }
 
-    change(newColor, duration) {
+    reColor(newColor, duration) {
         this.c.shake(7, 0.8);
         this.txt.shake(7, 0.8);
-        this.c.st.change(newColor, duration);
-        this.c.ft.change(vector_multiply(newColor, 0.2), duration);
+        this.c.st.reColor(newColor, duration);
+        this.c.ft.reColor(vector_multiply(newColor, 0.2), duration);
     }
 
     show() {
@@ -268,8 +268,15 @@ class Edge extends Line {
         this.txt.shake(amp, 1);
     }
 
-    change(lineColor, txtColor, duration) {
-        this.l.colorTimer.change(lineColor, txtColor, duration);
+    reset(str) {
+        if (this.txt)
+            this.txt.reset({ str: "" + str });
+    }
+
+    reColor(lineColor, txtColor, duration) {
+        this.l.colorTimer.reColor(lineColor, duration);
+        if (this.txt && txtColor)
+            this.txt.reColor(txtColor, duration);
     }
 
     highlight(color, duration, thickness) {

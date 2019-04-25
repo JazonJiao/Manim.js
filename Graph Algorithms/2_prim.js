@@ -102,7 +102,7 @@ class Graph_Prim extends Graph_U {
 
         if (! this.finished && s.frameCount % this.f === 0 && s.frameCount > this.begin) {
             if (this.state === 0) {
-                this.nodes[this.added].change(this.VColor);
+                this.nodes[this.added].reColor(this.VColor);
 
                 this.state = 1;  // never returns to 0
             } else if (this.state === 1) {  // search for smallest edge
@@ -144,7 +144,7 @@ class Graph_Prim extends Graph_U {
             } else {  // add vertex and edge
                 this.edges[this.curEdge[0]][this.curEdge[1]].addEdge(Green);
 
-                this.nodes[this.added].change(this.VColor);
+                this.nodes[this.added].reColor(this.VColor);
                 this.arr.reset({
                     x1: 637, y1: 380, x2: 677, y2: 380
                 });

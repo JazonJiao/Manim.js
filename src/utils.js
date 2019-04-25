@@ -948,7 +948,7 @@ class Pie extends PointBase {
 
         this.r = args.r || 100;
         this.timer = new Timer1(frames(this.duration));
-        this.st = new StrokeChanger(this.s, args.color);
+        this.colorTimer = new StrokeChanger(this.s, args.color);
         this.fill = args.fill || undefined;
         if (this.fill)
             this.ft = new FillChanger(this.s, args.fill);
@@ -963,7 +963,7 @@ class Pie extends PointBase {
         } else
             this.s.noFill();
 
-        this.st.advance();
+        this.colorTimer.advance();
         this.timer_sw.advance();
     }
 
