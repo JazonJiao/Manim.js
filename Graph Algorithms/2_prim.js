@@ -120,7 +120,6 @@ class Graph_Prim extends Graph_U {
                                 this.edges[i][j].highlight();
                             else
                                 this.edges[j][i].highlight();
-                            console.log(i, j);
                             if (this.A[i][j] < weight) {
                                 weight = this.A[i][j];
                                 this.curEdge = [i, j];

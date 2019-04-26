@@ -935,6 +935,61 @@ class Table {
     }
 }
 
+/*** 2019-04-26
+ * Chart
+ * A base class for Grid-like structures
+ * Child classes should define what's in the grid by saying, for example,
+ * this.grid[i][j] = new Text({ x: (i+0.5) * this.w, y: (j+0.5) * this.h, mode: 1 });
+ *
+ * ---- args list parameters ----
+ * @mandatory (number) w, h [specifies the w and h for ONE grid],
+ *             i, j [specifies the number of blocks on x/y direction of the grid]
+ * @optional (number) x, y, start, size [for text], duration [in seconds]
+ */
+class Chart extends PointBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.duration = frames(args.duration) || frames(1.7);  // init animation duration
+        this.w = args.w || 67;
+        this.h = args.h || 47;
+        this.i = args.i || 2;
+        this.j = args.j || 2;
+        this.sw = args.strokeweight || 1;
+        this.color = [167, 167, 167];
+
+        this.hl = [];  // horizontal lines, # = j + 1
+        this.vl = [];  // vertical lines, # = i + 1
+        this.grid = [];
+        for (let i = 0; i < this.i; i++)
+            this.grid[i] = [];
+
+        for (let j = 0; j < this.j + 1; j++)
+            this.hl[j] = new Line(this.s, {
+                x1: this.x + j * this.w, y1: this.y, color: this.color,
+                x2: this.x + j * this.w, y2: this.y + this.h * this.j,
+                strokeweight: this.sw, start: this.start + this.duration * j / this.j
+            });
+
+        for (let i = 0; i < this.i + 1; i++)
+            this.vl[i] = new Line(this.s, {
+                x1: this.x, y1: this.y + i * this.h, color: this.color,
+                x2: this.x + this.w * this.i, y2: this.y + i * this.h,
+                strokeweight: this.sw, start: this.start + this.duration * i / this.i
+            });
+    }
+    show() {
+        for (let j = 0; j < this.j + 1; j++)
+            this.hl[j].show();
+        for (let i = 0; i < this.i + 1; i++)
+            this.vl[i].show();
+
+        for (let i = 0; i < this.i; i++)
+            for (let j = 0; j < this.j; j++)
+                if (this.grid[i][j])
+                    this.grid[i][j].show();
+    }
+}
+
 /*** 2019-04-24
  * ---- args list parameters ----
  * @mandatory (number) x, y, r, a1, a2 (start/end angle in radians)

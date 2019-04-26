@@ -16,6 +16,7 @@
  * @optional (number) radius [for nodes], duration [in seconds], begin,
  *           yOffset [for adjusting location of the node number],
  *           (array) color_v, color_e
+ *           (str) label [if passed in, then node has bigger radius and a label on bottom-right]
  */
 class Graph extends PointBase {
     constructor(ctx, args) {
@@ -42,14 +43,19 @@ class Graph extends PointBase {
         }
         this.dur = args.duration || 1.7;
         this.yOffset = args.yOffset === undefined ? -5 : args.yOffset;   // offset for node text
-        this.radius = args.radius || 57;  // node radius
+        this.radius = args.radius || (args.label ? 67 : 57);  // node radius
 
         this.nodes = [];  // stores Node objects
         for (let i = 0; i < this.n; i++) {
-            this.nodes[i] = new Node(this.s, {
+            this.nodes[i] = args.label ? new NodeLabel(this.s, {
+                x: this.V[i][0], y: this.V[i][1], yOffset: this.yOffset, duration: 0.37,
+                start: this.start + frames(this.dur) * i / this.n, size: args.size || 37,
+                str: "" + i, font: args.font, color: args.color_v, r: this.radius,
+                label: args.label
+            }) : new Node(this.s, {
                 x: this.V[i][0], y: this.V[i][1], yOffset: this.yOffset, duration: 0.37,
                 // display all nodes in this.dur seconds
-                start: this.start + frames(this.dur) * i / this.n, size: args.size,
+                start: this.start + frames(this.dur) * i / this.n, size: args.size || 42,
                 str: "" + i, font: args.font, color: args.color_v, r: this.radius,
             });
         }
@@ -133,6 +139,59 @@ class Node extends PointBase {
             this.highlighting();
         this.c.show();
         this.txt.show();
+    }
+}
+
+// extra param: label, labelColor
+class NodeLabel extends Node {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.txt.reset({
+            x: this.x - 12, y: this.y - 14
+        });
+        let m = 0.24;
+        this.labelColor = args.labelColor || [255, 247, 77];
+        this.lin = new Line(this.s, {
+            x1: this.x - this.r * m, y1: this.y + this.r * m,
+            x2: this.x + this.r * m, y2: this.y - this.r * m,
+            strokeweight: 1, start: args.start, color: [177, 177, 177]
+        });
+        this.cost = new TextFade(this.s, {
+            str: args.label, mode: 1, x: this.x + 10, y: this.y + 10, start: args.start,
+            color: this.labelColor, size: 24
+        });
+    }
+
+    reset(cost) {  // display reset animations
+        this.resetted = true;
+        this.f = 0;
+        this.duration = 1;
+        this.costN = new TextFade(this.s, {
+            str: "" + cost, mode: 1, x: this.x + 10, y: this.y + 40, start: this.s.frameCount + 1,
+            color: this.labelColor, size: 24
+        });
+        this.cost.ft.fadeOut(0.7);
+        this.cost.shift(0, -30, 1, 1);
+        this.costN.shift(0, -30, 1, 1);
+    }
+
+    resetting() {
+        if (this.f <= this.duration * fr) {
+            this.f++;
+            this.costN.show();
+        } else {
+            this.resetted = false;
+            this.cost = this.costN;
+            this.costN = null;
+        }
+    }
+
+    show() {
+        super.show();
+        this.lin.show();
+        if (this.resetted)
+            this.resetting();
+        this.cost.show();
     }
 }
 

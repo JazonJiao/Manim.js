@@ -38,69 +38,9 @@ let G = {
     ],
 };
 
-let nodeTxtSize = 37;
-let nodeRadius = 67;
-
-class Node_07 extends Node {
-    constructor(ctx, args) {
-        super(ctx, args);
-        this.txt.reset({
-            x: this.x - 12, y: this.y - 14
-        });
-        let m = 0.24;
-        this.lin = new Line(this.s, {
-            x1: this.x - this.r * m, y1: this.y + this.r * m,
-            x2: this.x + this.r * m, y2: this.y - this.r * m,
-            strokeweight: 1, start: args.start, color: [177, 177, 177]
-        });
-        this.cost = new TextFade(this.s, {
-            str: "-", mode: 1, x: this.x + 10, y: this.y + 10, start: args.start,
-            color: [177, 217, 255], size: 24
-        });
-    }
-
-    reset(cost) {  // display reset animations
-        this.resetted = true;
-        this.f = 0;
-        this.duration = 1;
-        this.costN = new TextFade(this.s, {
-            str: "" + cost, mode: 1, x: this.x + 10, y: this.y + 40, start: this.s.frameCount + 1,
-            color: [255, 247, 177], size: 24
-        });
-        this.cost.ft.fadeOut(0.7);
-        this.cost.shift(0, -30, 1, 1);
-        this.costN.shift(0, -30, 1, 1);
-    }
-
-    resetting() {
-        if (this.f <= this.duration * fr) {
-            this.f++;
-            this.costN.show();
-        } else {
-            this.resetted = false;
-            this.cost = this.costN;
-            this.costN = null;
-        }
-    }
-
-    show() {
-        super.show();
-        this.lin.show();
-        if (this.resetted)
-            this.resetting();
-        this.cost.show();
-    }
-}
-
 class Graph_Dijk extends Graph_D {
     constructor(ctx, args) {
         super(ctx, args);
-        for (let i = 0; i < this.n; i++)   // reconstruct nodes
-            this.nodes[i] = new Node_07(this.s, {
-                x: this.V[i][0], y: this.V[i][1], yOffset: this.yOffset, duration: 0.37,
-                start: this.start + frames(this.dur) * i / this.n, size: args.size,
-                str: "" + i, font: args.font, color: args.color_v, r: nodeRadius
-            });
 
         this.C = [];
         for (let i = 0; i < this.n; i++) {
@@ -125,10 +65,8 @@ const Graph07 = function (s) {
         setup2D(s);
         s.g = new Graph_Dijk(s, {
             V: G.V, E: G.E, font: tnr,
-            color_v: Green,
-            size: nodeTxtSize, radius: nodeRadius,  // necessary for config
-            color_e: [7, 97, 7],
             start: t.start, begin: t.trace, time: t.txt,
+            label: "-"
         });
         s.d = new Dragger(s, [s.g.txt]);
     };

@@ -60,7 +60,6 @@ class Graphics {         // the master of all classes
  */
 class PointBase {
     constructor(ctx, args) {
-        ///console.log(args);
         this.s = ctx;
         this.x = args.x || 0;
         this.y = args.y || 0;
