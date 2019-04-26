@@ -4,12 +4,33 @@ let G = {
         [300, 300],
         [400, 200],
     ],
-    E: [[0, 1, 2, 2],
-        [0, 2, 23, 3],
-        [0, 3, 34, 9],
-        [1, 2, 0, 5],
+    E: [[0, 1],
+        [0, 2],
+        [0, 3],
+        [1, 2],
     ]
 };
+
+class Graph_Topo extends Graph_D {
+    constructor(ctx, args) {
+        super(ctx, args);
+
+        this.left = 100;  // starting point of list of nodes
+        this.right = 1100;  // ending point of list of nodes
+        this.y = 100;   // the y-coordinate of list of nodes
+
+
+    }
+}
+
+// Calculate in-degree of each vertex via DFS
+// Repeat:
+// 1. Find a vertex with in-degree 0
+// 2. Add it to the sorted list of vertices
+// 3. Remove it in graph and update in-degrees
+// If there are no 0-degree vertices:
+// graph contains cycle and no topological sort exists
+// End if graph is empty
 
 
 const Graph05 = function(s) {

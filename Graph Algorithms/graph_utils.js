@@ -124,7 +124,7 @@ class Node extends PointBase {
     reColor(newColor, duration) {
         this.c.shake(7, 0.8);
         this.txt.shake(7, 0.8);
-        this.c.st.reColor(newColor, duration);
+        this.c.colorTimer.reColor(newColor, duration);
         this.c.ft.reColor(vector_multiply(newColor, 0.2), duration);
     }
 
@@ -386,5 +386,61 @@ class Graph_D extends Graph {
                 duration: 0.8, node_r: this.radius, directed: true, weight: c,
             });
         }
+    }
+}
+
+/*** 2019-04-26
+ * A class that contains the steps of the algorithm
+ *
+ * --- args list ---
+ * str, x, y, start, (size): parameters for the title
+ * begin: starting time for showing the arrow (should be same as starting time for tracing algo)
+ */
+class Tracer extends PointBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.t = [];
+        this.n = 1;
+        this.xs = [];
+        this.ys = [];
+        this.t[0] = new TextWriteIn(this.s, {
+            str: args.str, color: Yellow,
+            x: args.x, y: args.y, size: args.size || 29, start: args.start,
+        });
+        this.arr = new Arrow(this.s, {
+            x1: 0, x2: 0, y1: 1, y2: 1, start: args.begin, color: Orange,
+        });
+    }
+
+    /***
+     * x and y are relative to the location of this graph, which is defined as
+     * the top-left position of the title.
+     *
+     * index is set to 0, 1, 2, 3... if this text is a step of the algorithm, or -1 if not
+     */
+    addText(str, index, x, y, start, size, color) {
+        this.t[this.n] = new TextWriteIn(this.s, {
+            str: str, x: this.x + x, y: this.y + y, size: size || 29, start: start,
+            color: color || White
+        });
+        this.n++;
+        if (index > 0) {
+            this.xs[index] = this.x + x;
+            this.ys[index] = this.y + y;
+        }
+    }
+
+    /**
+     * Reset the arrow to point to a certain step of the algorithm (step 0, 1, 2, 3, etc.)
+     */
+    reset(index) {
+        this.arr.reset({
+            x1: this.xs[index] - 50, x2: this.xs[index] - 10,
+            y1: this.ys[index] + 17, y2: this.ys[index] + 17,
+        });
+    }
+    show() {
+        for (let t of this.t) t.show();
+        this.arr.show();
     }
 }

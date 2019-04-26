@@ -1,4 +1,4 @@
-let G2 = {
+let G = {
     V: [[90, 170],  // S = 0
         [190, 70],
         [190, 270],
@@ -22,7 +22,21 @@ let G2 = {
     ],
 };
 
-let G = {
+let G1 = {
+    V: [[100, 200],  // S (0)
+        [260, 100],  // 1
+        [260, 300],  // 2
+        [420, 200],  // T (3)
+    ],
+    E: [[0, 1, 0, 9],// last entry stores capacity, should be integer
+        [0, 2, 0, 9],
+        [1, 2, 0, 1],
+        [1, 3, 0, 9],
+        [2, 3, 0, 9],
+    ]
+};
+
+let G3 = {
     V: [[120, 70],  // S (0)
         [420, 70],  // 1
         [270, 170],  // 2
@@ -112,59 +126,21 @@ class Graph_Flow extends Graph {
             });
         }
 
-        this.txt = [];
-        this.txt[0] = new TextWriteIn(this.s, {
-            str: "Ford's Algorithm for Max Flow", color: Yellow,
-            x: 517, y: 77, size: 29, start: args.time[0],
+        this.tracer = new Tracer(this.s, {
+            str: "Ford's Algorithm for Max Flow",
+            x: 517, y: 77, size: 29, start: args.time[0], begin: args.begin,
         });
-        this.txt[1] = new TextWriteIn(this.s, {
-            str: "Construct the Residual Graph",
-            x: 557, y: 127, size: 29, start: args.time[1],
-        });
-        this.txt[2] = new TextWriteIn(this.s, {
-            str: "Repeat: ",
-            x: 557, y: 177, size: 29, start: args.time[2],
-        });
-        this.txt[3] = new TextWriteIn(this.s, {
-            str: "1. Find a path from S to T in Residual Graph",
-            x: 597, y: 227, size: 29, start: args.time[3],
-        });
-        this.txt[4] = new TextWriteIn(this.s, {
-            str: "2. Find the smallest-weight edge in the path",
-            x: 597, y: 277, size: 29, start: args.time[4],
-        });
-        this.txt[5] = new TextWriteIn(this.s, {
-            str: "3. Add this amount of flow to the network\n",
-            x: 597, y: 327, size: 29, start: args.time[5],
-        });
-        this.txt[6] = new TextWriteIn(this.s, {
-            str: "Forward edge: ",
-            x: 627, y: 377, size: 24, start: args.time[5], color: Blue,
-        });
-        this.txt[7] = new TextWriteIn(this.s, {
-            str: "increase flow of corresponding edge",
-            x: 777, y: 377, size: 24, start: args.time[5],
-        });
-        this.txt[8] = new TextWriteIn(this.s, {
-            str: "Backward edge: ",
-            x: 627, y: 417, size: 24, start: args.time[5], color: Orange,
-        });
-        this.txt[9] = new TextWriteIn(this.s, {
-            str: "decrease flow of corresponding edge",
-            x: 793, y: 417, size: 24, start: args.time[5],
-        });
-        this.txt[10] = new TextWriteIn(this.s, {
-            str: "4. Update Residual Graph\n",
-            x: 597, y: 467, size: 29, start: args.time[5],
-        });
-        this.txt[11] = new TextWriteIn(this.s, {
-            str: "End if T is unreachable from S in Residual Graph",
-            x: 557, y: 517, size: 29, start: args.time[6],
-        });
-
-        this.arr = new Arrow(this.s, {
-            x1: 597, y1: 140, x2: 637, y2: 140, tipLen: 10, color: Orange, start: args.begin,
-        });
+        this.tracer.addText("Construct the Residual Graph", 0, 40, 50, args.time[1]);
+        this.tracer.addText("Repeat: ", -1, 40, 100, args.time[2]);
+        this.tracer.addText("1. Find a path from S to T in Residual Graph", 1, 80, 150, args.time[3]);
+        this.tracer.addText("2. Find the smallest-weight edge in the path", 2, 80, 200, args.time[4]);
+        this.tracer.addText("3. Add this amount of flow to the network", 3, 80, 250, args.time[5]);
+        this.tracer.addText("Forward edge: ", -1, 110, 300, args.time[5], 24, Blue);
+        this.tracer.addText("increase flow of corresponding edge", -1, 260, 300, args.time[5], 24);
+        this.tracer.addText("Backward edge: ", -1, 110, 340, args.time[5], 24, Orange);
+        this.tracer.addText("decrease flow of corresponding edge", -1, 276, 340, args.time[5], 24);
+        this.tracer.addText("4. Update Residual Graph", 4, 80, 390, args.time[5]);
+        this.tracer.addText("End if T is unreachable from S in Residual Graph", -1, 40, 440, args.time[6]);
 
         this.R = [];  // residual for edge i-j; F[j][i] (backward edge, undefined in E) is flow
         this.rnodes = [];  // residual graph nodes
@@ -226,6 +202,7 @@ class Graph_Flow extends Graph {
 
         this.state = 1;  // corresponds to the step in the algorithm
         this.reset();
+        this.tracer.reset(0);
     }
 
     reset() {
@@ -270,7 +247,7 @@ class Graph_Flow extends Graph {
     }
 
     show() {  // trace the algorithm
-        //for (let t of this.txt) t.show();
+        this.tracer.show();
         for (let i = this.n - 1; i >= 0; i--)
             for (let j = this.n - 1; j >= 0; j--)
                 if (this.redges[i][j])
@@ -280,6 +257,7 @@ class Graph_Flow extends Graph {
         if (!this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
             if (this.state === 1) {
                 this.DFS(0, this.n - 1);
+                this.tracer.reset(1);
                 if (this.found === false)
                     this.finished = true;   // max flow achieved, terminate program
 
@@ -287,6 +265,7 @@ class Graph_Flow extends Graph {
             } else if (this.state === 2) {
                 let x = this.min_e[0], y = this.min_e[1];
                 this.redges[x][y].shake(24);
+                this.tracer.reset(2);
 
                 this.state = 3;
             } else if (this.state === 3) {
@@ -298,6 +277,7 @@ class Graph_Flow extends Graph {
                         this.edges[y][x].reset(-this.min_w, this.R[x][y] - this.min_w);
                     }
                 }
+                this.tracer.reset(3);
 
                 this.state = 4;
             } else if (this.state === 4) {
@@ -314,22 +294,29 @@ class Graph_Flow extends Graph {
                     let r = this.R[x][y];  // new residual
                     let f = c - r;  // new flow (capacity - residual) = this.R[y][x]
 
-                    if (this.A[x][y] === undefined) {   // this is a backward edge, swap x and y
-                        let t1 = x;
-                        r = f;
-                        y = t1;
+                    if (this.A[x][y] === undefined) {   // this is a backward edge
+                        if (r === this.min_w)  // forward edge fades out
+                            this.redges[x][y].reColor(this.feu, this.ftu);
+                        else if (r === 0)   // forward edge fades in
+                            this.redges[x][y].reColor(this.fel, this.ftl);
+
+                        if (f === this.min_w)  // backward edge fades out
+                            this.redges[y][x].reColor(this.beu, this.btu);
+                        else if (f === 0)   // backward edge fades in
+                            this.redges[y][x].reColor(this.bel, this.btl);
+                    } else {   // this is a forward edge
+                        if (r === 0)  // forward edge fades out
+                            this.redges[x][y].reColor(this.feu, this.ftu);
+                        else if (r === this.min_w)   // forward edge fades in
+                            this.redges[x][y].reColor(this.fel, this.ftl);
+
+                        if (f === 0)  // backward edge fades out
+                            this.redges[y][x].reColor(this.beu, this.btu);
+                        else if (f === this.min_w)   // backward edge fades in
+                            this.redges[y][x].reColor(this.bel, this.btl);
                     }
-
-                    if (r === 0)  // forward edge fades out
-                        this.redges[x][y].reColor(this.feu, this.ftu);
-                    else if (r === this.min_w)   // forward edge fades in
-                        this.redges[y][x].reColor(this.fel, this.ftl);
-
-                    if (f === 0)  // backward edge fades out
-                        this.redges[x][y].reColor(this.beu, this.btu);
-                    else if (f === this.min_w)   // backward edge fades in
-                        this.redges[y][x].reColor(this.bel, this.btl);
                 }
+                this.tracer.reset(4);
 
                 this.reset();
                 this.state = 1;
@@ -346,6 +333,7 @@ const Graph04 = function (s) {
         start: frames(1),
         resStart: frames(1),  // display residual graph
         txt: [frames(5), frames(8), frames(10), frames(12), frames(15), frames(17), frames(19)],
+        trace: frames(3),
     };
     let tnr;
     s.preload = function () {
@@ -357,7 +345,7 @@ const Graph04 = function (s) {
             V: G.V, E: G.E, font: tnr,
             color_v: Green,
             color_e: [7, 97, 7],
-            start: t.start, resStart: t.resStart, time: t.txt,
+            start: t.start, begin: t.trace, resStart: t.resStart, time: t.txt,
         });
         s.d = new Dragger(s, [s.g.txt]);
     };
