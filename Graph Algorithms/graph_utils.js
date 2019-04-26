@@ -49,8 +49,8 @@ class Graph extends PointBase {
             this.nodes[i] = new Node(this.s, {
                 x: this.V[i][0], y: this.V[i][1], yOffset: this.yOffset, duration: 0.37,
                 // display all nodes in this.dur seconds
-                start: this.start + frames(this.dur) * i / this.n,
-                str: "" + i, font: args.font, color: args.color_v,
+                start: this.start + frames(this.dur) * i / this.n, size: args.size,
+                str: "" + i, font: args.font, color: args.color_v, r: this.radius,
             });
         }
     }
@@ -68,7 +68,7 @@ class Graph extends PointBase {
 /*** 2019-04-23
  * --- args list ---
  * @mandatory (number) x, y, str, yOffset, (p5.Font) font [tnr]
- * @optional (number) r, start, end, duration, strokeweight,
+ * @optional (number) r, start, end, duration, strokeweight, size
  *           (array) color [for the ring], fill [for inside the circle]
  *
  */
@@ -86,7 +86,7 @@ class Node extends PointBase {
         });
 
         this.txt = new TextFade(this.s, {
-            x: this.x, y: this.y + args.yOffset, size: 42,
+            x: this.x, y: this.y + args.yOffset, size: args.size || 42,
             start: this.start, font: args.font, mode: 1, str: args.str,
         })
     }
@@ -193,7 +193,7 @@ class Edge extends Line {
             }
 
             // start and end angles, after "subtracting" the radius of two nodes from the curve
-            let half_a = Math.asin(this.node_r / 2 / this.r) * 1.07;  // guaranteed in [0, PI/4]
+            let half_a = Math.asin(this.node_r / 2 / this.r) * 1.14;  // guaranteed in [0, PI/4]
             this.la1 = this.a1 - half_a;  // it's supposed to be +, but p5 has a weird coord system
             this.la2 = this.a2 + half_a;  // it's supposed to be - ...
 
@@ -212,11 +212,11 @@ class Edge extends Line {
             }
         } else {
             // the coordinates for line segment; it's shorter than the distance between node centers
-            this.lx1 = args.x1 + dx * this.node_r / len * 0.5;
+            this.lx1 = args.x1 + dx * this.node_r / len * 0.54;
             // 0.54, to account for the node's ring thickness
-            this.lx2 = args.x2 - dx * this.node_r / len * 0.54;
-            this.ly1 = args.y1 + dy * this.node_r / len * 0.5;
-            this.ly2 = args.y2 - dy * this.node_r / len * 0.54;
+            this.lx2 = args.x2 - dx * this.node_r / len * 0.57;
+            this.ly1 = args.y1 + dy * this.node_r / len * 0.54;
+            this.ly2 = args.y2 - dy * this.node_r / len * 0.57;
 
             this.l = this.createLine();
             this.x3 = args.x3 || xm;
@@ -418,13 +418,13 @@ class Tracer extends PointBase {
      *
      * index is set to 0, 1, 2, 3... if this text is a step of the algorithm, or -1 if not
      */
-    addText(str, index, x, y, start, size, color) {
+    add(str, index, x, y, start, size, color) {
         this.t[this.n] = new TextWriteIn(this.s, {
             str: str, x: this.x + x, y: this.y + y, size: size || 29, start: start,
             color: color || White
         });
         this.n++;
-        if (index > 0) {
+        if (index >= 0) {
             this.xs[index] = this.x + x;
             this.ys[index] = this.y + y;
         }

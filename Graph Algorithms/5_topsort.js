@@ -25,11 +25,11 @@ class Graph_Topo extends Graph_D {
 
 // Calculate in-degree of each vertex via DFS
 // Repeat:
-// 1. Find a vertex with in-degree 0
+// 1. Choose a vertex with in-degree 0
 // 2. Add it to the sorted list of vertices
 // 3. Remove it in graph and update in-degrees
 // If there are no 0-degree vertices:
-// graph contains cycle and no topological sort exists
+// graph contains cycle, no topological sort exists
 // End if graph is empty
 
 

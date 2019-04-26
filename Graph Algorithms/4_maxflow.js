@@ -126,21 +126,21 @@ class Graph_Flow extends Graph {
             });
         }
 
-        this.tracer = new Tracer(this.s, {
+        this.tx = new Tracer(this.s, {
             str: "Ford's Algorithm for Max Flow",
             x: 517, y: 77, size: 29, start: args.time[0], begin: args.begin,
         });
-        this.tracer.addText("Construct the Residual Graph", 0, 40, 50, args.time[1]);
-        this.tracer.addText("Repeat: ", -1, 40, 100, args.time[2]);
-        this.tracer.addText("1. Find a path from S to T in Residual Graph", 1, 80, 150, args.time[3]);
-        this.tracer.addText("2. Find the smallest-weight edge in the path", 2, 80, 200, args.time[4]);
-        this.tracer.addText("3. Add this amount of flow to the network", 3, 80, 250, args.time[5]);
-        this.tracer.addText("Forward edge: ", -1, 110, 300, args.time[5], 24, Blue);
-        this.tracer.addText("increase flow of corresponding edge", -1, 260, 300, args.time[5], 24);
-        this.tracer.addText("Backward edge: ", -1, 110, 340, args.time[5], 24, Orange);
-        this.tracer.addText("decrease flow of corresponding edge", -1, 276, 340, args.time[5], 24);
-        this.tracer.addText("4. Update Residual Graph", 4, 80, 390, args.time[5]);
-        this.tracer.addText("End if T is unreachable from S in Residual Graph", -1, 40, 440, args.time[6]);
+        this.tx.add("Construct the Residual Graph", 0, 40, 50, args.time[1]);
+        this.tx.add("Repeat: ", -1, 40, 100, args.time[2]);
+        this.tx.add("1. Find a path from S to T in Residual Graph", 1, 80, 150, args.time[3]);
+        this.tx.add("2. Find the smallest-weight edge in the path", 2, 80, 200, args.time[4]);
+        this.tx.add("3. Add this amount of flow to the network", 3, 80, 250, args.time[5]);
+        this.tx.add("Forward edge: ", -1, 110, 300, args.time[5], 24, Blue);
+        this.tx.add("increase flow of corresponding edge", -1, 260, 300, args.time[5], 24);
+        this.tx.add("Backward edge: ", -1, 110, 340, args.time[5], 24, Orange);
+        this.tx.add("decrease flow of corresponding edge", -1, 276, 340, args.time[5], 24);
+        this.tx.add("4. Update Residual Graph", 4, 80, 390, args.time[5]);
+        this.tx.add("End if T is unreachable from S in Residual Graph", -1, 40, 440, args.time[6]);
 
         this.R = [];  // residual for edge i-j; F[j][i] (backward edge, undefined in E) is flow
         this.rnodes = [];  // residual graph nodes
@@ -202,7 +202,7 @@ class Graph_Flow extends Graph {
 
         this.state = 1;  // corresponds to the step in the algorithm
         this.reset();
-        this.tracer.reset(0);
+        this.tx.reset(0);
     }
 
     reset() {
@@ -247,7 +247,7 @@ class Graph_Flow extends Graph {
     }
 
     show() {  // trace the algorithm
-        this.tracer.show();
+        this.tx.show();
         for (let i = this.n - 1; i >= 0; i--)
             for (let j = this.n - 1; j >= 0; j--)
                 if (this.redges[i][j])
@@ -257,7 +257,7 @@ class Graph_Flow extends Graph {
         if (!this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
             if (this.state === 1) {
                 this.DFS(0, this.n - 1);
-                this.tracer.reset(1);
+                this.tx.reset(1);
                 if (this.found === false)
                     this.finished = true;   // max flow achieved, terminate program
 
@@ -265,7 +265,7 @@ class Graph_Flow extends Graph {
             } else if (this.state === 2) {
                 let x = this.min_e[0], y = this.min_e[1];
                 this.redges[x][y].shake(24);
-                this.tracer.reset(2);
+                this.tx.reset(2);
 
                 this.state = 3;
             } else if (this.state === 3) {
@@ -277,7 +277,7 @@ class Graph_Flow extends Graph {
                         this.edges[y][x].reset(-this.min_w, this.R[x][y] - this.min_w);
                     }
                 }
-                this.tracer.reset(3);
+                this.tx.reset(3);
 
                 this.state = 4;
             } else if (this.state === 4) {
@@ -316,7 +316,7 @@ class Graph_Flow extends Graph {
                             this.redges[y][x].reColor(this.bel, this.btl);
                     }
                 }
-                this.tracer.reset(4);
+                this.tx.reset(4);
 
                 this.reset();
                 this.state = 1;
