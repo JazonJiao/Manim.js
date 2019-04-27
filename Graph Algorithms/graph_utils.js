@@ -127,11 +127,13 @@ class Node extends PointBase {
             this.hi = false;
     }
 
-    reColor(newColor, duration) {
+    reColor(ringColor, fillColor, txtColor, duration) {
         this.c.shake(7, 0.8);
         this.txt.shake(7, 0.8);
-        this.c.colorTimer.reColor(newColor, duration);
-        this.c.ft.reColor(vector_multiply(newColor, 0.2), duration);
+        this.c.colorTimer.reColor(ringColor, duration);
+        this.c.ft.reColor(fillColor ? fillColor : vector_multiply(ringColor, 0.2), duration);
+        if (txtColor)
+            this.txt.ft.reColor(txtColor, duration);
     }
 
     show() {
@@ -335,10 +337,8 @@ class Edge extends Line {
 
     reColor(lineColor, txtColor, duration) {
         this.l.colorTimer.reColor(lineColor, duration);
-        if (this.txt !== undefined) {
-            console.log(txtColor);
+        if (this.txt !== undefined)
             this.txt.reColor(txtColor, duration);
-        }
     }
 
     highlight(color, duration, thickness) {
@@ -464,8 +464,10 @@ class Tracer extends PointBase {
         this.ys = [];
         this.t[0] = new TextWriteIn(this.s, {
             str: args.str, color: Yellow,
-            x: args.x, y: args.y, size: args.size || 29, start: args.start,
+            x: args.x, y: args.y, size: args.size || 29, start: this.start,
         });
+        this.start += args.str.length + 7;
+
         this.arr = new Arrow(this.s, {
             x1: 0, x2: 0, y1: 1, y2: 1, start: args.begin, color: Orange,
         });
@@ -474,14 +476,16 @@ class Tracer extends PointBase {
     /***
      * x and y are relative to the location of this graph, which is defined as
      * the top-left position of the title.
+     * If want no halt between display time, pass in 1 as frameOff for PREVIOUS string
      *
      * index is set to 0, 1, 2, 3... if this text is a step of the algorithm, or -1 if not
      */
-    add(str, index, x, y, start, size, color) {
+    add(str, index, x, y, size, color, frameOff) {
         this.t[this.n] = new TextWriteIn(this.s, {
-            str: str, x: this.x + x, y: this.y + y, size: size || 29, start: start,
+            str: str, x: this.x + x, y: this.y + y, size: size || 29, start: this.start,
             color: color || White
         });
+        this.start += str.length + (frameOff ? frameOff : 7);
         this.n++;
         if (index >= 0) {
             this.xs[index] = this.x + x;

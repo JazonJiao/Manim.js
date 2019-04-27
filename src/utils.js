@@ -949,7 +949,7 @@ class Table {
 class Chart extends PointBase {
     constructor(ctx, args) {
         super(ctx, args);
-        this.duration = frames(args.duration) || frames(1.7);  // init animation duration
+        this.duration = frames(args.duration) || frames(1.2);  // init animation duration
         this.w = args.w || 67;
         this.h = args.h || 47;
         this.i = args.i || 2;

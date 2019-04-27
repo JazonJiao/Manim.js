@@ -128,19 +128,19 @@ class Graph_Flow extends Graph {
 
         this.tx = new Tracer(this.s, {
             str: "Ford's Algorithm for Max Flow",
-            x: 517, y: 77, size: 29, start: args.time[0], begin: args.begin,
+            x: 517, y: 77, size: 29, start: args.time, begin: args.begin,
         });
-        this.tx.add("Construct the Residual Graph", 0, 40, 50, args.time[1]);
-        this.tx.add("Repeat: ", -1, 40, 100, args.time[2]);
-        this.tx.add("1. Find a path from S to T in Residual Graph", 1, 80, 150, args.time[3]);
-        this.tx.add("2. Find the smallest-weight edge in the path", 2, 80, 200, args.time[4]);
-        this.tx.add("3. Add this amount of flow to the network", 3, 80, 250, args.time[5]);
-        this.tx.add("Forward edge: ", -1, 110, 300, args.time[5], 24, Blue);
-        this.tx.add("increase flow of corresponding edge", -1, 260, 300, args.time[5], 24);
-        this.tx.add("Backward edge: ", -1, 110, 340, args.time[5], 24, Orange);
-        this.tx.add("decrease flow of corresponding edge", -1, 276, 340, args.time[5], 24);
-        this.tx.add("4. Update Residual Graph", 4, 80, 390, args.time[5]);
-        this.tx.add("End if T is unreachable from S in Residual Graph", -1, 40, 440, args.time[6]);
+        this.tx.add("Construct the Residual Graph", 0, 40, 50);
+        this.tx.add("Repeat: ", -1, 40, 100);
+        this.tx.add("1. Find a path from S to T in Residual Graph", 1, 80, 150);
+        this.tx.add("2. Find the smallest-weight edge in the path", 2, 80, 200);
+        this.tx.add("3. Add this amount of flow to the network", 3, 80, 250);
+        this.tx.add("Forward edge: ", -1, 110, 300, 24, Blue);
+        this.tx.add("increase flow of corresponding edge", -1, 260, 300, 24);
+        this.tx.add("Backward edge: ", -1, 110, 340, 24, Orange);
+        this.tx.add("decrease flow of corresponding edge", -1, 276, 340, 24);
+        this.tx.add("4. Update Residual Graph", 4, 80, 390);
+        this.tx.add("End if T is unreachable from S in Residual Graph", -1, 40, 440);
 
         this.R = [];  // residual for edge i-j; F[j][i] (backward edge, undefined in E) is flow
         this.rnodes = [];  // residual graph nodes
@@ -332,7 +332,7 @@ const Graph04 = function (s) {
     let t = {
         start: frames(1),
         resStart: frames(1),  // display residual graph
-        txt: [frames(5), frames(8), frames(10), frames(12), frames(15), frames(17), frames(19)],
+        txt: frames(2),
         trace: frames(3),
     };
     let tnr;

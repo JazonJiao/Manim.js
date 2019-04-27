@@ -54,7 +54,7 @@ class Graph_Dijk extends Graph_D {
 const Graph07 = function (s) {
     let t = {
         start: frames(1),
-        txt: [frames(5), frames(8), frames(10), frames(12), frames(15), frames(17), frames(19)],
+        txt: frames(2),
         trace: frames(3),
     };
     let tnr;
@@ -66,7 +66,7 @@ const Graph07 = function (s) {
         s.g = new Graph_Dijk(s, {
             V: G.V, E: G.E, font: tnr,
             start: t.start, begin: t.trace, time: t.txt,
-            label: "-"
+            label: "∞"
         });
         s.d = new Dragger(s, [s.g.txt]);
     };

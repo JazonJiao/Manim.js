@@ -51,6 +51,12 @@ class Text extends TextBase {
         this.ft.reColor(color, duration);
     }
 
+    // works the same way as move
+    change(str, duration) {
+        // todo
+        this.reset({ str: str });
+    }
+
     reset(args) {
         this.x = args.x || this.x;
         this.y = args.y || this.y;
@@ -87,7 +93,6 @@ class Text extends TextBase {
         if (this.s.frameCount >= this.start && this.s.frameCount < this.end) {
             this.showSetup();
             this.s.fill(this.color);
-            //fill(this.color[0], this.color[1], this.color[2]);
 
             this.s.text(this.str, this.x, this.y);
         }
@@ -149,6 +154,26 @@ class TextWriteIn extends Text {
             }
             this.s.text(this.txt, this.x, this.y);
         }
+    }
+}
+
+/***
+ * todo
+ */
+class TextRoll extends TextFade {
+    constructor(ctx, args) {
+        super(ctx, args);
+    }
+
+    /**
+     * @param str - could be a number
+     */
+    roll(str) {
+        this.reset({ str: "" + str });
+    }
+
+    rolling() {
+
     }
 }
 
