@@ -128,8 +128,8 @@ class Node extends PointBase {
     }
 
     reColor(ringColor, fillColor, txtColor, duration) {
-        this.c.shake(7, 0.8);
-        this.txt.shake(7, 0.8);
+        // this.c.shake(7, 0.8);
+        // this.txt.shake(7, 0.8);
         this.c.colorTimer.reColor(ringColor, duration);
         this.c.ft.reColor(fillColor ? fillColor : vector_multiply(ringColor, 0.2), duration);
         if (txtColor)

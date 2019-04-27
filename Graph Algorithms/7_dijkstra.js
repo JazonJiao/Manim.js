@@ -1,4 +1,4 @@
-// Dijkstra's algorithm
+// Dijkstra's algorithm, 2019-04-26
 
 let G2 = {
     V: [[225, 100],  // 0

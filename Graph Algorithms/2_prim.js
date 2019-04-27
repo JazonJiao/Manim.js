@@ -1,4 +1,4 @@
-// Prim's algorithm for MST (naive implementation)
+// Prim's algorithm for MST (naive implementation), 2019-04-24
 
 let G = {
     V: [[250, 100],  // 0

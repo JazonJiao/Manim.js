@@ -41,7 +41,7 @@ class Chart_Floyd extends Chart {
                     size: 29, start: this.start, mode: 1,
                 });
                 this.path[i][j] = new TextRoll(this.s, {
-                    str: "3",
+                    str: "-",
                     x: this.x + (i + 0.9) * this.w, y: this.y + (j + 0.74) * this.h, mode: 1,
                     font: args.font, size: 19, color: Orange,
                     start: this.start + (i + j) * this.duration / this.j,
@@ -93,7 +93,7 @@ class Chart_Floyd extends Chart {
         if (this.s.frameCount === this.startMove)
             for (let i = 1; i < this.i; i++)
                 for (let j = 1; j < this.j; j++)
-                    if (this.A[i - 1][j - 1])
+                    if (this.A[i - 1][j - 1] !== undefined)
                         this.grid[i][j].move(this.x + (i + this.xp) * this.w,
                             this.y + (j + 0.42) * this.h, 1);
 
@@ -122,8 +122,10 @@ class Graph_Floyd extends Graph_D {
         this.z.add("Graph contains negative-weight cycle,\n" +
             "shortest path undefined", 4, 120, 305, 24, [117, 117, 117]);  // step 4
 
-        this.P = [];  // 2D array of paths (previous node)
-        this.C = [];  // 2D array of costs
+        this.P = [];  // 2D array of paths (previous node in the best path)
+        //this.C = [];  // 2D array of costs
+
+
 
         this.chart = new Chart_Floyd(this.s, {
             x: 100, y: 327, start: 70, h: 47,
@@ -132,11 +134,20 @@ class Graph_Floyd extends Graph_D {
 
         for (let i = 0; i < this.n; i++)   // use 1-based indexing
             this.nodes[i].relabel("" + (i + 1));
+
+        this.state = 1;
+        this.i = 0;
+        this.j = 0;
+        this.k = 0;
     }
     show() {
         super.show();
         this.z.show();
         this.chart.show();
+
+        if (!this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
+
+        }
     }
 }
 

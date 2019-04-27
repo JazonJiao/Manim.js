@@ -51,6 +51,36 @@ class Text extends TextBase {
         this.ft.reColor(color, duration);
     }
 
+    move(x, y, duration, timerNum, size) {
+        super.move(x, y, duration, timerNum);
+        this.so = this.size;
+        this.sn = size || this.size;
+    }
+
+    moving() {
+        super.moving();
+        this.size = this.so + this.move_timer.t * (this.sn - this.so);
+    }
+
+    shake(amp, duration) {
+        super.shake(amp, duration);
+        this.so = this.size;
+    }
+    shaking() {
+        super.shaking();
+        // 2019-04-27: if I don't plus 0.1, it gives a NaN for negative numbers
+        this.size += Math.sin(this.move_timer.t * this.s.TWO_PI) * this.amp * 0.27;
+    }
+
+    jump(amp, duration) {
+        super.jump(amp, duration);
+        this.so = this.size;
+    }
+    jumping() {
+        super.jumping();
+        this.size = this.so + Math.pow(Math.sin(this.move_timer.t * 3.14) + 0.1, 0.4) * this.amp;
+    }
+
     // works the same way as move
     change(str, duration) {
         // todo
@@ -60,6 +90,7 @@ class Text extends TextBase {
     reset(args) {
         this.x = args.x || this.x;
         this.y = args.y || this.y;
+        this.size = args.size || this.size;
         this.str = args.str || this.str;
     }
 
