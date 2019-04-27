@@ -101,6 +101,12 @@ class Node extends PointBase {
         this.txt.reset({ str: txt });
     }
 
+    /**
+     * If time for highlight is unknown, could pass in 1e5 as @param duration and
+     * call dehighlight() later on
+     *
+     * There seems to be a bug that duration = 1 causes error. Try setting duration to be >= 1.7
+     */
     highlight(color, duration, thickness) {
         this.hi = true;
         this.h_color = color || [255, 67, 7];
@@ -110,6 +116,10 @@ class Node extends PointBase {
         this.f = 0;
         this.h_timer = new Timer2(frames(0.67));
         this.s_timer = new FillChanger(this.s, this.h_color);
+    }
+
+    dehighlight() {
+        this.h_fr = this.f + frames(1);
     }
 
     highlighting() {
@@ -164,7 +174,13 @@ class NodeLabel extends Node {
         });
     }
 
-    reset(cost) {  // display reset animations
+    reColor(ringColor, fillColor, txtColor, labelColor, duration) {
+        super.reColor(ringColor, fillColor, txtColor, duration);
+        if (labelColor)
+            this.cost.ft.reColor(labelColor, duration);
+    }
+
+    reset(cost, down) {  // display reset animations, 2nd param specify direction (default shift up)
         this.resetted = true;
         this.f = 0;
         this.duration = 1;
@@ -173,8 +189,9 @@ class NodeLabel extends Node {
             color: this.labelColor, size: 24
         });
         this.cost.ft.fadeOut(0.7);
-        this.cost.shift(0, -30, 1, 1);
-        this.costN.shift(0, -30, 1, 1);
+        let d = down ? 1 : -1;
+        this.cost.shift(0, 30 * d, 1, 1);
+        this.costN.shift(0, 30 * d, 1, 1);
     }
 
     resetting() {
@@ -350,6 +367,13 @@ class Edge extends Line {
         this.f = 0;
         this.h_timer = new Timer2(frames(0.67));
         this.s_timer = new StrokeChanger(this.s, this.h_color);
+    }
+
+    /**
+     * @see class Node's highlight() and dehighlight() method
+     */
+    dehighlight() {
+        this.h_fr = this.f + frames(1);
     }
 
     highlighting() {

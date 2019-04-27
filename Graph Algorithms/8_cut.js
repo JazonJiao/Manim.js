@@ -1,5 +1,7 @@
 // 8. Finding cut vertices (articulation points), 2019-04-27
 
+
+
 class Graph_Cut extends Graph_U {
     constructor(ctx, args) {
         super(ctx, args);
@@ -41,7 +43,7 @@ const Graph08 = function (s) {
     };
     s.setup = function () {
         setup2D(s);
-        s.g = new Graph_Floyd(s, {
+        s.g = new Graph_Cut(s, {
             V: G.V, E: G.E, font: tnr, label: " ",
             start: t.start, begin: t.trace, time: t.txt,
         });

@@ -62,23 +62,16 @@ class Text extends TextBase {
         this.size = this.so + this.move_timer.t * (this.sn - this.so);
     }
 
-    shake(amp, duration) {
-        super.shake(amp, duration);
-        this.so = this.size;
-    }
     shaking() {
         super.shaking();
-        // 2019-04-27: if I don't plus 0.1, it gives a NaN for negative numbers
-        this.size += Math.sin(this.move_timer.t * this.s.TWO_PI) * this.amp * 0.27;
+        if (this.mode === 1)   // changing size only works if text is in the center
+            this.size += Math.sin(this.move_timer.t * this.s.TWO_PI) * this.amp * 0.27;
     }
 
-    jump(amp, duration) {
-        super.jump(amp, duration);
-        this.so = this.size;
-    }
     jumping() {
         super.jumping();
-        this.size = this.so + Math.pow(Math.sin(this.move_timer.t * 3.14) + 0.1, 0.4) * this.amp;
+        if (this.mode === 1)
+            this.size += Math.sin(this.move_timer.t * this.s.TWO_PI) * this.amp * 0.27;
     }
 
     // works the same way as move
