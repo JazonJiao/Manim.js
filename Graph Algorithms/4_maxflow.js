@@ -119,7 +119,7 @@ class Graph_Flow extends Graph {
 
         for (let i = 0; i < this.m; i++) {  // copied from Graph_G, but need a different class
             let a = this.E[i][0], b = this.E[i][1];  // two connecting nodes
-            let d = this.E[i][2], c = this.E[i][3];  // radius and cost
+            let d = this.E[i][2], c = this.E[i][3];  // radius and label
             this.A[a][b] = c;
             this.edges[a][b] = new Edge_04(this.s, {
                 x1: this.V[a][0], y1: this.V[a][1], x2: this.V[b][0], y2: this.V[b][1],

@@ -1,3 +1,5 @@
+// Topological sort using in-degrees, 2019-04-27
+
 let G = {
     V: [[300, 100],
         [200, 200],
@@ -16,7 +18,7 @@ class Graph_Topo extends Graph_D {
         super(ctx, args);
         this.z = new Tracer(this.s, {
             str: "Topological sort (using in-degrees)",
-            x: 537, y: 57, start: args.time, begin: args.begin,
+            x: 537, y: 57, start: args.time, begin: args.begin, arrColor: [77, 197, 77],
         });
         this.z.add("Using DFS to find the in-degree of each node", 0, 40, 45);
         this.z.add("Repeat: ", -1, 40, 90);
@@ -30,14 +32,17 @@ class Graph_Topo extends Graph_D {
         this.f = 37;  // fixme
 
         this.dx = cvw / this.n;  // starting point of list of nodes as well as x-step
-        this.ty = 100;   // the y-coordinate of list of nodes
+        this.ty = 577;   // the y-coordinate of list of nodes
 
         this.I = [];    // array of in-degrees
         this.visited = [];  // used for DFS
         this.stack = [0];  // used for DFS
         this.aim = [1];    // used for DFS
         this.top = 0;    // used for DFS, equal to size - 1
-        this.tnodes = [];  // nodes for the sorted order
+        this.T = [];     // the order of a node
+        this.len = 0;    // number of nodes on sorted order
+        this.tnodes = [];  // node objects for the sorted order
+        this.tedges = [];
 
         for (let i = 0; i < this.n; i++) {
             this.I[i] = 0;
@@ -57,6 +62,7 @@ class Graph_Topo extends Graph_D {
         if (! this.visited[0]) {  // starting point
             this.visited[0] = true;
             this.nodes[0].highlight(hlc, 1e5, 12);
+            this.z.reset(0);
             return;
         }
 
@@ -76,8 +82,8 @@ class Graph_Topo extends Graph_D {
                     this.nodes[aim].highlight(hlc, 1e5, 12);
                     this.edges[node][aim].highlight(hlc, 1e5, 14);
                 } else {// else, an unvisited edge is detected, but endpoint is visited
-                    this.nodes[aim].highlight(hlc, 2, 12);
-                    this.edges[node][aim].highlight(hlc, 1.9, 14);
+                    this.nodes[aim].highlight(hlc, this.f / fr * 1.5, 12);
+                    this.edges[node][aim].highlight(hlc, this.f / fr * 1.4, 14);
                 }
 
                 this.I[aim]++;    // fixme
@@ -113,25 +119,30 @@ class Graph_Topo extends Graph_D {
         super.show();
         this.z.show();
         for (let t of this.tnodes) t.show();
+        for (let e of this.tedges) e.show();
 
         if (!this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
             if (this.state === 0) {  // perform DFS
                 this.DFS();
             } else if (this.state === -2) {  // intermediate step: start DFS at new vertex
-                this.nodes[this.stack[0]].highlight(Orange, 1e5, 9);
+                this.nodes[this.stack[0]].highlight(Orange, 1e5, 12);
 
                 this.state = 0;
             } else if (this.state === -1) {  // intermediate step: mark all 0-degree vertices
+                this.z.reset(1);
                 for (let i = 0; i < this.n; i++)
                     if (this.I[i] === 0) {
                         this.nodes[i].reColor(Yellow, false, false, [255, 147, 7, 255]);
                     }
                 this.state = 1;
             } else if (this.state === 1) {
+                this.z.reset(1);
                 for (let i = 0; i < this.n; i++) {
-                    if (this.I[i] === 0) {
+                    if (this.I[i] === 0) {  // found a 0 in-degree vertex!
                         this.cur = i;
-                        this.nodes[i].highlight(Orange, 2, 17);
+                        this.T[i] = this.len;
+                        this.len++;
+                        this.nodes[i].highlight(Orange, this.f / fr * 1.5, 17);
 
                         this.state = 2;
                         return;
@@ -139,22 +150,61 @@ class Graph_Topo extends Graph_D {
                 }
                 this.state = 4;  // no topological sort exists
             } else if (this.state === 2) {
+                this.z.reset(2);
                 let i = this.cur;
-
-                this.nodes[i].reColor([57, 27, 0], false, [77, 77, 77], [0, 0, 0], [0, 0, 0]);
-
                 let l = this.tnodes.length;
-                this.tnodes[l] = new Node(this.s, {
+                let x = cvw * (l + 1) / (this.n + 1);
+
+                this.tnodes[l] = new Node(this.s, {  // add new vertex in the sorted list
                     str: "" + i, color: Green,
-                    x: this.nodes[i].x, y: this.nodes[i].y, start: this.s.frameCount,
+                    start: this.s.frameCount + 1,  // this is important since fade in anim needs it!
+                    x: x, y: this.ty,
                 });
-                this.tnodes[l].move(cvw * l / this.n, this.ty, 1.7, 2);
+                // add incoming edges
+                for (let j = 0; j < this.n; j++)
+                    if (this.A[j][i]) {
+                        let pj = this.T[j];  // position of j on the sorted order
+                        this.tedges[this.tedges.length] = new Edge(this.s, {
+                            x1: cvw * (pj + 1) / (this.n + 1), x2: x,
+                            y1: this.ty, y2: this.ty,
+                            color: [17, 97, 197], directed: true, start: this.s.frameCount + 1,
+                            duration: 0.8, node_r: this.radius,
+                            d: Math.abs(pj - l) === 1 ?
+                                0 : 67 + Math.abs(pj - l) * 2  // curvature of edge
+                        });
+                    }
 
                 this.state = 3;
             } else if (this.state === 3) {
+                this.z.reset(3);
+                let i = this.cur;
 
+                this.I[i]--;  // in-degree set to -1
+
+                // NodeLabel fade out animation
+                this.nodes[i].reColor([57, 27, 0], false, [97, 77, 77, 177]);
+                this.nodes[i].lin.timer_sw =
+                    new StrokeWeightTimer(this.s, this.s.frameCount + 1, 1, 0.7);
+                this.nodes[i].label.end = this.s.frameCount + 1;
+
+                // outgoing edges fade out & reset in-degrees
+                for (let j = 0; j < this.n; j++) {
+                    if (this.A[i][j]) {
+                        this.edges[i][j].reColor([4, 27, 4]);
+                        this.I[j]--;
+                        this.nodes[j].reset(this.I[j], true);  // decrease, so down = true
+                    }
+                }
+                this.finished = true;
+                for (let i = 0; i < this.n; i++)  // check if algorithm is terminated
+                    if (this.I[i] > -1)
+                        this.finished = false;
+
+                this.state = this.finished ? 5 : 1;
             } else if (this.state === 4) {
                 console.log("no topsort exists");
+            } else if (this.state === 5) {
+                this.z.reset(5);
             }
         }
     }

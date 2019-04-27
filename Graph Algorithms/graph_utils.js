@@ -84,6 +84,7 @@ class Node extends PointBase {
         this.r = args.r || 57;
         this.sw = args.strokeweight || 2;
         this.color = args.color || Blue;
+        this.yOffset = args.yOffset || -4;
         this.fill = args.fill || vector_multiply(this.color, 0.14);
 
         this.c = new Circle(this.s, {
@@ -92,7 +93,7 @@ class Node extends PointBase {
         });
 
         this.txt = new TextFade(this.s, {
-            x: this.x, y: this.y + args.yOffset, size: args.size || 42,
+            x: this.x, y: this.y + this.yOffset, size: args.size || 42,
             start: this.start, font: args.font, mode: 1, str: args.str,
         })
     }
@@ -142,13 +143,19 @@ class Node extends PointBase {
             this.hi = false;
     }
 
+    /**
+     * NOTICE: If this does not work correctly, it's usually because color array should have
+     * 4 entries!!
+     */
     reColor(ringColor, fillColor, txtColor, duration) {
         // this.c.shake(7, 0.8);
         // this.txt.shake(7, 0.8);
-        this.c.colorTimer.reColor(ringColor, duration);
+        this.c.st.reColor(ringColor, duration);
         this.c.ft.reColor(fillColor ? fillColor : vector_multiply(ringColor, 0.2), duration);
-        if (txtColor)
+        if (txtColor) {
+            console.log(txtColor);
             this.txt.ft.reColor(txtColor, duration);
+        }
     }
 
     show() {
@@ -173,7 +180,7 @@ class NodeLabel extends Node {
             x2: this.x + this.r * m, y2: this.y - this.r * m,
             strokeweight: 1, start: args.start, color: [177, 177, 177]
         });
-        this.cost = new TextFade(this.s, {
+        this.label = new TextFade(this.s, {
             str: args.label, mode: 1, x: this.x + 10, y: this.y + 10, start: args.start,
             color: this.labelColor, size: 24
         });
@@ -182,33 +189,34 @@ class NodeLabel extends Node {
     reColor(ringColor, fillColor, txtColor, labelColor, lineColor, duration) {
         super.reColor(ringColor, fillColor, txtColor, duration);
         if (labelColor)
-            this.cost.ft.reColor(labelColor, duration);
+            this.label.ft.reColor(labelColor, duration);
         if (lineColor)
-            this.lin.colorTimer.reColor(lineColor, duration);
+            this.lin.st.reColor(lineColor, duration);
     }
 
     reset(cost, down) {  // display reset animations, 2nd param specify direction (default shift up)
         this.resetted = true;
         this.f = 0;
         this.duration = 1;
-        this.costN = new TextFade(this.s, {
-            str: "" + cost, mode: 1, x: this.x + 10, y: this.y + 40, start: this.s.frameCount + 1,
+        this.labelN = new TextFade(this.s, {
+            str: "" + cost, mode: 1, x: this.x + 10,
+            y: down ? this.y - 20 : this.y + 40, start: this.s.frameCount + 1,
             color: this.labelColor, size: 24
         });
-        this.cost.ft.fadeOut(0.7);
+        this.label.ft.fadeOut(0.7);
         let d = down ? 1 : -1;
-        this.cost.shift(0, 30 * d, 1, 1);
-        this.costN.shift(0, 30 * d, 1, 1);
+        this.label.shift(0, 30 * d, 1, 1);
+        this.labelN.shift(0, 30 * d, 1, 1);
     }
 
     resetting() {
         if (this.f <= this.duration * fr) {
             this.f++;
-            this.costN.show();
+            this.labelN.show();
         } else {
             this.resetted = false;
-            this.cost = this.costN;
-            this.costN = null;
+            this.label = this.labelN;
+            this.labelN = null;
         }
     }
 
@@ -217,7 +225,7 @@ class NodeLabel extends Node {
         this.lin.show();
         if (this.resetted)
             this.resetting();
-        this.cost.show();
+        this.label.show();
     }
 }
 
@@ -360,7 +368,7 @@ class Edge extends Line {
     }
 
     reColor(lineColor, txtColor, duration) {
-        this.l.colorTimer.reColor(lineColor, duration);
+        this.l.st.reColor(lineColor, duration);
         if (this.txt !== undefined)
             this.txt.reColor(txtColor, duration);
     }
@@ -427,7 +435,7 @@ class Graph_U extends Graph {
         super(ctx, args);
         for (let i = 0; i < this.m; i++) {
             let a = this.E[i][0], b = this.E[i][1];  // two connecting nodes
-            let d = this.E[i][2], c = this.E[i][3];  // radius and cost
+            let d = this.E[i][2], c = this.E[i][3];  // radius and label
             if (c !== undefined)
                 this.A[a][b] = this.A[b][a] = c;
             else
@@ -463,7 +471,7 @@ class Graph_D extends Graph {
         super(ctx, args);
         for (let i = 0; i < this.m; i++) {
             let a = this.E[i][0], b = this.E[i][1];  // two connecting nodes
-            let d = this.E[i][2], c = this.E[i][3];  // radius and cost
+            let d = this.E[i][2], c = this.E[i][3];  // radius and label
             if (c !== undefined)
                 this.A[a][b] = c;
             else
@@ -485,6 +493,7 @@ class Graph_D extends Graph {
  * --- args list ---
  * str, x, y, start, (size): parameters for the title
  * begin: starting time for showing the arrow (should be same as starting time for tracing algo)
+ * (array) arrColor
  */
 class Tracer extends PointBase {
     constructor(ctx, args) {
@@ -500,7 +509,7 @@ class Tracer extends PointBase {
         this.start += args.str.length + 7;
 
         this.arr = new Arrow(this.s, {
-            x1: 0, x2: 0, y1: 1, y2: 1, start: args.begin, color: Orange,
+            x1: 0, x2: 0, y1: 1, y2: 1, start: args.begin, color: args.arrColor || Orange,
         });
     }
 

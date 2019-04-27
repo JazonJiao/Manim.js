@@ -477,7 +477,7 @@ class Line {
         // starting frame for initialization animation
         this.start = args.start || 1;
         this.strokeweight = args.strokeweight || 3;
-        this.colorTimer = new StrokeChanger(this.s, args.color);
+        this.st = new StrokeChanger(this.s, args.color);
 
         this.timer = new TimerFactory(frames(this.duration), args.mode);
 
@@ -529,7 +529,7 @@ class Line {
     }
 
     showSetup() {
-        this.colorTimer.advance();
+        this.st.advance();
         this.timer_sw.advance();
         if (this.moved)
             this.moving();
@@ -1003,7 +1003,7 @@ class Pie extends PointBase {
 
         this.r = args.r || 100;
         this.timer = new Timer1(frames(this.duration));
-        this.colorTimer = new StrokeChanger(this.s, args.color);
+        this.st = new StrokeChanger(this.s, args.color);
         this.fill = args.fill || undefined;
         if (this.fill)
             this.ft = new FillChanger(this.s, args.fill);
@@ -1011,6 +1011,7 @@ class Pie extends PointBase {
         this.strokeweight = args.strokeweight || 3;
         this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
     }
+
     showSetup() {
         this.showMove();
         if (this.fill) {
@@ -1018,7 +1019,7 @@ class Pie extends PointBase {
         } else
             this.s.noFill();
 
-        this.colorTimer.advance();
+        this.st.advance();
         this.timer_sw.advance();
     }
 

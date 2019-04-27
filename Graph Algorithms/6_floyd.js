@@ -111,12 +111,12 @@ class Graph_Floyd extends Graph_D {
             str: "Floyd's all-pair shortest path algorithm",
             x: 567, y: 67, size: 29, start: args.time, begin: args.begin,
         });
-        this.z.add("Initialize cost table", 0, 30, 45);   // step 0
+        this.z.add("Initialize label table", 0, 30, 45);   // step 0
         this.z.add("For i from 1 to number of nodes: ", 1, 30, 90);  // step 1
         this.z.add("For each pair of nodes j and k:", -1, 60, 135);
         //this.z.add("Compute Cost(j→i) and Cost(i→k)", 2, 90, 180);
         this.z.add("If Cost(j→i) + Cost(i→k) < Cost(j→k):", 2, 90, 180);   // step 2
-        this.z.add("Update cost table and", 3, 120, 225, false, White, 1);  // step 3
+        this.z.add("Update label table and", 3, 120, 225, false, White, 1);  // step 3
         this.z.add("source vertex", -1, 379, 225, false, Orange);
         this.z.add("If j == k and Cost(j→k) < 0 then", -1, 90, 270, 24, [117, 117, 117]);
         this.z.add("Graph contains negative-weight cycle,\n" +
