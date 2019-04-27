@@ -73,8 +73,8 @@ class Graph extends PointBase {
 
 /*** 2019-04-23
  * --- args list ---
- * @mandatory (number) x, y, str, yOffset, (p5.Font) font [tnr]
- * @optional (number) r, start, end, duration, strokeweight, size
+ * @mandatory (number) x, y, str, (p5.Font) font [tnr]
+ * @optional (number) r, start, end, duration, strokeweight, size, yOffset,
  *           (array) color [for the ring], fill [for inside the circle]
  *
  */
@@ -97,6 +97,11 @@ class Node extends PointBase {
         })
     }
 
+    move(x, y, dur, timerNum) {
+        this.c.move(x, y, dur, timerNum);
+        this.txt.move(x, y, dur, timerNum);
+    }
+
     relabel(txt) {
         this.txt.reset({ str: txt });
     }
@@ -112,7 +117,7 @@ class Node extends PointBase {
         this.h_color = color || [255, 67, 7];
         this.h_dur = duration || 1;
         this.h_fr = frames(this.h_dur);
-        this.thickness = thickness || 24;
+        this.thickness = thickness || 17;
         this.f = 0;
         this.h_timer = new Timer2(frames(0.67));
         this.s_timer = new FillChanger(this.s, this.h_color);
@@ -174,10 +179,12 @@ class NodeLabel extends Node {
         });
     }
 
-    reColor(ringColor, fillColor, txtColor, labelColor, duration) {
+    reColor(ringColor, fillColor, txtColor, labelColor, lineColor, duration) {
         super.reColor(ringColor, fillColor, txtColor, duration);
         if (labelColor)
             this.cost.ft.reColor(labelColor, duration);
+        if (lineColor)
+            this.lin.colorTimer.reColor(lineColor, duration);
     }
 
     reset(cost, down) {  // display reset animations, 2nd param specify direction (default shift up)
