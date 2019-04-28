@@ -153,7 +153,6 @@ class Node extends PointBase {
         this.c.st.reColor(ringColor, duration);
         this.c.ft.reColor(fillColor ? fillColor : vector_multiply(ringColor, 0.2), duration);
         if (txtColor) {
-            console.log(txtColor);
             this.txt.ft.reColor(txtColor, duration);
         }
     }
@@ -170,8 +169,8 @@ class Node extends PointBase {
 class NodeLabel extends Node {
     constructor(ctx, args) {
         super(ctx, args);
-        this.txt.reset({
-            x: this.x - 12, y: this.y - 14
+        this.txt.reset({   // if it's a two digit number, txt needs to be smaller
+            x: this.x - 12, y: this.y - 14, size: args.str.length === 2 ? 37 : 42  // fixme
         });
         let m = 0.24;
         this.labelColor = args.labelColor || [255, 247, 77];

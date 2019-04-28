@@ -7,8 +7,8 @@ let G = {
         [400, 200],
     ],
     E: [[0, 1],
-        [0, 2],
-        [2, 1],
+        [1, 2],
+        [2, 3],
         [3, 0],
     ]
 };
@@ -18,22 +18,20 @@ class Graph_Topo extends Graph_D {
         super(ctx, args);
         this.z = new Tracer(this.s, {
             str: "Topological sort (using in-degrees)",
-            x: 537, y: 57, start: args.time, begin: args.begin, arrColor: [77, 197, 77],
+            x: 537, y: 57, start: args.time, begin: args.begin,
         });
         this.z.add("Using DFS to find the in-degree of each node", 0, 40, 45);
-        this.z.add("Repeat: ", -1, 40, 90);
-        this.z.add("1. Choose a vertex with in-degree 0", 1, 80, 135);
-        this.z.add("2. Add it to the sorted list of vertices", 2, 80, 180);
-        this.z.add("3. Remove from graph and update in-degrees", 3, 80, 225);
-        this.z.add("If there are no 0-degree vertices left:", -1, 80, 270, 24, [117, 117, 117]);
-        this.z.add("graph contains cycle, no topological sort exists", 4, 120, 305, 24, [117, 117, 117]);
+        this.z.add("If detected a cycle:", -1, 40, 90, 24, [147, 147, 147]);
+        this.z.add("Error: no topological sort exists", 4, 80, 125, 24, [147, 147, 147]);
+        this.z.add("Repeat: ", -1, 40, 170);
+        this.z.add("1. Choose a vertex with in-degree 0", 1, 80, 215);
+        this.z.add("2. Add it to the sorted list of vertices", 2, 80, 260);
+        this.z.add("3. Remove from graph and update in-degrees", 3, 80, 305);
         this.z.add("End if graph is empty", 5, 40, 350);  // step 5
 
         this.f = 37;  // fixme
 
-        this.dx = cvw / this.n;  // starting point of list of nodes as well as x-step
-        this.ty = 577;   // the y-coordinate of list of nodes
-
+        this.ty = 547;   // the y-coordinate of list of nodes
         this.I = [];    // array of in-degrees
         this.visited = [];  // used for DFS
         this.stack = [0];  // used for DFS
@@ -48,8 +46,6 @@ class Graph_Topo extends Graph_D {
             this.I[i] = 0;
             this.visited[i] = false;
         }
-        this.rec = [];  // removed edge color
-        this.rvc = [];  // removed vertex color
 
         this.cur = 0;   // current node to be added to list and removed from graph
         this.state = 0;
@@ -70,9 +66,9 @@ class Graph_Topo extends Graph_D {
 
         while (this.aim[this.top] < this.n) {
             let aim = this.aim[this.top];
-            if (this.A[node][aim]) {  // an edge exists
-                this.aim[this.top]++;   // skip this edge
+            this.aim[this.top]++;   // skip this edge
 
+            if (this.A[node][aim]) {  // an edge exists
                 if (! this.visited[aim]) {  // visit this node
                     this.top++;   // update stack size
                     this.stack[this.top] = aim;  // push onto stack
@@ -82,8 +78,13 @@ class Graph_Topo extends Graph_D {
                     this.nodes[aim].highlight(hlc, 1e5, 12);
                     this.edges[node][aim].highlight(hlc, 1e5, 14);
                 } else {// else, an unvisited edge is detected, but endpoint is visited
-                    this.nodes[aim].highlight(hlc, this.f / fr * 1.5, 12);
-                    this.edges[node][aim].highlight(hlc, this.f / fr * 1.4, 14);
+                    if (this.stack.includes(0)) {  // this is a back edge--cycle detected
+                        this.edges[node][aim].highlight([247, 27, 7], 1e5, 14);
+                        this.state = 4;
+                    } else {   // this is a cross edge
+                        this.edges[node][aim].highlight(hlc, this.f / fr * 1.4, 14);
+                        this.nodes[aim].highlight(hlc, this.f / fr * 1.5, 12);
+                    }
                 }
 
                 this.I[aim]++;    // fixme
@@ -91,7 +92,6 @@ class Graph_Topo extends Graph_D {
 
                 return;  // if any unvisited edge is detected, stop this iteration
             }
-            this.aim[this.top]++;
         }
         if (this.aim[this.top] === this.n) {  // finished this node
             this.nodes[node].dehighlight();
@@ -115,6 +115,12 @@ class Graph_Topo extends Graph_D {
         }
     }
 
+    reColor() {
+        for (let i = 0; i < this.n; i++)
+            if (this.I[i] === 0)
+                this.nodes[i].reColor(Yellow);
+    }
+
     show() {
         super.show();
         this.z.show();
@@ -130,10 +136,8 @@ class Graph_Topo extends Graph_D {
                 this.state = 0;
             } else if (this.state === -1) {  // intermediate step: mark all 0-degree vertices
                 this.z.reset(1);
-                for (let i = 0; i < this.n; i++)
-                    if (this.I[i] === 0) {
-                        this.nodes[i].reColor(Yellow, false, false, [255, 147, 7, 255]);
-                    }
+                this.reColor();
+
                 this.state = 1;
             } else if (this.state === 1) {
                 this.z.reset(1);
@@ -167,10 +171,10 @@ class Graph_Topo extends Graph_D {
                         this.tedges[this.tedges.length] = new Edge(this.s, {
                             x1: cvw * (pj + 1) / (this.n + 1), x2: x,
                             y1: this.ty, y2: this.ty,
-                            color: [17, 97, 197], directed: true, start: this.s.frameCount + 1,
+                            color: [7, 77, 147], directed: true, start: this.s.frameCount + 1,
                             duration: 0.8, node_r: this.radius,
                             d: Math.abs(pj - l) === 1 ?
-                                0 : 67 + Math.abs(pj - l) * 2  // curvature of edge
+                                0 : 42 + Math.abs(pj - l) * 3  // curvature of edge
                         });
                     }
 
@@ -195,16 +199,19 @@ class Graph_Topo extends Graph_D {
                         this.nodes[j].reset(this.I[j], true);  // decrease, so down = true
                     }
                 }
+                this.reColor();
+
                 this.finished = true;
                 for (let i = 0; i < this.n; i++)  // check if algorithm is terminated
                     if (this.I[i] > -1)
                         this.finished = false;
 
-                this.state = this.finished ? 5 : 1;
+                if (this.finished)
+                    this.z.reset(5);
+                this.state = 1;
             } else if (this.state === 4) {
-                console.log("no topsort exists");
-            } else if (this.state === 5) {
-                this.z.reset(5);
+                this.z.reset(4);
+                this.finished = true;
             }
         }
     }
@@ -228,15 +235,10 @@ const Graph05 = function(s) {
             start: t.start, begin: t.trace, time: t.txt,
             label: "0",
         });
-        s.d = new Dragger(s, []);
-        // s.a = new Arc(s, {
-        //     a1: 0, a2: -2, x: 322, y: 332, r: 32
-        // })
     };
     s.draw = function () {
         s.background(0);
         s.g.show();
-        s.d.show();
     };
 };
 

@@ -71,6 +71,7 @@ class Text extends TextBase {
     jumping() {
         super.jumping();
         if (this.mode === 1)
+            // the integral of sin(2*PI*x) over 0 to 2*PI is 0, so position doesn't change
             this.size += Math.sin(this.move_timer.t * this.s.TWO_PI) * this.amp * 0.27;
     }
 
