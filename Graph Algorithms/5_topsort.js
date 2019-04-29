@@ -7,8 +7,8 @@ let G = {
         [400, 200],
     ],
     E: [[0, 1],
-        [1, 2],
-        [2, 3],
+        [0, 2],
+        [2, 1],
         [3, 0],
     ]
 };
@@ -77,11 +77,11 @@ class Graph_Topo extends Graph_D {
                     this.visited[aim] = true;  // mark as visited
                     this.nodes[aim].highlight(hlc, 1e5, 12);
                     this.edges[node][aim].highlight(hlc, 1e5, 14);
-                } else {// else, an unvisited edge is detected, but endpoint is visited
-                    if (this.stack.includes(0)) {  // this is a back edge--cycle detected
+                } else {  // else, an unvisited edge is detected, but endpoint is visited
+                    if (this.stack.includes(aim)) {  // this is a back edge--cycle detected
                         this.edges[node][aim].highlight([247, 27, 7], 1e5, 14);
                         this.state = 4;
-                    } else {   // this is a cross edge
+                    } else {   // this is a cross edge (can exist since it's directed graph)
                         this.edges[node][aim].highlight(hlc, this.f / fr * 1.4, 14);
                         this.nodes[aim].highlight(hlc, this.f / fr * 1.5, 12);
                     }
@@ -110,6 +110,7 @@ class Graph_Topo extends Graph_D {
             }
             // not at root; all neighboring edges and vertices are visited, need to backtrack
             this.nodes[node].dehighlight();
+            this.stack[this.top] = -1;
             this.top--;    // reset stack size
             this.edges[this.stack[this.top]][node].dehighlight();
         }

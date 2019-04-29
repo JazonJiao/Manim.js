@@ -30,14 +30,7 @@ let G = {
     ]
 };
 
-class Edge_08 extends Edge {
-    addEdge(color) {
-        this.directed = true;
-        super.addEdge(color);
-    }
-}
-
-class Graph_Cut extends Graph {
+class Graph_Cut extends Graph_U {
     constructor(ctx, args) {
         super(ctx, args);
         for (let i = 0; i < this.n; i++)
@@ -53,24 +46,11 @@ class Graph_Cut extends Graph {
         this.z.add("= DFS Number", -1, 190, 135);
         this.z.add("If DFS reached visited nodes (i.e. found a back edge):", 1, 60, 180); // step 1
         this.z.add("Low value = lowest DFS Number of visited nodes", 2, 90, 225);  // step 2
-        this.z.add("While backtracking:", -1, 60, 270);
-        this.z.add("Update Low values until it equals DFS Number", 3, 90, 315);  // step 3
-        this.z.add("If Low value of a child > DFS Number:", 4, 90, 360);
-        this.z.add("then this node is an articulation point", 0, 120, 405);  // step 4
-
-        for (let i = 0; i < this.m; i++) {   // Copied from Graph_U, but need Edge_08
-            let a = this.E[i][0], b = this.E[i][1], d = this.E[i][2];
-            this.edges[a][b] = new Edge_08(this.s, {
-                x1: this.V[a][0], y1: this.V[a][1], x2: this.V[b][0], y2: this.V[b][1],
-                start: this.start + frames(this.dur) * i / this.m, d: d, color: args.color_e,
-                duration: 0.8, node_r: this.radius, directed: false, label: false
-            });
-            this.edges[b][a] = new Edge_08(this.s, {
-                x1: this.V[b][0], y1: this.V[b][1], x2: this.V[a][0], y2: this.V[a][1],
-                color: args.color_e, start: this.start + frames(this.dur) + 1, d: -d,
-                duration: 0.8, node_r: this.radius, directed: false, label: false
-            });
-        }
+        this.z.add("While backtracking:", 3, 60, 270);   // step 3
+        this.z.add("Update Low values until it equals DFS Number", 4, 90, 315);  // step 4
+        this.z.add("If Low value of a child > DFS Number:", 5, 90, 360);   // step 5
+        this.z.add("then this node is an articulation point", 6, 120, 405);  // step 6
+        this.z.add("End", 7, 30, 450);  // step 7
 
         this.visited = [];  // used for DFS
         this.stack = [0];  // used for DFS
@@ -81,26 +61,36 @@ class Graph_Cut extends Graph {
         this.D = [];  // DFS number
         this.L = [];  // Low value
         for (let i = 0; i < this.n; i++)
-            this.D[i] = this.L[i] = -1;
+            this.D[i] = this.L[i] = 0;
 
-        this.start = 0;
+        this.state = -2;
     }
 
     addEdge(i, j, forward) {
         // adds a forward (green) or backward (blue) directed edge for the DFS tree
         // if i > j, edge i-j will be displayed earlier than j-i and thus overwritten in animation
         // anyway we delete the undirected edge in the reverse direction since it's not needed
+        this.edges[j][i] = false;
+        this.A[j][i] = false;
+        this.edges[i][j].directed = true;
+        this.edges[i][j].addEdge(forward ? [7, 117, 17] : [7, 77, 177]);
+    }
 
+    resetNode(v) {
+        let n = this.size;
+        v.labelColor = Blue;
+        v.txt = new TextFade(this.s, {  // overwrite text objects
+            x: v.x - 12, y: v.y - 14, size: n > 9 ? 34 : 42,
+            start: this.s.frameCount + 1, mode: 1, str: "" + n,
+        });
+        v.label = new TextFade(this.s, {
+            str: "" + n, mode: 1, x: v.x + 10, y: v.y + 10,
+            start: this.s.frameCount + 1, color: Blue, size: 24
+        });
     }
 
     DFS() {   // Adapted from topological sort
         let hlc = Orange;
-
-        if (! this.visited[0]) {  // starting point
-            this.visited[0] = true;
-            this.nodes[0].highlight(hlc, 1e5, 12);
-            return;
-        }
         let node = this.stack[this.top];
 
         while (this.aim[this.top] < this.n) {
@@ -115,15 +105,24 @@ class Graph_Cut extends Graph {
                     this.visited[aim] = true;  // mark as visited
                     this.nodes[aim].highlight(hlc, 1e5, 12);
                     this.edges[node][aim].highlight(hlc, 1e5, 14);
-                    // mark forward edge as green, and
 
+                    // mark forward edge as green, and update it's DFS number and low value
+                    this.addEdge(node, aim, true);
+                    this.D[aim] = this.L[aim] = this.size;
+
+                    this.resetNode(this.nodes[aim]);
+                    this.size++;
                 } else {  // else, an unvisited edge is detected, but endpoint is visited
-                    // endpoint is on stack--it's a back edge
-                    if (this.stack.includes(0)) {
-                        // mark back edge as blue, and update low value
-                    } else {
-                        this.nodes[aim].highlight(hlc, this.f / fr * 1.5, 12);
-                        this.edges[node][aim].highlight(hlc, this.f / fr * 1.4, 14);
+                    this.z.reset(1);
+                    // this cannot be a cross edge since graph is undirected
+                    // it's a back edge; mark it as blue, and update low value
+                    this.edges[node][aim].highlight([17, 167, 255], this.f / fr * 1.4, 14);
+                    this.addEdge(node, aim, false);
+
+                    // update low value if it's lower
+                    if (this.D[aim] < this.L[node]) {
+                        this.L[node] = this.D[aim];
+                        this.state = 2;
                     }
                 }
                 return;  // if any unvisited edge is detected, stop this iteration
@@ -142,12 +141,23 @@ class Graph_Cut extends Graph {
                     }
                 }  // for loop exits: all vertices are visited, DFS finished
                 this.finished = true;
+                this.z.reset(7);
                 return;
             }
             // not at root; all neighboring edges and vertices are visited, need to backtrack
             this.nodes[node].dehighlight();
+
             this.top--;    // reset stack size
-            this.edges[this.stack[this.top]][node].dehighlight();
+            let prev = this.stack[this.top];
+            this.edges[prev][node].dehighlight();
+            this.z.reset(3);
+
+            if (this.L[prev] > this.L[node]) {  // found an articulation point!
+                this.state = 6;
+            } else if (this.L[prev] < this.L[node]) {  // need to update low value
+                this.L[prev] = this.L[node];
+                this.nodes[prev].reset(this.L[prev], true);
+            }
         }
     }
 
@@ -156,14 +166,34 @@ class Graph_Cut extends Graph {
         this.z.show();
 
         if (!this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
-            if (this.state === -1) {  // intermediate step: start DFS at new vertex
-                this.nodes[this.stack[0]].highlight(Orange, 1e5, 12);
+            if (this.state === -2) {  // initial state
+                this.visited[0] = true;
+                this.z.reset(0);
+                this.nodes[0].highlight(Orange, 1e5, 12);
+                this.resetNode(this.nodes[0]);
+                this.size++;
+
+                this.state = 0;
+            } else if (this.state === -1) {  // intermediate step: start DFS at new vertex
+                let aim = this.stack[0];
+                this.nodes[aim].highlight(Orange, 1e5, 12);
+                this.resetNode(this.nodes[aim], aim, this.size);
 
                 this.state = 0;
             } else if (this.state === 0) {  // visiting new vertices
+                this.DFS();
+            } else if (this.state === 2) {
+                this.z.reset(2);
+                this.nodes[this.stack[this.top]].reset(this.D[this.aim[this.top] - 1], true);
 
-            } else if (this.state === 1) {
+                this.state = 0;
+            } else if (this.state === 3) {
 
+            } if (this.state === 6) {
+                this.z.reset(6);
+                this.nodes[this.stack[this.top]].reColor(Yellow);
+
+                this.state = 0;
             }
         }
     }
@@ -184,6 +214,7 @@ const Graph08 = function (s) {
         s.g = new Graph_Cut(s, {
             V: G.V, E: G.E, font: tnr, label: " ",
             start: t.start, begin: t.trace, time: t.txt,
+            color_v: Green,
         });
     };
     s.draw = function () {
