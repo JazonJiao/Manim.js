@@ -486,6 +486,7 @@ class Graph_D extends Graph {
     }
 }
 
+// modify Tracer class for use in github pages
 /*** 2019-04-26
  * A class that contains the steps of the algorithm
  *
@@ -524,7 +525,7 @@ class Tracer extends PointBase {
             str: str, x: this.x + x, y: this.y + y, size: size || 29, start: this.start,
             color: color || White
         });
-        this.start += str.length + (frameOff ? frameOff : 7);
+        this.start += str.length + (frameOff ? frameOff : 7);  // disabled for github pages
         this.n++;
         if (index >= 0) {
             this.xs[index] = this.x + x;
@@ -544,5 +545,12 @@ class Tracer extends PointBase {
     show() {
         for (let t of this.t) t.show();
         this.arr.show();
+    }
+}
+
+// 2019-05-06
+function randomizeWeights(arr, max) {  // this will change the array
+    for (let i = 0; i < arr.length; i++) {
+        arr[i][3] = Math.floor(Math.random() * max);  // fixme: random often gives duplicate nums
     }
 }
