@@ -114,6 +114,7 @@ class Node extends PointBase {
      * There seems to be a bug that duration = 1 causes error. Try setting duration to be >= 1.7
      */
     highlight(color, duration, thickness) {
+       // console.log(3);
         this.hi = true;
         this.h_color = color || [255, 67, 7];
         this.h_dur = duration || 1;
