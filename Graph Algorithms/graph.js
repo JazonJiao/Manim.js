@@ -550,8 +550,22 @@ class Tracer extends PointBase {
 }
 
 // 2019-05-06
+// change the weights to be a random int value between 0 and max
 function randomizeWeights(arr, max) {  // this will change the array
     for (let i = 0; i < arr.length; i++) {
         arr[i][3] = Math.floor(Math.random() * max);  // fixme: random often gives duplicate nums
     }
+}
+
+// 2019-05-06
+// select edges from a given list of valid edges, each choice with a certain probability
+function randomizeEdges(arr, prob) {
+    let r = [];
+    let l = 0;
+    for (let i = 0; i < arr.length; i++)
+        if (Math.random() < prob) {
+            r[l] = arr[i];
+            l++;
+        }
+    return r;
 }
