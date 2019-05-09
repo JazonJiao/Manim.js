@@ -51,7 +51,7 @@ class Graph_Dijk extends Graph_D {
 
 }
 
-const Graph07 = function (s) {
+const Graph04 = function (s) {
     let t = {
         start: frames(1),
         txt: frames(2),
@@ -79,4 +79,4 @@ const Graph07 = function (s) {
     };
 };
 
-let p = new p5(Graph07);
+let p = new p5(Graph04);

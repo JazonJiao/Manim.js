@@ -1,4 +1,4 @@
-let E =
+let EU =    // pool of undirected edges
     [[0, 1],
     [0, 2],
     [0, 3],
@@ -92,25 +92,112 @@ let G = {
         [300, 577],
         [420, 577],
     ],
-    E: randomizeEdges(E, 0.47)
+    E: randomizeEdges(EU, 0.47)
 };
 
 
-class Graph_DFS extends Graph_D {
+class Graph_DFS extends Graph_U {
     constructor(ctx, args) {
         super(ctx, args);
-        this.visited = [];
-        this.stack = [];
+
+        this.visited = [];  // used for DFS
+        for (let i = 0; i < this.n; i++)
+            this.visited[i] = false;
+        this.stack = [0];  // used for DFS
+        this.aim = [1];    // used for DFS
+        this.top = 0;    // used for DFS, equal to size - 1
+
+        this.z = new Tracer(this.s, {
+            str: "Depth-first search",
+            x: 617, y: 57, start: args.time, begin: args.begin,
+        });
+        this.z.add("Create a queue, and enqueue start vertex", 0, 35, 45);
+        this.z.add("While queue is not empty, do:", -1, 35, 90);
+        this.z.add("Dequeue a vertex from queue", 1, 70, 135);
+        this.z.add("Add its unvisited neighbors to queue", 2, 70, 180);
+        this.z.add("End", 3, 35, 225);
+
+        this.f = 47;
+        this.state = 0;
     }
 
-    stepDFS() {
+    DFS() {   // adapted from 5_topsort.js
+        let hlc = Orange;
+        let nhr = 12;  // node highlight radius
+        let ehr = 14;  // edge highlight radius
 
+        if (! this.visited[0]) {  // starting point
+            this.visited[0] = true;
+            this.nodes[0].highlight(hlc, 1e5, nhr);
+            this.z.reset(0);
+            return;
+        }
+
+        let node = this.stack[this.top];
+
+        while (this.aim[this.top] < this.n) {
+            let aim = this.aim[this.top];
+            this.aim[this.top]++;   // skip this edge
+
+            if (this.A[node][aim]) {  // an edge exists
+                if (! this.visited[aim]) {  // visit this node
+                    this.top++;   // update stack size
+                    this.stack[this.top] = aim;  // push onto stack
+                    this.aim[this.top] = 0;  // search from vertex 0
+
+                    this.visited[aim] = true;  // mark as visited
+                    this.nodes[aim].highlight(hlc, 1e5, nhr);
+                    this.edges[node][aim].highlight(hlc, 1e5, ehr);
+                } else {  // else, an unvisited edge is detected, but endpoint is visited
+                    this.edges[node][aim].highlight([247, 27, 7], 1, ehr);
+                }
+                return;  // if any unvisited edge is detected, stop this iteration
+            }
+        }
+        if (this.aim[this.top] === this.n) {  // finished this node
+            this.nodes[node].dehighlight();
+            if (this.top === 0) {  // already at root
+                for (let i = 0; i < this.n; i++) {
+                    if (!this.visited[i]) {  // start a new DFS tree at another component
+                        this.stack[0] = i;
+                        this.aim[0] = 0;
+                        this.visited[i] = true;
+                        this.state = -1;   // intermediate step
+                        return;
+                    }
+                }  // for loop exits: all vertices are visited, DFS finished
+                this.state = 3; // fixme
+                return;
+            }
+            // not at root; all neighboring edges and vertices are visited, need to backtrack
+            this.nodes[node].dehighlight();
+            this.stack[this.top] = -1;
+            this.top--;    // reset stack size
+            this.edges[this.stack[this.top]][node].dehighlight();
+        }
+    }
+
+    show() {
+        super.show();
+        this.z.show();
+
+        if (!this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
+            if (this.state === 0) {  // perform DFS
+                this.DFS();
+            } else if (this.state === -1) {  // intermediate step: start DFS at new vertex
+                this.nodes[this.stack[0]].highlight(Orange, 1e5, 12);
+
+                this.state = 0;
+            }
+        }
     }
 }
 
 const Graph00 = function(s) {
     let t = {
-
+        start: frames(1),
+        txt: frames(2),
+        trace: frames(3),
     };
     let tnr;
     s.preload = function() {
@@ -119,20 +206,19 @@ const Graph00 = function(s) {
     s.setup = function () {
         setup2D(s);
         s.g = new Graph_DFS(s, {
-            V: G.V, E: G.E, font: tnr
+            V: G.V, E: G.E, font: tnr,
+            start: t.start, begin: t.trace, time: t.txt,
         });
-        s.d = new Dragger(s, []);
     };
     s.draw = function () {
         s.background(0);
         s.g.show();
-        //s.d.show();
     };
 };
 
+//------ BFS, 2019-05-07 ------
 
-
-class Graph_BFS extends Graph_U {   // 2019-05-07
+class Graph_BFS extends Graph_U {
     constructor(ctx, args) {
         super(ctx, args);
 
@@ -184,7 +270,7 @@ class Graph_BFS extends Graph_U {   // 2019-05-07
                 this.z.reset(1);
                 let node = this.queue[this.bottom];
 
-                this.nodes[node].highlight(Orange, this.f / fr * 2, 14);
+                this.nodes[node].highlight(Orange, this.f / fr * 2, 17);
 
                 this.state = 2;
             } else if (this.state === 2) {  // add unvisited neighbors to queue
@@ -260,4 +346,4 @@ const Graph01 = function(s) {
     };
 };
 
-let p = new p5(Graph01);
+let p = new p5(Graph00);

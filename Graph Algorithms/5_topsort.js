@@ -1,16 +1,47 @@
 // Topological sort using in-degrees, 2019-04-27
 
+let ED = [  // pool of undirected edges
+    [0, 1],
+    [0, 2],
+    [0, 3],
+    [0, 4],
+    [1, 3],
+    [1, 4],
+    [1, 6],
+    [2, 1],
+    [2, 3],
+    [2, 5],
+    [2, 6],
+    [2, 7],
+    [3, 4],
+    [3, 5],
+    [3, 6],
+    [4, 6],
+    [4, 9],
+    [5, 6],
+    [5, 7],
+    [5, 8],
+    [5, 9],
+    [6, 8],
+    [6, 9],
+    [7, 6],
+    [7, 8],
+    [9, 8],
+];
+
 let G = {
-    V: [[300, 100],
-        [200, 200],
-        [300, 300],
-        [400, 200],
+    V: [[210, 87],
+        [350, 87],
+        [140, 197],
+        [280, 197],
+        [420, 197],
+        [210, 307],
+        [350, 307],
+        [140, 417],
+        [280, 417],
+        [420, 417],
     ],
-    E: [[0, 1],
-        [0, 2],
-        [2, 1],
-        [3, 0],
-    ]
+    E: randomizeEdges(ED, 0.7)
 };
 
 class Graph_Topo extends Graph_D {
@@ -29,9 +60,9 @@ class Graph_Topo extends Graph_D {
         this.z.add("3. Remove from graph and update in-degrees", 3, 80, 305);
         this.z.add("End if graph is empty", 5, 40, 350);  // step 5
 
-        this.f = 37;  // fixme
+        this.f = 54;  // fixme
 
-        this.ty = 547;   // the y-coordinate of list of nodes
+        this.ty = 567;   // the y-coordinate of list of nodes
         this.I = [];    // array of in-degrees
         this.visited = [];  // used for DFS
         this.stack = [0];  // used for DFS
@@ -54,10 +85,12 @@ class Graph_Topo extends Graph_D {
     // 2019-04-27
     DFS() {   // code is reusable, except for places marked as fixme
         let hlc = Orange;
+        let nhr = 12;  // node highlight radius
+        let ehr = 14;  // edge highlight radius
 
-        if (! this.visited[0]) {  // starting point
+        if (!this.visited[0]) {  // starting point
             this.visited[0] = true;
-            this.nodes[0].highlight(hlc, 1e5, 12);
+            this.nodes[0].highlight(hlc, 1e5, nhr);
             this.z.reset(0);
             return;
         }
@@ -69,21 +102,21 @@ class Graph_Topo extends Graph_D {
             this.aim[this.top]++;   // skip this edge
 
             if (this.A[node][aim]) {  // an edge exists
-                if (! this.visited[aim]) {  // visit this node
+                if (!this.visited[aim]) {  // visit this node
                     this.top++;   // update stack size
                     this.stack[this.top] = aim;  // push onto stack
                     this.aim[this.top] = 0;  // search from vertex 0
 
                     this.visited[aim] = true;  // mark as visited
-                    this.nodes[aim].highlight(hlc, 1e5, 12);
-                    this.edges[node][aim].highlight(hlc, 1e5, 14);
+                    this.nodes[aim].highlight(hlc, 1e5, nhr);
+                    this.edges[node][aim].highlight(hlc, 1e5, ehr);
                 } else {  // else, an unvisited edge is detected, but endpoint is visited
                     if (this.stack.includes(aim)) {  // this is a back edge--cycle detected
-                        this.edges[node][aim].highlight([247, 27, 7], 1e5, 14);
-                        this.state = 4;
+                        this.edges[node][aim].highlight([247, 27, 7], 1e5, ehr);
+                        this.state = 4;  // fixme
                     } else {   // this is a cross edge (can exist since it's directed graph)
-                        this.edges[node][aim].highlight(hlc, this.f / fr * 1.4, 14);
-                        this.nodes[aim].highlight(hlc, this.f / fr * 1.5, 12);
+                        this.edges[node][aim].highlight(hlc, this.f / fr * 1.4, ehr);
+                        this.nodes[aim].highlight(hlc, this.f / fr * 1.5, nhr);
                     }
                 }
 
@@ -172,10 +205,10 @@ class Graph_Topo extends Graph_D {
                         this.tedges[this.tedges.length] = new Edge(this.s, {
                             x1: cvw * (pj + 1) / (this.n + 1), x2: x,
                             y1: this.ty, y2: this.ty,
-                            color: [7, 77, 147], directed: true, start: this.s.frameCount + 1,
+                            color: [7, 67, 127], directed: true, start: this.s.frameCount + 1,
                             duration: 0.8, node_r: this.radius,
                             d: Math.abs(pj - l) === 1 ?
-                                0 : 42 + Math.abs(pj - l) * 3  // curvature of edge
+                                0 : 27 + Math.abs(pj - l) * 7  // curvature of edge
                         });
                     }
 
@@ -218,14 +251,14 @@ class Graph_Topo extends Graph_D {
     }
 }
 
-const Graph05 = function(s) {
+const Graph05 = function (s) {
     let t = {
         start: frames(1),
         txt: frames(2),
         trace: frames(3),
     };
     let tnr;
-    s.preload = function() {
+    s.preload = function () {
         tnr = s.loadFont('../lib/font/times.ttf');
     };
     s.setup = function () {

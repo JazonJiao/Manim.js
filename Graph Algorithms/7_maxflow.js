@@ -56,7 +56,7 @@ let G3 = {
     ]
 };
 
-class Label_04 extends PointBase {  // shows an edge's flow | capacity
+class Label_07 extends PointBase {  // shows an edge's flow | capacity
     constructor(ctx, args) {
         super(ctx, args);
         this.flow = new TextFade(this.s, {
@@ -99,10 +99,10 @@ class Label_04 extends PointBase {  // shows an edge's flow | capacity
     }
 }
 
-class Edge_04 extends Edge {  // override Edge so that
+class Edge_07 extends Edge {  // override Edge so that
     constructor(ctx, args) {
         super(ctx, args);
-        this.txt = new Label_04(this.s, {
+        this.txt = new Label_07(this.s, {
             cap: args.weight, x: this.x3, y: this.y3, start: args.start
         });
     }
@@ -121,7 +121,7 @@ class Graph_Flow extends Graph {
             let a = this.E[i][0], b = this.E[i][1];  // two connecting nodes
             let d = this.E[i][2], c = this.E[i][3];  // radius and label
             this.A[a][b] = c;
-            this.edges[a][b] = new Edge_04(this.s, {
+            this.edges[a][b] = new Edge_07(this.s, {
                 x1: this.V[a][0], y1: this.V[a][1], x2: this.V[b][0], y2: this.V[b][1],
                 start: this.start + frames(this.dur) * i / this.m, d: d, color: args.color_e,
                 duration: 0.8, node_r: this.radius, directed: true, weight: c,
@@ -330,7 +330,7 @@ class Graph_Flow extends Graph {
     }
 }
 
-const Graph04 = function (s) {
+const Graph07 = function (s) {
     let t = {
         start: frames(1),
         resStart: frames(1),  // display residual graph
@@ -358,4 +358,4 @@ const Graph04 = function (s) {
     };
 };
 
-let p = new p5(Graph04);
+let p = new p5(Graph07);
