@@ -3,7 +3,7 @@
 let time = {
     brain: frames(1.4),
     move: frames(2.7),
-    txt: frames(3.7),
+    txt: frames(4.2),
 };
 
 class IntroBrain extends BrainBase {
@@ -40,8 +40,8 @@ const Intro = function (s) {
         setup2D(s);
         brain = new IntroBrain(s);
         txt = new TextWriteIn(s, {
-            str: "Prim's Algorithm (naive implementation)",  /// modify this
-            x: 287,   /// modify this
+            str: "Graph Algorithm: Breadth-first search",  /// modify this
+            x: 307,   /// modify this
             y: 557, start: time.txt, font: tnr,
         });
         s.d = new Dragger(s, [txt]);

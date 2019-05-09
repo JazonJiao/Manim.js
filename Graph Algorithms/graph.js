@@ -503,11 +503,13 @@ class Tracer extends PointBase {
         this.n = 1;
         this.xs = [];
         this.ys = [];
+        this.to = 17;  // time offset
+
         this.t[0] = new TextWriteIn(this.s, {
             str: args.str, color: Yellow,
             x: args.x, y: args.y, size: args.size || 29, start: this.start,
         });
-        this.start += args.str.length + 7;
+        this.start += args.str.length + this.to * 2;
 
         this.arr = new Arrow(this.s, {
             x1: 0, x2: 0, y1: 1, y2: 1, start: args.begin, color: args.arrColor || Orange,
@@ -526,7 +528,7 @@ class Tracer extends PointBase {
             str: str, x: this.x + x, y: this.y + y, size: size || 29, start: this.start,
             color: color || White
         });
-        this.start += str.length + (frameOff ? frameOff : 7);  // disabled for github pages
+        this.start += str.length + (frameOff ? frameOff : this.to);  // disabled for github pages
         this.n++;
         if (index >= 0) {
             this.xs[index] = this.x + x;

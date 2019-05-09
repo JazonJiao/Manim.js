@@ -1,6 +1,6 @@
 // Topological sort using in-degrees, 2019-04-27
 
-let ED = [  // pool of undirected edges
+let ED = [  // pool of directed edges
     [0, 1],
     [0, 2],
     [0, 3],
@@ -41,7 +41,7 @@ let G = {
         [280, 417],
         [420, 417],
     ],
-    E: randomizeEdges(ED, 0.7)
+    E: randomizeEdges(ED, 0.5 + Math.random() * 0.27)
 };
 
 class Graph_Topo extends Graph_D {
@@ -60,7 +60,7 @@ class Graph_Topo extends Graph_D {
         this.z.add("3. Remove from graph and update in-degrees", 3, 80, 305);
         this.z.add("End if graph is empty", 5, 40, 350);  // step 5
 
-        this.f = 54;  // fixme
+        this.f = 45;  // fixme
 
         this.ty = 567;   // the y-coordinate of list of nodes
         this.I = [];    // array of in-degrees
@@ -108,15 +108,18 @@ class Graph_Topo extends Graph_D {
                     this.aim[this.top] = 0;  // search from vertex 0
 
                     this.visited[aim] = true;  // mark as visited
-                    this.nodes[aim].highlight(hlc, 1e5, nhr);
+                    this.edges[node][aim].reColor([7, 77, 147]);  // mark visited edge as blue
                     this.edges[node][aim].highlight(hlc, 1e5, ehr);
+                    this.nodes[aim].highlight(hlc, 1e5, nhr);
                 } else {  // else, an unvisited edge is detected, but endpoint is visited
                     if (this.stack.includes(aim)) {  // this is a back edge--cycle detected
                         this.edges[node][aim].highlight([247, 27, 7], 1e5, ehr);
                         this.state = 4;  // fixme
                     } else {   // this is a cross edge (can exist since it's directed graph)
-                        this.edges[node][aim].highlight(hlc, this.f / fr * 1.4, ehr);
+                        this.edges[node][aim].reColor([7, 77, 147]);  // mark visited edge as blue
+                        this.edges[node][aim].highlight(hlc, this.f / fr * 1.27, ehr);
                         this.nodes[aim].highlight(hlc, this.f / fr * 1.5, nhr);
+                        this.state = -3;  // fixme: intermediate step
                     }
                 }
 
@@ -164,6 +167,8 @@ class Graph_Topo extends Graph_D {
         if (!this.finished && this.s.frameCount % this.f === 0 && this.s.frameCount > this.begin) {
             if (this.state === 0) {  // perform DFS
                 this.DFS();
+            } else if (this.state === -3) {  // intermediate step
+                this.state = 0;
             } else if (this.state === -2) {  // intermediate step: start DFS at new vertex
                 this.nodes[this.stack[0]].highlight(Orange, 1e5, 12);
 

@@ -117,7 +117,7 @@ class Graph_DFS extends Graph_U {
         this.z.add("Add its unvisited neighbors to queue", 2, 70, 180);
         this.z.add("End", 3, 35, 225);
 
-        this.f = 47;
+        this.f = 54;
         this.state = 0;
     }
 
@@ -243,7 +243,7 @@ class Graph_BFS extends Graph_U {
         this.z.add("End", 3, 35, 225);
 
         this.state = 0;
-        this.f = 47;
+        this.f = 52;
         this.fc = 0;   // frame count for this class
     }
 
@@ -324,9 +324,9 @@ class Graph_BFS extends Graph_U {
 
 const Graph01 = function(s) {
     let t = {
-        start: frames(1),
-        txt: frames(2),
-        trace: frames(3),
+        start: frames(2),
+        txt: frames(5),
+        trace: frames(14.7),
     };
     let tnr;
     s.preload = function() {
@@ -346,4 +346,4 @@ const Graph01 = function(s) {
     };
 };
 
-let p = new p5(Graph00);
+let p = new p5(Graph01);

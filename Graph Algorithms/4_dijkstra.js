@@ -38,7 +38,7 @@ let G = {
     ],
 };
 
-class Graph_Dijk extends Graph_D {
+class Graph_Dijk extends Graph_U {
     constructor(ctx, args) {
         super(ctx, args);
 
