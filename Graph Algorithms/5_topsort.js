@@ -1,6 +1,6 @@
 // Topological sort using in-degrees, 2019-04-27
 
-let ED = [  // pool of directed edges
+let ED = [  // pool of directed edges; note that cycles will never occur from this list of edges
     [0, 1],
     [0, 2],
     [0, 3],

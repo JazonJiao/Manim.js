@@ -297,8 +297,6 @@ class Edge extends Line {
                 this.la2 = this.a2 - half_a;
             }
 
-            //console.log(this.la1, this.la2);
-
             this.l = this.createLine();
 
             this.numPts = 27;   // this is used for highlighting, code copied from Arc class

@@ -1,18 +1,50 @@
+// Kruskal's Algorithm
 
+let G = {
+    V: [[117, 137],
+        [237, 137],
+        [357, 137],
+        [477, 137],
+        [117, 257],
+        [237, 257],
+        [357, 257],
+        [477, 257],
+        [117, 377],
+        [237, 377],
+        [357, 377],
+        [477, 377],
+        [117, 497],
+        [237, 497],
+        [357, 497],
+        [477, 497],
+    ],
+    E: [[0, 1, 0, 7],
+        [0, 4, 0, 7],
+        [0, 5, 0, 7],
+        [1, 2, 0, 7],
+        [1, 5, 0, 7],
+        [2, 3, 0, 7],
+        [2, 5, 0, 7],
+        [2, 6, 0, 7],
+        [2, 7, 0, 7],
+    ]
+};
 
+randomizeWeights(G.E, 40);
 
 class Graph_Kru extends Graph_U {
     constructor(ctx, args) {
         super(ctx, args);
         this.z = new Tracer(this.s, {
             str: "Kruskal's Algorithm for Minimum Spanning Tree",
-            x: 607, y: 77, start: args.time, begin: args.begin,
+            x: 577, y: 77, start: args.time, begin: args.begin,
         });
-        this.z.add("Sort the edges by their weights", 0, 35, 45);
+        this.z.add("Sort the edges by their weights", 0, 35, 45);   // step 0
         this.z.add("Repeat:", 0, 35, 90);
-        this.z.add("Choose the edge with next smallest weight", 0, 70, 135);
-        this.z.add("Add it to tree if doesn't create a cycle", 0, 70, 180);
-        this.z.add("End when all vertices are added", 0, 35, 225);
+        this.z.add("Choose the edge with next smallest weight", 1, 70, 135);  // step 1
+        this.z.add("If it doesn't create a cycle", 2, 70, 180);   // step 2
+        this.z.add("Add this edge to the tree", 3, 105, 225);    // step 3
+        this.z.add("End when all vertices are added", 4, 35, 270);  // step 4: end
 
         this.f = 47;  // fixme
 
