@@ -229,7 +229,7 @@ class NodeLabel extends Node {
     }
 }
 
-/*** 2019-04-23, 04-24
+/*** 2019-04-23, 04-24, 05-09
  * Draws a line/arc from one node to another given the positions and radii of two nodes.
  * Could pass in a string str to add a label the edge in the middle, if so, pass in label: true.
  * If need an arc, pass in the distance from the midpoint to the arc as d.
@@ -281,14 +281,21 @@ class Edge extends Line {
             this.a1 = Math.atan2(y1d, x1d);  // NOTICE: acos does NOT work here!!!
             let x2d = this.x2 - this.xc, y2d = this.y2 - this.yc;
             this.a2 = Math.atan2(y2d, x2d);
-            if (this.a2 > this.a1 && this.d > 0) {   // don't yet know why I need to do this
+            if (this.a2 < this.a1 && this.d < 0) {
+                this.a2 += this.s.TWO_PI;
+            } else if (this.a2 > this.a1 && this.d > 0) {   // don't yet know why I need to do this
                 this.a1 += this.s.TWO_PI;
             }
 
             // start and end angles, after "subtracting" the radius of two nodes from the curve
             let half_a = Math.asin(this.node_r / 2 / this.r) * 1.14;  // guaranteed in [0, PI/4]
-            this.la1 = this.a1 - half_a;  // it's supposed to be +, but p5 has a weird coord system
-            this.la2 = this.a2 + half_a;  // it's supposed to be - ...
+            if (this.d > 0) {
+                this.la1 = this.a1 - half_a;  // supposed to be +, but p5 has a weird coord system
+                this.la2 = this.a2 + half_a;  // it's supposed to be - ...
+            } else {  // 05-09: handle negative d
+                this.la1 = this.a1 + half_a;
+                this.la2 = this.a2 - half_a;
+            }
 
             //console.log(this.la1, this.la2);
 
@@ -428,7 +435,8 @@ class Edge extends Line {
 
 /**
  * Undirected Graph
- * Assumes that args.E go from small-index vertices to big-index vertices (actually doesn't matter)
+ * Assumes that args.E go from small-index vertices to big-index vertices, otherwise weight
+ * will not be displayed properly
  */
 class Graph_U extends Graph {
     constructor(ctx, args) {
