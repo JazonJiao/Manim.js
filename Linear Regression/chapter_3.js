@@ -419,8 +419,8 @@ const Scene27 = function(s) {
         g3 = s.createGraphics(cvw * 2, cvh * 2, s.WEBGL);
         if (SN === 1)
             s.gd = new Grid3D(s, { numLines: 2, lineLen: 197, strokeweight: 4.7 });
-        if (SN === 1)
-            s.txt = new Text(s, { str: "Normal Equations", mode: 1, x: 627, y: 77, size: 97 });
+        //if (SN === 1)
+            //s.txt = new Text(s, { str: "Normal Equations", mode: 1, x: 627, y: 77, size: 97 });
         s.eqs = new Sys_3Eqs(s, {
             x: 387, y: 467,
             move1: 1, move2: 4,
@@ -708,7 +708,13 @@ const SceneEnd = function(s) {
     }
 };
 
+function getT(t) {
+    if (t === undefined) {
+        return 10000;
+    } else
+        return t;
+}
 
-let p = new p5(SceneEnd);
+let p = new p5(Scene27);
 
 // fixme: the audio volume doesn't change for 1+?
