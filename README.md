@@ -5,7 +5,7 @@ This repo contains the source code for all animations of my YouTube channel, Jaz
 
 Manim.js is a project that aims to emulate 3b1b-style math animations using JavaScript (p5.js). The library is currently focused on visualizing linear algebra concepts and graph algorithms. All util classes are located in /src, with detailed documentation. Feel free to use my tools to make your own visualizations of math or CS concepts!
 
-As an example, here's how you could create an simple graph:
+As an example, here's how you could create an simple graph. Include this code and other necessary source files in an html file, and then open the browser.
 
 ```JavaScript
 let G = {
@@ -40,5 +40,5 @@ const GraphExample = function(s) {
     };
 };
 
-let p = new p5(GraphExample);
+let p = new p5(GraphExample);   // creates the p5 object to render the animation
 ```
