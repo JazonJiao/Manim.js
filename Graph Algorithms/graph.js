@@ -112,16 +112,17 @@ class Node extends PointBase {
      * call dehighlight() later on
      *
      * There seems to be a bug that duration = 1 causes error. Try setting duration to be >= 1.7
+     * disableGrow - disable the arc grow animation, only grow the highlight radius
      */
-    highlight(color, duration, thickness) {
-       // console.log(3);
+    highlight(color, duration, thickness, disableGrow) {
+        this.dis = !!disableGrow;  // fancy JavaScript syntax, == disableGrow ? true : false
         this.hi = true;
         this.h_color = color || [255, 67, 7];
         this.h_dur = duration || 1;
         this.h_fr = frames(this.h_dur);
         this.thickness = thickness || 17;
         this.f = 0;
-        this.h_timer = new Timer2(frames(0.67));
+        this.h_timer = new Timer1(frames(0.67));
         this.s_timer = new FillChanger(this.s, this.h_color);
     }
 
@@ -138,8 +139,13 @@ class Node extends PointBase {
                 this.s_timer.fadeOut(0.27);  // fade out .27 seconds before duration ends
             }
             let t = this.h_timer.advance();
-            this.s.ellipse(this.x, this.y,
-                this.r + this.thickness * t, this.r + this.thickness * t);
+            let r = this.r + this.thickness * t;
+            if (this.dis) {
+                this.s.ellipse(this.x, this.y,
+                    this.r + this.thickness * t, this.r + this.thickness * t);
+            } else     // refined animation on 05/14
+                this.s.arc(this.x, this.y, r, r,
+                    -this.s.PI + t * this.s.HALF_PI, -this.s.PI + t * this.s.TWO_PI * 1.2499);
         } else
             this.hi = false;
     }

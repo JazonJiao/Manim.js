@@ -52,7 +52,7 @@ class Graph_Topo extends Graph_D {
             x: 537, y: 57, start: args.time, begin: args.begin,
         });
         this.z.add("Using DFS to find the in-degree of each node", 0, 40, 45);
-        this.z.add("If detected a cycle:", -1, 40, 90, 24, [147, 147, 147]);
+        this.z.add("If detected a cycle:", -1, 40, 90, 24, [147, 147, 147], 1);
         this.z.add("Error: no topological sort exists", 4, 80, 125, 24, [147, 147, 147]);
         this.z.add("Repeat: ", -1, 40, 170);
         this.z.add("1. Choose a vertex with in-degree 0", 1, 80, 215);
@@ -60,7 +60,7 @@ class Graph_Topo extends Graph_D {
         this.z.add("3. Remove from graph and update in-degrees", 3, 80, 305);
         this.z.add("End if graph is empty", 5, 40, 350);  // step 5
 
-        this.f = 45;  // fixme
+        this.f = 37;  // fixme
 
         this.ty = 567;   // the y-coordinate of list of nodes
         this.I = [];    // array of in-degrees
@@ -110,7 +110,7 @@ class Graph_Topo extends Graph_D {
                     this.visited[aim] = true;  // mark as visited
                     this.edges[node][aim].reColor([7, 77, 147]);  // mark visited edge as blue
                     this.edges[node][aim].highlight(hlc, 1e5, ehr);
-                    this.nodes[aim].highlight(hlc, 1e5, nhr);
+                    this.nodes[aim].highlight(hlc, 1e5, nhr, true);
                 } else {  // else, an unvisited edge is detected, but endpoint is visited
                     if (this.stack.includes(aim)) {  // this is a back edge--cycle detected
                         this.edges[node][aim].highlight([247, 27, 7], 1e5, ehr);
@@ -118,7 +118,7 @@ class Graph_Topo extends Graph_D {
                     } else {   // this is a cross edge (can exist since it's directed graph)
                         this.edges[node][aim].reColor([7, 77, 147]);  // mark visited edge as blue
                         this.edges[node][aim].highlight(hlc, this.f / fr * 1.27, ehr);
-                        this.nodes[aim].highlight(hlc, this.f / fr * 1.5, nhr);
+                        this.nodes[aim].highlight(hlc, this.f / fr * 1.57, nhr, true);
                         this.state = -3;  // fixme: intermediate step
                     }
                 }
@@ -259,8 +259,8 @@ class Graph_Topo extends Graph_D {
 const Graph05 = function (s) {
     let t = {
         start: frames(1),
-        txt: frames(2),
-        trace: frames(3),
+        txt: frames(4),
+        trace: frames(18.7),
     };
     let tnr;
     s.preload = function () {

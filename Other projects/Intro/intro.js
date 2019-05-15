@@ -40,8 +40,8 @@ const Intro = function (s) {
         setup2D(s);
         brain = new IntroBrain(s);
         txt = new TextWriteIn(s, {
-            str: "Graph Algorithm: Breadth-first search",  /// modify this
-            x: 307,   /// modify this
+            str: "Graph Algorithm: Topological sort",  /// modify this
+            x: 340,   /// modify this
             y: 557, start: time.txt, font: tnr,
         });
         s.d = new Dragger(s, [txt]);

@@ -22,5 +22,3 @@ const GraphEnd = function(s) {
         //s.d.show();
     };
 };
-
-let p = new p5(GraphEnd);
