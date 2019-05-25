@@ -45,13 +45,13 @@ class Graph_Dijk extends Graph_U {
         });
         this.z.add("Initialize dist(start node) = 0, dist(other nodes) = ∞", -1, 35, 50);
         this.z.add("Repeat:", 1, 35, 100);
-        this.z.add("Select the unfinished vertex with smallest", 2, 70, 150, false, false, 1);
-        this.z.add("dist value, and set as “cur” node", -1, 70, 187);
-        this.z.add("For each unfinished neighbor, v, of “cur”:", 2, 70, 237);
-        this.z.add("If dist(v) > dist(cur) + weight(cur—v)", 2, 105, 287);
-        this.z.add("Update dist(v)", 2, 140, 337);
-        this.z.add("Mark “cur” as", 2, 70, 387, false, false, 1);
-        this.z.add("finished", -1, 242, 387, false, Green);
+        this.z.add("1. Select the unfinished vertex with smallest", 2, 70, 150, false, false, 1);
+        this.z.add("dist value, and set as “cur” node", -1, 100, 187);
+        this.z.add("2. For each unfinished neighbor, v, of “cur”:", 2, 70, 237);
+        this.z.add("If dist(v) > dist(cur) + weight(cur—v):", 2, 125, 287);
+        this.z.add("Update dist(v)", 2, 160, 337);
+        this.z.add("3. Mark “cur” as", 2, 70, 387, false, false, 1);
+        this.z.add("finished", -1, 270, 387, false, Green);
         this.z.add("End", 3, 35, 437);
 
         this.C = [];

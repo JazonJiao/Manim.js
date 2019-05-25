@@ -1,7 +1,7 @@
 # Manim.js
 ![Screenshot](/lib/thumbnails/GitHubThumbnail.png)
 
-This repo contains the source code for all animations of my YouTube channel, **Jazon Jiao**: https://www.youtube.com/channel/UC8bvGUlaTahF0lHhMsZFhfw 
+This repo contains the source code for all animations of my YouTube channel, **Jazon Jiao** (Subscribe!): https://www.youtube.com/channel/UC8bvGUlaTahF0lHhMsZFhfw 
 
 Manim.js is a project that aims to emulate 3b1b-style math animations using JavaScript (p5.js). The library is currently focused on visualizing linear algebra concepts and graph algorithms. All util classes are located in /src, with detailed documentation. Feel free to use my tools to make your own visualizations of math or CS concepts!
 
