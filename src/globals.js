@@ -4,11 +4,12 @@
 
 let fr = 30;  // frame rate
 
-// canvas width. Set to 1200 normally, 1250 if want to monitor frame rate during recording
 let cvw = 1200;
-
-// canvas height. Ensure 16:9 ratio
 let cvh = 675;
+
+// Canvas dimensions for new 16:9 projects.
+let canvasWidth = 1920;
+let canvasHeight = 1080;
 
 let scn = 2;  // scene number
 
@@ -75,6 +76,14 @@ function frames(sec) {
     return Math.round(fr * sec);
 }
 
+/**
+ * Convert a value that was historically applied once per frame at 30 FPS
+ * into the equivalent per-frame value for the configured frame rate.
+ */
+function perFrame(value) {
+    return value * 30 / fr;
+}
+
 
 /**
  * All 3D/2D scenes should call in s.setup()
@@ -82,12 +91,12 @@ function frames(sec) {
 function setup3D(s) {
     s.frameRate(fr);
     s.pixelDensity(1);
-    s.createCanvas(cvw, cvh);
+    s.createCanvas(canvasWidth, canvasHeight);
 }
 
 function setup2D(s) {
     s.frameRate(fr);
-    s.createCanvas(cvw, cvh);
+    s.createCanvas(canvasWidth, canvasHeight);
 }
 
 
@@ -100,7 +109,7 @@ function setup2D(s) {
  */
 function showFR(s) {
     const fps = s.frameRate();
-    let pos = (cvw === 1200) ? 0 : 1200;
+    let pos = (canvasWidth === 1920) ? 0 : 1920;
     s.fill(255);
     s.textSize(10);
     s.textAlign(s.LEFT, s.TOP);

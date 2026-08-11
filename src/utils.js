@@ -182,7 +182,7 @@ class Grid extends Axes {
         this.showAxes();
         for (let i = 0; i < this.maxNumLines; ++i) {
             this.s.strokeWeight(2);
-            if (this.s.frameCount - this.start - frames(1) > i * 2) {
+            if (this.s.frameCount - this.start - frames(1) > i * frames(2 / 30)) {
                 if (i % 2 === 1) {  // major grid line
                     this.s.stroke(27, 177, 247);
                 } else {    // minor grid line
@@ -425,6 +425,207 @@ class Rect extends PointBase {
     }
 }
 
+/**
+ * A filled rectangle with rounded corners and fade-in/fade-out animations.
+ *
+ * `radius` may be a single number for every corner or an array ordered as
+ * [topLeft, topRight, bottomRight, bottomLeft]. The fill color accepts RGB or
+ * RGBA arrays.
+ *
+ * ----args list parameters----
+ * @mandatory (number) x, y, w, h
+ * @optional (number|array) radius; (number) start, end, duration; (array) color
+ */
+class RoundedRect extends Rect {
+    constructor(ctx, args) {
+        super(ctx, args);
+        const radius = args.radius === undefined ? 16 : args.radius;
+        this.radii = Array.isArray(radius) ? radius : [radius, radius, radius, radius];
+    }
+
+    growFromCenter(scale, duration) {
+        this.growStart = {
+            x: this.x,
+            y: this.y,
+            w: this.w,
+            h: this.h
+        };
+        this.growTarget = {
+            w: this.w * scale,
+            h: this.h * scale
+        };
+        this.growDuration = frames(duration || 0.3);
+        this.growFrame = 0;
+        this.growTimer = new Timer0(this.growDuration);
+    }
+
+    reColor(newColor, duration) {
+        const currentAlpha = this.color[3] === undefined ? 255 : this.color[3];
+        const targetAlpha = newColor[3] === undefined ? 255 : newColor[3];
+        this.colorStart = [this.color[0], this.color[1], this.color[2], currentAlpha];
+        this.colorTarget = [newColor[0], newColor[1], newColor[2], targetAlpha];
+        this.colorDuration = frames(duration || 0.3);
+        this.colorFrame = 0;
+        this.colorTimer = new Timer0(this.colorDuration);
+    }
+
+    updateAnimations() {
+        if (this.growTimer && this.growFrame < this.growDuration) {
+            const t = this.growTimer.advance();
+            const centerX = this.growStart.x + this.growStart.w / 2;
+            const centerY = this.growStart.y + this.growStart.h / 2;
+            this.w = this.growStart.w + t * (this.growTarget.w - this.growStart.w);
+            this.h = this.growStart.h + t * (this.growTarget.h - this.growStart.h);
+            this.x = centerX - this.w / 2;
+            this.y = centerY - this.h / 2;
+            this.growFrame++;
+        }
+
+        if (this.colorTimer && this.colorFrame < this.colorDuration) {
+            const t = this.colorTimer.advance();
+            this.color = this.colorStart.map((channel, index) =>
+                channel + t * (this.colorTarget[index] - channel)
+            );
+            this.colorFrame++;
+        }
+    }
+
+    show() {
+        this.updateAnimations();
+        this.showSetup();
+        const alpha = this.color[3] === undefined ? 255 : this.color[3];
+        this.s.fill(this.color[0], this.color[1], this.color[2], alpha * this.t);
+        this.s.rect(
+            this.x, this.y, this.w, this.h,
+            this.radii[0], this.radii[1], this.radii[2], this.radii[3]
+        );
+    }
+}
+
+/**
+ * An unfilled rectangle composed of four animated Line objects.
+ *
+ * mode 0 (default): all four sides grow outward from their centers.
+ * mode 1: the top/left sides grow from the top-left corner, while the
+ *         bottom/right sides grow from the diagonally opposite corner.
+ * mode 2: draws one continuous clockwise perimeter from the top-left corner,
+ *         starting quickly and continuously slowing down.
+ *
+ * ----args list parameters----
+ * @mandatory (number) x, y, w, h
+ * @optional (number) start, duration, strokeweight, mode; (array) color
+ */
+class LinedRect extends PointBase {
+    constructor(ctx, args) {
+        super(ctx, args);
+        this.w = args.w;
+        this.h = args.h;
+        this.mode = args.mode || 0;
+        this.color = args.color || [255, 255, 255];
+        this.strokeweight = args.strokeweight || 3;
+
+        const lineArgs = {
+            start: this.start,
+            duration: this.duration,
+            strokeweight: this.strokeweight,
+            color: this.color,
+            mode: 1
+        };
+
+        if (this.mode === 2) {
+            this.timer = new Timer1(frames(this.duration));
+            this.lines = [];
+        } else if (this.mode === 1) {
+            this.lines = [
+                // Both of these sides start at the top-left corner.
+                new Line(this.s, Object.assign({}, lineArgs, {
+                    x1: this.x, y1: this.y,
+                    x2: this.x + this.w, y2: this.y
+                })),
+                new Line(this.s, Object.assign({}, lineArgs, {
+                    x1: this.x, y1: this.y,
+                    x2: this.x, y2: this.y + this.h
+                })),
+                // These sides start at the diagonally opposite corner.
+                new Line(this.s, Object.assign({}, lineArgs, {
+                    x1: this.x + this.w, y1: this.y + this.h,
+                    x2: this.x, y2: this.y + this.h
+                })),
+                new Line(this.s, Object.assign({}, lineArgs, {
+                    x1: this.x + this.w, y1: this.y + this.h,
+                    x2: this.x + this.w, y2: this.y
+                }))
+            ];
+        } else {
+            this.lines = [
+                new LineCenter(this.s, Object.assign({}, lineArgs, {
+                    x1: this.x, y1: this.y,
+                    x2: this.x + this.w, y2: this.y
+                })),
+                new LineCenter(this.s, Object.assign({}, lineArgs, {
+                    x1: this.x + this.w, y1: this.y,
+                    x2: this.x + this.w, y2: this.y + this.h
+                })),
+                new LineCenter(this.s, Object.assign({}, lineArgs, {
+                    x1: this.x + this.w, y1: this.y + this.h,
+                    x2: this.x, y2: this.y + this.h
+                })),
+                new LineCenter(this.s, Object.assign({}, lineArgs, {
+                    x1: this.x, y1: this.y + this.h,
+                    x2: this.x, y2: this.y
+                }))
+            ];
+        }
+    }
+
+    showClockwise() {
+        if (this.s.frameCount <= this.start)
+            return;
+
+        const progress = this.s.constrain(this.timer.advance(), 0, 1);
+        let remaining = (this.w * 2 + this.h * 2) * progress;
+        const sides = [
+            [this.x, this.y, this.x + this.w, this.y, this.w],
+            [this.x + this.w, this.y, this.x + this.w, this.y + this.h, this.h],
+            [this.x + this.w, this.y + this.h, this.x, this.y + this.h, this.w],
+            [this.x, this.y + this.h, this.x, this.y, this.h]
+        ];
+
+        this.s.push();
+        this.s.noFill();
+        this.s.stroke(this.color);
+        this.s.strokeWeight(this.strokeweight);
+        this.s.strokeCap(this.s.ROUND);
+
+        for (let side of sides) {
+            if (remaining <= 0)
+                break;
+
+            const sideProgress = this.s.constrain(remaining / side[4], 0, 1);
+            this.s.line(
+                side[0],
+                side[1],
+                side[0] + (side[2] - side[0]) * sideProgress,
+                side[1] + (side[3] - side[1]) * sideProgress
+            );
+            remaining -= side[4];
+        }
+
+        this.s.pop();
+    }
+
+    show() {
+        if (this.mode === 2) {
+            this.showClockwise();
+            return;
+        }
+
+        for (let line of this.lines) {
+            line.show();
+        }
+    }
+}
+
 /** 2018-12-22
  * Emphasis
  * Essentially a shiny rectangle under the text or formula we want to emphasize
@@ -462,7 +663,8 @@ class Emphasis extends Rect {
  * ----args list parameters----
  * @mandatory (number) x1, y1, x2, y2;
  * @optional (array) color;
- *           (number) start, duration, end, strokeweight, mode [defines which timer to use]
+ *           (number) start, duration, end, strokeweight, mode [defines which timer to use];
+ *           (boolean) square [true for SQUARE caps, false for ROUND caps]
  */
 class Line {
     constructor(ctx, args) {
@@ -477,6 +679,7 @@ class Line {
         // starting frame for initialization animation
         this.start = args.start || 1;
         this.strokeweight = args.strokeweight || 3;
+        this.square = args.square === true;
         this.st = new StrokeChanger(this.s, args.color);
 
         this.timer = new TimerFactory(frames(this.duration), args.mode);
@@ -531,6 +734,7 @@ class Line {
     showSetup() {
         this.st.advance();
         this.timer_sw.advance();
+        this.s.strokeCap(this.square ? this.s.SQUARE : this.s.ROUND);
         if (this.moved)
             this.moving();
     }
@@ -538,7 +742,7 @@ class Line {
     show() {
         if (this.s.frameCount > this.start) {
             this.showSetup();
-            let t = this.timer.advance();
+            let t = this.s.constrain(this.timer.advance(), 0, 1);
             this.s.line(this.x1, this.y1,
                 this.x1 + (this.x2 - this.x1) * t, this.y1 + (this.y2 - this.y1) * t);
         }
@@ -566,9 +770,60 @@ class LineCenter extends Line {
     show() {
         if (this.s.frameCount > this.start) {
             this.showSetup();
-            let t = this.timer.advance();
+            let t = this.s.constrain(this.timer.advance(), 0, 1);
             this.s.line(this.xm + (this.x1 - this.xm) * t, this.ym + (this.y1 - this.ym) * t,
                 this.xm + (this.x2 - this.xm) * t, this.ym + (this.y2 - this.ym) * t);
+        }
+    }
+}
+
+/**
+ * A line that repeatedly grows from its first endpoint to its second endpoint,
+ * then disappears in the same direction. Each pass is controlled by a manually
+ * supplied start/end frame interval.
+ *
+ * ----args list parameters----
+ * @mandatory (number) x1, y1, x2, y2; (array) intervals [{start, end}, ...]
+ * @optional (array) color; (number) strokeweight; (boolean) square
+ */
+class TransmitLine {
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.x1 = args.x1;
+        this.y1 = args.y1;
+        this.x2 = args.x2;
+        this.y2 = args.y2;
+        this.intervals = args.intervals || [];
+        this.color = args.color || [247, 227, 47];
+        this.strokeweight = args.strokeweight || 8;
+        this.square = args.square === true;
+    }
+
+    show() {
+        for (let interval of this.intervals) {
+            if (this.s.frameCount < interval.start || this.s.frameCount > interval.end)
+                continue;
+
+            const duration = Math.max(1, interval.end - interval.start);
+            const progress = this.s.constrain(
+                (this.s.frameCount - interval.start) / duration,
+                0,
+                1
+            );
+            const head = Math.min(1, progress * 2);
+            const tail = Math.max(0, progress * 2 - 1);
+            const startX = this.x1 + (this.x2 - this.x1) * tail;
+            const startY = this.y1 + (this.y2 - this.y1) * tail;
+            const endX = this.x1 + (this.x2 - this.x1) * head;
+            const endY = this.y1 + (this.y2 - this.y1) * head;
+
+            this.s.push();
+            this.s.stroke(this.color);
+            this.s.strokeWeight(this.strokeweight);
+            this.s.strokeCap(this.square ? this.s.SQUARE : this.s.ROUND);
+            this.s.line(startX, startY, endX, endY);
+            this.s.pop();
+            break;
         }
     }
 }
@@ -736,7 +991,7 @@ class Arrow extends Line {
         this.showSetup();
 
         // 2019-01-26 BUG FIX: no wonder why the display of arrows appears 6 times slower...
-        let t = this.timer.advance();
+        let t = this.s.constrain(this.timer.advance(), 0, 1);
 
         this.s.line(this.x1, this.y1, this.x1 + t * dx2, this.y1 + t * dy2);
 
@@ -842,8 +1097,8 @@ class Table {
         this.xs = args.xs;
         this.ys = args.ys;
         this.font = args.font;
-        this.label1 = "x" || args.label1;
-        this.label2 = "y" || args.label2;
+        this.label1 = args.label1 !== undefined ? args.label1 : "x";
+        this.label2 = args.label2 !== undefined ? args.label2 : "y";
         this.start = args.start || frames(1);
 
         this.numPts = this.xs.length;
@@ -856,19 +1111,21 @@ class Table {
         this.duration = args.duration || frames(1);
         this.timer = new Timer0(this.duration);
         this.textX = [new TextFade(this.s, {
-            duration: frames(0.5),
+            duration: 0.5,
             size: this.sizeY,
             str: this.label1,
             font: this.font,
+            start: this.start,
             x: this.x + this.sizeX * 0.6,
             y: this.y + this.sizeY * 0.6,
             mode: 1,
         })];
         this.textY = [new TextFade(this.s, {
-            duration: frames(0.5),
+            duration: 0.5,
             size: this.sizeY,
             str: this.label2,
             font: this.font,
+            start: this.start,
             x: this.x + this.sizeX * 0.6,
             y: this.y + this.sizeY * 1.8,
             mode: 1,
@@ -876,20 +1133,22 @@ class Table {
         for (let i = 1; i < this.numPts + 1; i++) {
             this.textX[i] = new TextFade(this.s, {
                 color: args.colorX,
-                duration: frames(0.5),
+                duration: 0.5,
                 size: this.sizeY,
                 str: "" + this.xs[i - 1],   // 3/19: why did this go wrong without me noticing???
                 font: this.font,
+                start: this.start + this.duration * i / (this.numPts + 1),
                 x: this.x + this.sizeX * (0.6 + i * 1.4),
                 y: this.y + this.sizeY * 0.6,
                 mode: 1
             });
             this.textY[i] = new TextFade(this.s, {
                 color: args.colorY,
-                duration: frames(0.5),
+                duration: 0.5,
                 size: this.sizeY,
                 str: "" + this.ys[i - 1],  // and here?
                 font: this.font,
+                start: this.start + this.duration * i / (this.numPts + 1),
                 x: this.x + this.sizeX * (0.6 + i * 1.4),
                 y: this.y + this.sizeY * 1.8,
                 mode: 1
@@ -908,7 +1167,7 @@ class Table {
         for (let i = 1; i < this.numPts + 1; i++) {
             this.vertLines[i - 1] = new LineCenter(this.s, {
                 strokeweight: 2,
-                duration: frames(0.5),
+                duration: 0.5,
                 x1: this.x + this.sizeX * (i * 1.4 - 0.1),
                 x2: this.x + this.sizeX * (i * 1.4 - 0.1),
                 y1: this.y + this.sizeY * 0.17,
@@ -919,13 +1178,13 @@ class Table {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.s.frameCount >= this.start) {
             this.horizLine.show();
             let t = Math.round(this.timer.advance() * (this.numPts + 1));
             for (let i = 0; i < this.numPts + 1; i++) {
+                this.textX[i].show();
+                this.textY[i].show();
                 if (i < t) {
-                    this.textX[i].show();
-                    this.textY[i].show();
                     if (i < this.numPts) {
                         this.vertLines[i].show();
                     }
@@ -1239,11 +1498,11 @@ class ImageFly extends ImageBase {
             case 1:
                 this.x = -this.img.width; break;
             case 2:
-                this.x = cvw; break;
+                this.x = canvasWidth; break;
             case 3:
                 this.y = -this.img.height; break;
             case 4:
-                this.y = cvh; break;
+                this.y = canvasHeight; break;
         }
     }
 

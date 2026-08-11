@@ -3,7 +3,7 @@
  * As of now this is the only class that uses the Graphics class inheritance hierarchy
  *
  * ---- args list parameters ----
- * @optional (number) start, duration
+ * @optional (number) start, duration; (array) respawnTimes [in frames]
  */
 class BrainBase extends Graphics {
     constructor(ctx, args) {
@@ -11,6 +11,12 @@ class BrainBase extends Graphics {
 
         this.start = args.start || frames(1);
         this.duration = args.duration || frames(1);   // duration of init animation
+        this.respawnTimes = args.respawnTimes || [];
+        this.respawnDuration = frames(1);
+        this.fadeDuration = frames(0.5);
+        this.respawnIndex = 0;
+        this.respawnStart = undefined;
+        this.respawnImage = undefined;
 
         // the coordinates of each vertex, from bottom to top
         this.xCoords = [
@@ -33,10 +39,27 @@ class BrainBase extends Graphics {
 
         // number of frames needed to display everything
         // this.frames = frames;
-        this.speed = Math.floor(this.duration / 7);
+        this.speed = Math.max(1, Math.floor(this.duration / 7));
 
         // frameCount for this class
         this.frCount = 0;
+    }
+
+    startRespawn() {
+        // Preserve the fully rendered brain while a fresh copy begins drawing.
+        this.respawnImage = this.g.get();
+        this.g.clear();
+        this.frCount = 0;
+        this.speed = Math.max(1, Math.floor(this.respawnDuration / 7));
+        this.respawnStart = this.s.frameCount;
+    }
+
+    checkForRespawn() {
+        if (this.respawnIndex < this.respawnTimes.length &&
+            this.s.frameCount >= this.respawnTimes[this.respawnIndex]) {
+            this.startRespawn();
+            this.respawnIndex++;
+        }
     }
 
     showCircle(x, y, size) { // size should be between 0 and 1
@@ -83,6 +106,7 @@ class BrainBase extends Graphics {
     }
 
     showBrain() {
+        this.checkForRespawn();
         if (this.s.frameCount > this.start) {
             // the thick lines
             this.g.noFill();
@@ -98,6 +122,47 @@ class BrainBase extends Graphics {
 
             // update local frame count
             this.frCount++;
+        }
+    }
+
+    /**
+     * Draw the brain at a given canvas location. During a respawn, the old
+     * brain fades out while the newly drawn brain spawns in at the same place.
+     */
+    showAt(x, y, size) {
+        this.showBrain();
+
+        if (this.respawnStart !== undefined) {
+            const elapsed = this.s.frameCount - this.respawnStart;
+            const fadeProgress = this.s.constrain(
+                elapsed / this.fadeDuration,
+                0,
+                1
+            );
+            const respawnProgress = this.s.constrain(
+                elapsed / this.respawnDuration,
+                0,
+                1
+            );
+
+            if (this.respawnImage) {
+                this.s.push();
+                this.s.tint(255, 255 * (1 - fadeProgress));
+                this.s.image(this.respawnImage, x, y, size, size);
+                this.s.pop();
+            }
+
+            this.s.push();
+            this.s.tint(255, 255 * respawnProgress);
+            this.s.image(this.g, x, y, size, size);
+            this.s.pop();
+
+            if (respawnProgress >= 1) {
+                this.respawnStart = undefined;
+                this.respawnImage = undefined;
+            }
+        } else {
+            this.s.image(this.g, x, y, size, size);
         }
     }
 
@@ -128,6 +193,8 @@ class Bubble {
         this.end = args.end || 10000;  // starting time for fade out animation, default "infinity"
 
         this.strokeweight = args.strokeweight || 2;
+        this.opacity = args.opacity === undefined ? 177 : args.opacity;
+        this.fillColor = args.fill || [0, 0, 0];
 
         this.text = new TextFade(this.s, {   // a center-mode text object
             mode: 1,
@@ -155,7 +222,12 @@ class Bubble {
     show() {
         this.s.stroke(255);
         this.s.strokeWeight(this.strokeweight);
-        this.s.fill(0, 177);           // the bubble is semi-transparent
+        this.s.fill(
+            this.fillColor[0],
+            this.fillColor[1],
+            this.fillColor[2],
+            this.opacity
+        );
 
         for (let i = 0; i < 4; i++) { // NOTE ON 2019-04-11: could actually use the new Circle class
             if (this.s.frameCount - this.start > i * frames(0.2)) {
@@ -249,7 +321,9 @@ class ThoughtBrain extends BrainBase {
             font: args.font,
             size: args.font_size,  // font size
             str: args.str,
-            start: args.bubbleStart || this.start
+            start: args.bubbleStart || this.start,
+            opacity: args.bubbleOpacity,
+            fill: args.bubbleFill
         });
         if (args.question) {
             this.qStart = args.qStart || this.start + frames(2);
@@ -257,13 +331,13 @@ class ThoughtBrain extends BrainBase {
 
             this.qm = [];  // create two question marks
             this.qm[0] = new Emoji(this.s, {
-                emoji: args.emoji, str: '❔', color: Orange,
+                emoji: args.emoji, str: '❔', color: Orange.slice(),
                 x: this.x - this.size * 0.027, y: this.y, size: this.size / 10,
                 start: this.qStart, end: this.qEnd
             });
             let dt = frames(0.3);
             this.qm[1] = new Emoji(this.s, {
-                emoji: args.emoji, str: '❔', color: Orange,
+                emoji: args.emoji, str: '❔', color: Orange.slice(),
                 x: this.x + this.size * 0.057, y: this.y, size: this.size / 10,
                 start: this.qStart + dt, end: this.qEnd + dt
             });

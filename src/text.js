@@ -29,7 +29,8 @@ class TextBase extends PointBase {
  *
  * ---- args list parameters ----
  * @mandatory (string) str; (number) x, y; (p5.Font) font
- * @optional (number) mode, size, start, end, strokeweight; (array) color, stroke
+ * @optional (number) mode, size, start, end, strokeweight, width, lineHeight;
+ *           (boolean) justify; (array) color, stroke
  */
 class Text extends TextBase {
     constructor(ctx, args) {
@@ -44,6 +45,9 @@ class Text extends TextBase {
         this.sw = args.strokeweight || 1.7;
 
         this.size = args.size || 37;
+        this.width = args.width;
+        this.lineHeight = args.lineHeight;
+        this.justify = args.justify !== false;
     }
 
     // works the same way as move()
@@ -86,6 +90,66 @@ class Text extends TextBase {
         this.y = args.y || this.y;
         this.size = args.size || this.size;
         this.str = args.str || this.str;
+        if (args.width !== undefined)
+            this.width = args.width;
+    }
+
+    wrapLines(str) {
+        const lines = [];
+        for (const paragraph of str.split("\n")) {
+            if (paragraph.trim() === "") {
+                lines.push([]);
+                continue;
+            }
+
+            let line = [];
+            for (const word of paragraph.trim().split(/\s+/)) {
+                const candidate = line.concat(word).join(" ");
+                if (line.length === 0 || this.s.textWidth(candidate) <= this.width) {
+                    line.push(word);
+                } else {
+                    lines.push(line);
+                    line = [word];
+                }
+            }
+            lines.push(line);
+        }
+        return lines;
+    }
+
+    drawText(str) {
+        if (this.width === undefined) {
+            this.s.text(str, this.x, this.y);
+            return;
+        }
+
+        const lines = this.wrapLines(str);
+        const lineHeight = this.lineHeight || this.size * 1.25;
+        const blockHeight = lines.length * lineHeight;
+        const left = this.mode === 1 ? this.x - this.width / 2 :
+            (this.mode === 2 || this.mode === 4 ? this.x - this.width : this.x);
+        const top = this.mode === 0 || this.mode === 2 ? this.y :
+            this.y - blockHeight / 2;
+
+        this.s.textAlign(this.s.LEFT, this.s.TOP);
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            const words = lines[lineIndex];
+            if (words.length === 0)
+                continue;
+
+            const wordWidths = words.map((word) => this.s.textWidth(word));
+            const naturalWidth = wordWidths.reduce((sum, width) => sum + width, 0);
+            const gap = this.justify && words.length > 1 ?
+                Math.max(0, (this.width - naturalWidth) / (words.length - 1)) :
+                this.s.textWidth(" ");
+            let cursorX = left;
+            const lineY = top + lineIndex * lineHeight;
+
+            for (let wordIndex = 0; wordIndex < words.length; wordIndex++) {
+                this.s.text(words[wordIndex], cursorX, lineY);
+                cursorX += wordWidths[wordIndex] + gap;
+            }
+        }
     }
 
     showSetup() {
@@ -119,7 +183,7 @@ class Text extends TextBase {
             this.showSetup();
             this.s.fill(this.color);
 
-            this.s.text(this.str, this.x, this.y);
+            this.drawText(this.str);
         }
     }
 }
@@ -155,7 +219,7 @@ class TextFade extends Text {
                 this.ft.fadeOut(this.duration);
 
             this.showSetup();
-            this.s.text(this.str, this.x, this.y);
+            this.drawText(this.str);
         }
 
     }
@@ -169,15 +233,22 @@ class TextWriteIn extends Text {
         this.frCount = 0;
         this.len = this.str.length;
         this.txt = "";
+        this.writeFrame = 0;
+        this.charactersPerSecond = args.charactersPerSecond || 30;
     }
     show() {
         if (this.s.frameCount >= this.start) {
             this.showSetup();
-            if (this.frCount < this.len) {
+            const targetLength = Math.min(
+                this.len,
+                Math.floor(this.writeFrame * this.charactersPerSecond / fr) + 1
+            );
+            while (this.frCount < targetLength) {
                 this.txt += this.str[this.frCount];
                 this.frCount++;
             }
-            this.s.text(this.txt, this.x, this.y);
+            this.writeFrame++;
+            this.drawText(this.txt);
         }
     }
 }
@@ -202,12 +273,98 @@ class TextRoll extends TextFade {
     }
 }
 
+/**
+ * A fixed, top-left paper citation introduced by a right-pointing triangle.
+ * The citation text fades in while the triangle decelerates into place from
+ * outside the left edge. At end, the triangle moves right and both elements
+ * fade out together.
+ *
+ * ----args list parameters----
+ * @mandatory (string) text/str; (p5.Font) font; (number) start, end
+ * @optional (number) grayScale, size, duration, exitDistance
+ */
+class Citation {
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.start = args.start;
+        this.end = args.end;
+        this.duration = args.duration || 0.8;
+        this.durationFrames = frames(this.duration);
+        this.triangleSide = 19;
+        this.triangleHeight = Math.sqrt(3) * this.triangleSide / 2;
+        this.triangleTargetX = 50;
+        this.triangleY = 55;
+        this.triangleX = -this.triangleHeight;
+        this.exitDistance = args.exitDistance || 79;
+        this.enterTimer = new Timer1(this.durationFrames);
+        this.exitTimer = new Timer1(this.durationFrames);
+        this.fadeTimer = new Timer1(this.durationFrames);
+        this.grayScale = args.grayScale || 97;
+        this.triangleAlpha = 255;
+        this.exiting = false;
+
+        this.referenceText = new TextFade(this.s, {
+            str: args.text || args.str,
+            x: 78,
+            y: this.triangleY - 4,
+            mode: 3,
+            size: 27,
+            color: [this.grayScale, this.grayScale, this.grayScale],
+            start: this.start,
+            end: this.end,
+            duration: this.duration,
+            font: args.font
+        });
+    }
+
+    drawTriangle() {
+        const tipX = this.triangleX + this.triangleHeight * 2 / 3;
+        const baseX = this.triangleX - this.triangleHeight / 3;
+        const halfSide = this.triangleSide / 2;
+
+        this.s.push();
+        this.s.noStroke();
+        this.s.fill(this.grayScale, this.triangleAlpha);
+        this.s.triangle(
+            tipX, this.triangleY,
+            baseX, this.triangleY - halfSide,
+            baseX, this.triangleY + halfSide
+        );
+        this.s.pop();
+    }
+
+    show() {
+        if (this.s.frameCount < this.start)
+            return;
+
+        if (!this.exiting && this.s.frameCount >= this.end)
+            this.exiting = true;
+
+        if (this.exiting) {
+            const exitProgress = this.s.constrain(this.exitTimer.advance(), 0, 1);
+            this.triangleX = this.triangleTargetX +
+                this.exitDistance * exitProgress;
+            this.triangleAlpha = 255 *
+                (1 - this.s.constrain(this.fadeTimer.advance(), 0, 1));
+        } else {
+            const enterProgress = this.s.constrain(this.enterTimer.advance(), 0, 1);
+            this.triangleX = -this.triangleHeight +
+                (this.triangleTargetX + this.triangleHeight) * enterProgress;
+        }
+
+        if (this.s.frameCount < this.end + this.durationFrames) {
+            this.referenceText.show();
+            this.drawTriangle();
+        }
+    }
+}
+
 
 /*** 2018-12-23
  * Katex
  * Base class for all math text objects. These are displayed directly as texts on the browser,
  * so I cannot do any animations on them except moving the position, changing the opacity, etc.
- * Requires the p5.dom.js and katex.js libraries.
+ * Requires p5.js (which includes the DOM APIs) and katex.js.
  *
  * The color of the text defaults to white. To reColor color, use \\textcolor{}{...} inside args.text
  *
@@ -217,9 +374,11 @@ class TextRoll extends TextFade {
  * ----args list parameters----
  * @mandatory (string) text/str--the string to display;
  * @optional (number) start--if display fade in animation, the frame to start animation (nonzero);
- *           (number) font_size, x, y, id; (string) color--note it's a string starting with '#';
+ *           (number) font_size, x, y, id, mode; (string) color--note it's a string starting with '#';
  *           (number) end--if display fade out animation, the frame to start animation;
- *           (number) rotation--in degrees
+ *           (number) rotation--in degrees; (string) entryMode--currently "moveUp";
+ *           (number) entryOffset, entryDuration;
+ * mode: 0 upper-left, 1 center, 2 upper-right, 3 center-left, 4 center-right
  */
 class Katex extends TextBase {
     constructor(ctx, args) {
@@ -228,22 +387,48 @@ class Katex extends TextBase {
         this.text = args.text || args.str;
         this.size = args.font_size || 37;
         this.color = args.color || '#fff';
+        this.mode = args.mode || 0;
+        this.entryMode = args.entryMode;
+        this.entryOffset = args.entryOffset === undefined ? 45 : args.entryOffset;
+        this.entryDuration = args.entryDuration || 0.7;
+        this.entryStarted = false;
         this.domId = args.id || 'KATEX-' + parseInt(Math.random().toString().substr(2)); // Rand ID
-        this.canvasPos = ctx.canvas.getBoundingClientRect();
-
         this.k = this.s.createP('');
+        // Remove the browser's default paragraph margin so (x, y) addresses
+        // the equation element itself instead of its surrounding margin box.
+        this.k.style('margin', '0');
+        this.k.style('display', 'inline-block');
+        this.k.style('white-space', 'nowrap');
+        const transforms = [
+            'translate(0, 0)',
+            'translate(-50%, -50%)',
+            'translate(-100%, 0)',
+            'translate(0, -50%)',
+            'translate(-100%, -50%)'
+        ];
+        this.k.style('transform', transforms[this.mode] || transforms[0]);
         this.k.style('color', this.color);
         this.k.style('font-size', this.size + 'px');
         this.k.id(this.domId);
 
-        if (args.fadeIn === true || args.start !== undefined) {
-            this.start = args.start || frames(1);
-            this.timer = new Timer0(frames(0.7));
+        if (args.fadeIn === true || args.start !== undefined || this.entryMode) {
+            this.start = args.start === undefined ? frames(1) : args.start;
+            this.timer = new Timer0(frames(this.entryDuration));
             this.k.style('opacity', 0);
         }
         if (args.fadeOut === true || args.end !== undefined) {
             this.end = args.end || frames(100);
             this.timer2 = new Timer0(frames(0.7));
+        }
+
+        // The equation is immutable after construction, so typeset it once.
+        // show() only updates animation-related DOM styles on each frame.
+        katex.render(this.text, this.k.elt);
+
+        if (this.entryMode === "moveUp") {
+            this.entryTargetX = this.x;
+            this.entryTargetY = this.y;
+            this.y += this.entryOffset;
         }
     }
 
@@ -255,13 +440,28 @@ class Katex extends TextBase {
      * show(this.x, this.y) on each Katex object. No need to move the Katex's one by one now.
      */
     show(x, y) {
-        this.showMove();
-        if (x !== undefined) {
-            this.k.position(x + this.canvasPos.x, y + this.canvasPos.y);  // todo: refactor for chap 5
-        } else {
-            // Based on the canvas position in the DOM
-            this.k.position(this.x + this.canvasPos.x, this.y + this.canvasPos.y);
+        if (this.entryMode === "moveUp" && !this.entryStarted &&
+            this.s.frameCount >= this.start) {
+            this.move(
+                this.entryTargetX,
+                this.entryTargetY,
+                this.entryDuration,
+                1
+            );
+            this.entryStarted = true;
         }
+        this.showMove();
+        const canvasPos = this.s.canvas.getBoundingClientRect();
+        const scaleX = canvasPos.width / this.s.width;
+        const scaleY = canvasPos.height / this.s.height;
+        const drawX = x !== undefined ? x : this.x;
+        const drawY = y !== undefined ? y : this.y;
+
+        this.k.position(
+            canvasPos.left + drawX * scaleX,
+            canvasPos.top + drawY * scaleY
+        );
+        this.k.style('font-size', this.size * Math.min(scaleX, scaleY) + 'px');
         this.k.style('rotate', this.rotation);
 
         if ((this.timer !== undefined) && this.s.frameCount > this.start) {
@@ -270,7 +470,5 @@ class Katex extends TextBase {
         if ((this.timer2 !== undefined) && this.s.frameCount > this.end) {
             this.k.style('opacity', 1 - this.timer2.advance());
         }
-        katex.render(this.text, window[this.domId]);
     }
 }
-

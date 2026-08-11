@@ -20,7 +20,8 @@ class Axes3D {
     constructor(ctx, args) {
         this.s = ctx;
         this.angle = args.angle || 0;  // starting angle
-        this.speed = args.speed || -0.0025;  // how many radians to rotate per frame
+        // Rotation step at the original 30 FPS; show() normalizes it for the configured frame rate.
+        this.speed = args.speed || -0.0025;
         this.camY = -567;
         this.camRadius = 674 || args.camRadius; // set to about 700 for displaying axes half-screen
         this.model = args.model;
@@ -76,7 +77,7 @@ class Axes3D {
         if (this.moved && this.f <= this.duration) {
             this.moving();
         } else {
-            this.angle += this.speed;
+            this.angle += perFrame(this.speed);
 
             // reset angles so that they remain between -PI and PI
             if (this.angle < -this.s.PI)

@@ -1,3 +1,4 @@
 .idea/*
 LR_Part 2 - Multiple Regression & Least Sqs/img
 cmake-build-debug/
+*.DS_Store
