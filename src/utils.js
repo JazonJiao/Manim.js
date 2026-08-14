@@ -911,7 +911,8 @@ class Arrow extends Line {
             this.colorArr = args.colorArr || [255, 255, 255];
             this.timer = new Timer0(frames(this.duration));
         } else {
-            this.timer = new Timer2(frames(this.duration));
+            // Use linear time and apply Arrow.entryEase() in showGrow().
+            this.timer = new Timer0(frames(this.duration));
         }
         //this.fadeOut = args.fadeOut || false;
 
@@ -983,6 +984,24 @@ class Arrow extends Line {
         let dy4 = obj.y4 - obj.y2;
         obj.s.line(obj.x2, obj.y2, obj.x2 + t * dx4, obj.y2 + t * dy4);
     }
+
+    /** Cubic deceleration shared by every growing Arrow. */
+    static entryEase(progress) {
+        const t = Math.max(0, Math.min(1, progress));
+        return 1 - Math.pow(1 - t, 3);
+    }
+
+    /** Grow the arrowhead from the shaft's current moving endpoint. */
+    static showMovingArrowhead(obj, tipX, tipY, progress) {
+        const dx3 = obj.x3 - obj.x2;
+        const dy3 = obj.y3 - obj.y2;
+        const dx4 = obj.x4 - obj.x2;
+        const dy4 = obj.y4 - obj.y2;
+        obj.s.line(tipX, tipY,
+            tipX + progress * dx3, tipY + progress * dy3);
+        obj.s.line(tipX, tipY,
+            tipX + progress * dx4, tipY + progress * dy4);
+    }
     
     showGrow() {
         // show the main line
@@ -991,11 +1010,20 @@ class Arrow extends Line {
         this.showSetup();
 
         // 2019-01-26 BUG FIX: no wonder why the display of arrows appears 6 times slower...
-        let t = this.s.constrain(this.timer.advance(), 0, 1);
+        const linearProgress = this.s.constrain(this.timer.advance(), 0, 1);
+        const t = Arrow.entryEase(linearProgress);
+        const tipX = this.x1 + t * dx2;
+        const tipY = this.y1 + t * dy2;
+        // Many legacy scenes retain previous canvas strokes. Delay the head
+        // until the shaft is near its destination so a moving tip does not
+        // leave detached arrowhead traces along long arrows such as axes.
+        const headLinear = this.s.constrain(
+            (linearProgress - 0.65) / 0.35, 0, 1);
+        const headProgress = Arrow.entryEase(headLinear);
 
-        this.s.line(this.x1, this.y1, this.x1 + t * dx2, this.y1 + t * dy2);
+        this.s.line(this.x1, this.y1, tipX, tipY);
 
-        Arrow.showArrow(this, t);
+        Arrow.showMovingArrowhead(this, tipX, tipY, headProgress);
     }
 
     show() {

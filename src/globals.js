@@ -2,7 +2,7 @@
  * Global variables / functions
  */
 
-let fr = 30;  // frame rate
+let fr = 60;  // frame rate
 
 let cvw = 1200;
 let cvh = 675;
@@ -97,6 +97,9 @@ function setup3D(s) {
 function setup2D(s) {
     s.frameRate(fr);
     s.createCanvas(canvasWidth, canvasHeight);
+    s.registerMethod("pre", function () {
+        s.background(8, 12, 22);
+    });
 }
 
 

@@ -6,7 +6,7 @@ const DPO_VARIABLE_COLORS = Object.freeze({
 });
 
 const DPOScene01 = function (s) {
-    let tnr, tnr_bold, abstractTitle;
+    let tnr, tnr_bold, arial, abstractTitle, citationCount;
     let titleBorders = [], paperTitle = [], authorTexts = [], abstractLines = [];
     const titleStrings = [
         "Direct Preference Optimization:",
@@ -32,15 +32,16 @@ const DPOScene01 = function (s) {
         "simple classification loss. The resulting algorithm, which we call Direct Prefer-",
         "ence Optimization (DPO), is stable, performant, and computationally lightweight,"
     ];
-    const borderStartTime = frames(0.4), paperTitleStartTime = frames(0.7);
-    const authorStartTime = frames(0.7), abstractTitleStartTime = frames(2);
-    const linesStartTime = frames(2.4);
+    const borderStartTime = frames(1), paperTitleStartTime = frames(6);
+    const authorStartTime = frames(2), abstractTitleStartTime = frames(3);
+    const linesStartTime = frames(3.4);
     const titleStagger = frames(0.25), authorStagger = frames(0.1);
     const lineStagger = frames(0.09), lineFadeDuration = 0.22;
 
     s.preload = function () {
         tnr = s.loadFont("../../lib/font/times.ttf");
         tnr_bold = s.loadFont("../../lib/font/timesbd.ttf");
+        arial = s.loadFont("../../lib/font/arial.ttf");
     };
 
     s.setup = function () {
@@ -65,19 +66,28 @@ const DPOScene01 = function (s) {
             square: true,
             color: [255, 255, 255]
         });
-        for (let i = 0; i < titleStrings.length; i++) {
-            paperTitle[i] = new TextFade(s, {
-                str: titleStrings[i],
-                x: s.width / 2,
-                y: 125 + i * 60,
-                mode: 1,
-                size: i === 0 ? 42 : 37,
-                font: tnr_bold,
-                color: [255, 255, 255],
-                start: paperTitleStartTime + i * titleStagger,
-                duration: 0.35
-            });
-        }
+        paperTitle[0] = new TextWriteIn(s, {
+            str: titleStrings[0],
+            x: s.width / 2,
+            y: 125,
+            mode: 1,
+            size: 42,
+            font: tnr_bold,
+            color: [255, 255, 255],
+            start: paperTitleStartTime,
+            duration: 0.35
+        });
+        paperTitle[1] = new TextFade(s, {
+            str: titleStrings[1],
+            x: s.width / 2,
+            y: 125 + 60,
+            mode: 1,
+            size: 37,
+            font: tnr_bold,
+            color: [255, 255, 255],
+            start: paperTitleStartTime + frames(1.5),
+            duration: 0.35
+        });
         for (let i = 0; i < authorStrings.length; i++) {
             authorTexts[i] = new TextFade(s, {
                 str: authorStrings[i],
@@ -118,10 +128,21 @@ const DPOScene01 = function (s) {
                 duration: lineFadeDuration
             });
         }
+        citationCount = new TextFade(s, {
+            str: "Cited 11,000+ times\nas of 2026!",
+            x: 1610,
+            y: 820,
+            mode: 1,
+            size: 32,
+            font: arial,
+            color: [255, 255, 255],
+            start: frames(12),
+            end: frames(15),
+            duration: 0.7
+        });
     };
 
     s.draw = function () {
-        s.background(0);
         for (let border of titleBorders)
             border.show();
         for (let titleLine of paperTitle)
@@ -131,6 +152,7 @@ const DPOScene01 = function (s) {
         abstractTitle.show();
         for (let line of abstractLines)
             line.show();
+        citationCount.show();
     };
 };
 
@@ -205,7 +227,6 @@ const DPOScene39 = function (s) {
     };
 
     s.draw = function () {
-        s.background(0);
         for (let border of titleBorders)
             border.show();
         for (let titleLine of paperTitle)
@@ -234,14 +255,14 @@ function preloadDPOChatGPTAssets(s) {
 }
 
 function createDPOChatGPTSharedElements(s, assets, animate, includeResponseLogo) {
-    const completedStart = -frames(2);
+    const completedStart = frames(0);
     const logoSvg = assets.logoSvg.join("");
     const titleLogo = new AnimatedSVGPath(s, {
         svg: logoSvg,
         x: DPO_CHATGPT_LAYOUT.titleLogoX,
         y: DPO_CHATGPT_LAYOUT.titleLogoY,
         w: DPO_CHATGPT_LAYOUT.titleLogoSize,
-        start: animate ? 0 : completedStart,
+        start: frames(1),
         strokeweight: 1
     });
     const responseLogo = includeResponseLogo ? new AnimatedSVGPath(s, {
@@ -249,7 +270,7 @@ function createDPOChatGPTSharedElements(s, assets, animate, includeResponseLogo)
         x: DPO_CHATGPT_LAYOUT.responseLogoX,
         y: DPO_CHATGPT_LAYOUT.responseLogoY,
         w: DPO_CHATGPT_LAYOUT.responseLogoSize,
-        start: animate ? frames(3) : completedStart,
+        start: animate ? frames(4) : completedStart,
         outlineDuration: 0.8,
         fillStart: 0.5,
         fillDuration: 0.7,
@@ -263,12 +284,12 @@ function createDPOChatGPTSharedElements(s, assets, animate, includeResponseLogo)
         y: 104,
         size: 42,
         color: [145, 145, 145],
-        start: animate ? frames(0.2) : -1,
+        start: animate ? frames(1.2) : -1,
         font: assets.arial,
         duration: 0.5
     });
     const modelBrain = new BrainBase(s, {
-        start: animate ? frames(1) : -1,
+        start: animate ? frames(2) : -1,
         duration: frames(1.2)
     });
     if (!animate)
@@ -280,7 +301,7 @@ function createDPOChatGPTSharedElements(s, assets, animate, includeResponseLogo)
         size: 38,
         color: [235, 241, 250],
         font: assets.tnr,
-        start: animate ? frames(1) : -1,
+        start: animate ? frames(2) : -1,
         charactersPerSecond: 30
     });
 
@@ -308,7 +329,7 @@ function showDPOChatGPTSharedElements(shared) {
 
 const DPOScene05 = function (s) {
     let assets, shared;
-    let responseLine1, responseLine2;
+    let responseLine1, responseLine2, responseLine3;
 
     s.preload = function () {
         assets = preloadDPOChatGPTAssets(s);
@@ -321,40 +342,48 @@ const DPOScene05 = function (s) {
             str: "There are many ways to answer the question...",
             x: 515, y: 405, size: 34,
             color: [235, 241, 250], font: assets.tnr,
-            start: frames(3), charactersPerSecond: 30
+            start: frames(5), charactersPerSecond: 30
         });
         responseLine2 = new TextWriteIn(s, {
-            str: "Let's see what the user prefers!",
+            str: "I should produce a “better” answer.",
             x: 515, y: 465, size: 34,
             color: [235, 241, 250], font: assets.tnr,
-            start: frames(5), charactersPerSecond: 30
+            start: frames(9.5), charactersPerSecond: 30
+        });
+        responseLine3 = new TextWriteIn(s, {
+            str: "Let me learn what the user prefers!",
+            x: 515, y: 525, size: 34,
+            color: [235, 241, 250], font: assets.tnr,
+            start: frames(15), charactersPerSecond: 30
         });
     };
 
     s.draw = function () {
-        s.background(8, 12, 22);
         showDPOChatGPTSharedElements(shared);
         responseLine1.show();
         responseLine2.show();
+        responseLine3.show();
     };
 };
 
 const DPOScene06 = function (s) {
-    let assets, shared, timesItalic;
+    let assets, shared, timesItalic, monoFont;
     let preferenceQuestion, preferenceHint;
     let responseA, responseB;
     let promptVariable, chosenVariable, rejectedVariable;
     let notationNote;
+    let responseAScore, responseAScoreStrike;
     let preferenceButtons = [], preferenceButtonLabels = [];
     const responsesY = 697;
-    const promptVariableStartTime = frames(8.6);
-    const chosenVariableStartTime = frames(9);
-    const rejectedVariableStartTime = frames(9.4);
-    const notationNoteStartTime = frames(10.1);
+    const promptVariableStartTime = frames(15);
+    const chosenVariableStartTime = frames(17);
+    const rejectedVariableStartTime = frames(19);
+    const notationNoteStartTime = frames(20);
 
     s.preload = function () {
         assets = preloadDPOChatGPTAssets(s);
         timesItalic = s.loadFont("../../lib/font/timesi.ttf");
+        monoFont = s.loadFont("../../lib/font/CascadiaMono.ttf");
     };
 
     s.setup = function () {
@@ -368,7 +397,7 @@ const DPOScene06 = function (s) {
             mode: 1,
             color: [235, 241, 250],
             font: assets.arial,
-            start: frames(4),
+            start: frames(8),
             charactersPerSecond: 30
         });
         preferenceHint = new TextFade(s, {
@@ -379,7 +408,7 @@ const DPOScene06 = function (s) {
             size: 25,
             color: [155, 169, 190],
             font: assets.arial,
-            start: frames(5.1),
+            start: frames(9),
             charactersPerSecond: 30
         });
         const buttonY = 587;
@@ -408,6 +437,37 @@ const DPOScene06 = function (s) {
                 duration: 0.4
             });
         }
+        const scoreSize = 38;
+        const scoreX = buttonXs[0] + 235 - 75;
+        const scoreY = buttonY - 57;
+        s.textFont(monoFont);
+        s.textSize(scoreSize);
+        const scoreWidth = s.textWidth("7/10");
+        responseAScore = new TextFade(s, {
+            str: "7/10",
+            x: scoreX,
+            y: scoreY,
+            mode: 1,
+            size: scoreSize,
+            color: [235, 241, 250],
+            font: monoFont,
+            start: frames(25),
+            end: frames(30),
+            duration: 0.5
+        });
+        responseAScoreStrike = new Line(s, {
+            x1: scoreX - scoreWidth / 2 - 5,
+            y1: scoreY + 7,
+            x2: scoreX + scoreWidth / 2 + 5,
+            y2: scoreY + 7,
+            color: [255, 75, 75],
+            strokeweight: 5,
+            start: frames(26),
+            end: frames(30),
+            duration: 0.5,
+            mode: 0,
+            square: true
+        });
         responseA = new TextWriteIn(s, {
             str: "As a language model, I don't have consciousness—just an ability for sounding like I'm thinking very hard.",
             x: 385,
@@ -418,7 +478,7 @@ const DPOScene06 = function (s) {
             size: 30,
             color: [235, 241, 250],
             font: assets.tnr,
-            start: frames(0.7),
+            start: frames(4),
             charactersPerSecond: 45
         });
         responseB = new TextWriteIn(s, {
@@ -431,7 +491,7 @@ const DPOScene06 = function (s) {
             size: 30,
             color: [235, 241, 250],
             font: assets.tnr,
-            start: frames(0.7),
+            start: frames(4),
             charactersPerSecond: 45
         });
         promptVariable = new Katex(s, {
@@ -469,18 +529,17 @@ const DPOScene06 = function (s) {
             x: 67,
             y: 42,
             mode: 0,
-            size: 274,
+            size: 27,
             color: [135, 145, 160],
             font: timesItalic,
             start: notationNoteStartTime,
+            end: notationNoteStartTime + frames(2),
             duration: 0.7
         });
     };
 
     s.draw = function () {
-        s.background(8, 12, 22);
-
-        if (s.frameCount === frames(8)) {
+        if (s.frameCount === frames(11.5)) {
             const selectionDuration = 0.35;
             preferenceButtons[0].growFromCenter(1.08, selectionDuration);
             preferenceButtons[0].reColor([42, 125, 98, 255], selectionDuration);
@@ -500,6 +559,8 @@ const DPOScene06 = function (s) {
             button.show();
         for (let label of preferenceButtonLabels)
             label.show();
+        responseAScore.show();
+        responseAScoreStrike.show();
         responseA.show();
         responseB.show();
         promptVariable.show();
@@ -509,4 +570,4 @@ const DPOScene06 = function (s) {
     };
 };
 
-let dpo0 = new p5(DPOScene39);
+let dpo0 = new p5(DPOScene06);

@@ -11,6 +11,10 @@ class BrainBase extends Graphics {
 
         this.start = args.start || frames(1);
         this.duration = args.duration || frames(1);   // duration of init animation
+        this.end = args.end === undefined ? Infinity : args.end;
+        this.fadeOutDuration = frames(
+            args.fadeOutDuration === undefined ? 0.7 : args.fadeOutDuration
+        );
         this.respawnTimes = args.respawnTimes || [];
         this.respawnDuration = frames(1);
         this.fadeDuration = frames(0.5);
@@ -60,6 +64,16 @@ class BrainBase extends Graphics {
             this.startRespawn();
             this.respawnIndex++;
         }
+    }
+
+    /** Return a smooth 1-to-0 opacity for an optional timed brain exit. */
+    exitOpacity() {
+        if (this.end === Infinity || this.s.frameCount <= this.end)
+            return 1;
+        const progress = Math.max(0, Math.min(1,
+            (this.s.frameCount - this.end) / this.fadeOutDuration));
+        const eased = progress * progress * (3 - 2 * progress);
+        return 1 - eased;
     }
 
     showCircle(x, y, size) { // size should be between 0 and 1
@@ -191,6 +205,7 @@ class Bubble {
 
         this.start = args.start || frames(1);
         this.end = args.end || 10000;  // starting time for fade out animation, default "infinity"
+        this.fadeOutDuration = frames(args.fadeOutDuration || 0.7);
 
         this.strokeweight = args.strokeweight || 2;
         this.opacity = args.opacity === undefined ? 177 : args.opacity;
@@ -203,7 +218,9 @@ class Bubble {
             y: this.y - this.h * 0.64,
             font: args.font,
             str: args.str,
-            start: this.start + frames(1)
+            start: this.start + frames(1),
+            end: this.end,
+            duration: args.fadeOutDuration || 0.7
         });
 
         this.timers = [new Timer1(frames(0.4)), new Timer1(frames(0.4)),
@@ -220,6 +237,17 @@ class Bubble {
     }
 
     show() {
+        if (this.s.frameCount < this.start ||
+            this.s.frameCount >= this.end + this.fadeOutDuration)
+            return;
+
+        const fadeProgress = this.s.constrain(
+            (this.s.frameCount - this.end) / this.fadeOutDuration,
+            0,
+            1
+        );
+        this.s.push();
+        this.s.drawingContext.globalAlpha *= 1 - fadeProgress;
         this.s.stroke(255);
         this.s.strokeWeight(this.strokeweight);
         this.s.fill(
@@ -236,6 +264,7 @@ class Bubble {
                     0, 6.283 * this.timers[i].advance());
             }
         }
+        this.s.pop();
         this.text.show();
     }
 }
@@ -322,6 +351,7 @@ class ThoughtBrain extends BrainBase {
             size: args.font_size,  // font size
             str: args.str,
             start: args.bubbleStart || this.start,
+            end: this.end,
             opacity: args.bubbleOpacity,
             fill: args.bubbleFill
         });
@@ -358,6 +388,12 @@ class ThoughtBrain extends BrainBase {
             for (let q of this.qm) q.show();
         if (this.bulb)
             this.bulb.show();
-        this.s.image(this.g, this.x, this.y, this.size, this.size);
+        const opacity = this.exitOpacity();
+        if (opacity > 0) {
+            this.s.push();
+            this.s.tint(255, 255 * opacity);
+            this.s.image(this.g, this.x, this.y, this.size, this.size);
+            this.s.pop();
+        }
     }
 }

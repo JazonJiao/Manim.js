@@ -70,7 +70,301 @@ class PreferenceLikelihoodExpressions {
     }
 }
 
-const DPOScene19 = function (s, args) {
+const DPOScene19 = function (s) {
+    const colors = {
+        chosen: [77, 217, 153],
+        rejected: [255, 112, 128],
+        prompt: [77, 177, 255],
+        foreground: [235, 241, 250],
+        outline: [255, 255, 255]
+    };
+    const promptText = 'Prompt: "When is the next total solar eclipse in Beijing?"';
+    const winnerTokens = ["It", "will", "happen", "on", "Sept", "2nd", "2035", "."];
+    const loserTokens = ["Sept", "2035", "."];
+    const promptSize = 40;
+    const tokenSize = 45;
+    const tokenGap = 14;
+    const wordStagger = frames(0.08);
+    const promptStartTime = frames(0.5);
+    const winnerResponseStartTime = frames(1.3);
+    const loserResponseStartTime = winnerResponseStartTime + frames(2);
+    const winnerJumpStartTime = frames(3.5);
+    const winnerJumpHeight = 35;
+    const winnerJumpDuration = 0.6;
+    const textMoveStartTime = frames(5);
+    const winnerMoveDuration = frames(1.5);
+    const loserMoveDuration = frames(2);
+    const winnerTableStartTime = frames(6);
+    const loserTableStartTime = frames(6.5);
+    const tableAnimationDuration = frames(2);
+    const endTokenFadeDuration = 0.5;
+    const pipelineStartTime = frames(8);
+    const rectangleStagger = frames(0.3);
+    const rectangleAnimationDuration = 2;
+    const connectionStartTime = pipelineStartTime + rectangleStagger * 2 +
+        frames(rectangleAnimationDuration);
+    const tableX = 180, winnerTableY = 570, loserTableY = 775;
+    const tableTextSize = 45, tableCellWidth = 109;
+    const refX = 1070, refY = 249;
+    let font, prompt, winnerSubtitle, loserSubtitle;
+    let winnerWords = [], loserWords = [];
+    let winnerTable, loserTable, promptRect, refRect, outRect, referenceModel;
+    let referenceLabel;
+    let connect1, connect2;
+    let winnerEndToken, loserEndToken;
+    let textTransitions = [];
+
+    function addTextTransition(text, target, duration) {
+        textTransitions.push({
+            text: text, fromX: text.x, fromY: text.y, fromSize: text.size,
+            targetX: target.x, targetY: target.y, targetSize: target.size,
+            duration: duration
+        });
+    }
+
+    function updateTextTransitions() {
+        const elapsed = s.frameCount - textMoveStartTime;
+        if (elapsed < 0)
+            return;
+        textTransitions.forEach(function (transition) {
+            const t = s.constrain(elapsed / transition.duration, 0, 1);
+            const eased = t * t * (3 - 2 * t);
+            transition.text.x = transition.fromX +
+                (transition.targetX - transition.fromX) * eased;
+            transition.text.y = transition.fromY +
+                (transition.targetY - transition.fromY) * eased;
+            transition.text.size = transition.fromSize +
+                (transition.targetSize - transition.fromSize) * t;
+        });
+    }
+
+    function tokenTarget(index, tableY) {
+        return {
+            x: tableX + tableCellWidth * (0.6 + (index + 1) * 1.4),
+            y: tableY + tableTextSize * 0.6,
+            size: tableTextSize
+        };
+    }
+
+    // Draw only the grid and its row labels. Scene 19's independently moving
+    // word objects occupy the token cells themselves.
+    function showTableShell(table) {
+        if (s.frameCount < table.start)
+            return;
+        table.horizLine.show();
+        table.textX[0].show();
+        table.textY[0].show();
+        const visibleColumns = Math.round(
+            table.timer.advance() * (table.numPts + 1)
+        );
+        for (let i = 0; i < table.numPts && i < visibleColumns; i++)
+            table.vertLines[i].show();
+    }
+
+    function createTokenRow(tokens, y, start) {
+        s.textSize(tokenSize);
+        const widths = tokens.map(function (token) {
+            return s.textWidth(token);
+        });
+        const gaps = tokens.slice(1).map(function (token) {
+            return token === "." ? 0 : tokenGap;
+        });
+        const rowWidth = widths.reduce(function (sum, width) {
+            return sum + width;
+        }, 0) + gaps.reduce(function (sum, gap) {
+            return sum + gap;
+        }, 0);
+        let x = (s.width - rowWidth) / 2;
+
+        return tokens.map(function (token, index) {
+            const word = new TextFade(s, {
+                str: token,
+                x: x + widths[index] / 2,
+                y: y + tokenSize / 2,
+                mode: 1,
+                size: tokenSize,
+                color: colors.foreground,
+                start: start + wordStagger * index,
+                duration: 0.25,
+                font: font
+            });
+            x += widths[index] + (gaps[index] || 0);
+            return word;
+        });
+    }
+
+    s.preload = function () {
+        font = s.loadFont("../../lib/font/times.ttf");
+    };
+
+    s.setup = function () {
+        setup2D(s);
+        s.textFont(font);
+        s.textSize(tokenSize);
+
+        prompt = new TextFade(s, {
+            str: promptText,
+            x: s.width / 2,
+            y: s.height / 4,
+            mode: 1,
+            size: promptSize,
+            color: colors.prompt,
+            start: promptStartTime,
+            font: font
+        });
+        s.textSize(31);
+        const winnerSubtitleText = "Response A - winner";
+        winnerSubtitle = new TextFade(s, {
+            str: winnerSubtitleText,
+            x: s.width / 2 - s.textWidth(winnerSubtitleText) / 2,
+            y: 414.5,
+            mode: 0,
+            size: 31,
+            color: colors.chosen,
+            start: winnerResponseStartTime,
+            font: font
+        });
+        winnerWords = createTokenRow(winnerTokens, 475, winnerResponseStartTime);
+        s.textSize(31);
+        const loserSubtitleText = "Response B - loser";
+        loserSubtitle = new TextFade(s, {
+            str: loserSubtitleText,
+            x: s.width / 2 - s.textWidth(loserSubtitleText) / 2,
+            y: 609.5,
+            mode: 0,
+            size: 31,
+            color: colors.rejected,
+            start: loserResponseStartTime,
+            font: font
+        });
+        loserWords = createTokenRow(loserTokens, 670, loserResponseStartTime);
+
+        addTextTransition(prompt,
+            {x: refX - 545, y: refY + 49, size: 29}, winnerMoveDuration);
+        addTextTransition(winnerSubtitle,
+            {x: 180, y: 530, size: 31}, winnerMoveDuration);
+        winnerWords.forEach(function (word, index) {
+            addTextTransition(word, tokenTarget(index, winnerTableY),
+                winnerMoveDuration);
+        });
+        addTextTransition(loserSubtitle,
+            {x: 180, y: 735, size: 31}, loserMoveDuration);
+        loserWords.forEach(function (word, index) {
+            addTextTransition(word, tokenTarget(index, loserTableY),
+                loserMoveDuration);
+        });
+
+        winnerTable = new Table(s, {
+            x: tableX, y: winnerTableY, xs: winnerTokens.concat([""]),
+            ys: winnerTokens.concat([""]).map(function () { return ""; }),
+            label1: "text", label2: "prob.", start: winnerTableStartTime,
+            duration: tableAnimationDuration, font: font,
+            colorX: colors.foreground, colorY: colors.chosen,
+            size: tableTextSize, sizeX: tableCellWidth
+        });
+        loserTable = new Table(s, {
+            x: tableX, y: loserTableY, xs: loserTokens.concat([""]),
+            ys: loserTokens.concat([""]).map(function () { return ""; }),
+            label1: "text", label2: "prob.", start: loserTableStartTime,
+            duration: tableAnimationDuration, font: font,
+            colorX: colors.foreground, colorY: colors.rejected,
+            size: tableTextSize, sizeX: tableCellWidth
+        });
+        winnerEndToken = new TextFade(s, {
+            str: "<end>",
+            x: tokenTarget(winnerTokens.length, winnerTableY).x,
+            y: tokenTarget(winnerTokens.length, winnerTableY).y,
+            mode: 1, size: tableTextSize, color: colors.foreground,
+            start: winnerTableStartTime + tableAnimationDuration -
+                frames(endTokenFadeDuration),
+            duration: endTokenFadeDuration, font: font
+        });
+        loserEndToken = new TextFade(s, {
+            str: "<end>",
+            x: tokenTarget(loserTokens.length, loserTableY).x,
+            y: tokenTarget(loserTokens.length, loserTableY).y,
+            mode: 1, size: tableTextSize, color: colors.foreground,
+            start: loserTableStartTime + tableAnimationDuration -
+                frames(endTokenFadeDuration),
+            duration: endTokenFadeDuration, font: font
+        });
+
+        promptRect = new LinedRect(s, {
+            x: refX - 940, y: refY - 20, w: 790, h: 220,
+            start: pipelineStartTime, duration: rectangleAnimationDuration, mode: 2,
+            strokeweight: 2, color: colors.outline
+        });
+        refRect = new LinedRect(s, {
+            x: refX - 40, y: refY - 20, w: 330, h: 220,
+            start: pipelineStartTime + rectangleStagger,
+            duration: rectangleAnimationDuration, mode: 2,
+            strokeweight: 2, color: colors.outline
+        });
+        outRect = new LinedRect(s, {
+            x: refX + 400, y: refY - 20, w: 290, h: 220,
+            start: pipelineStartTime + rectangleStagger * 2,
+            duration: rectangleAnimationDuration, mode: 2,
+            strokeweight: 2, color: colors.outline
+        });
+        connect1 = new Line(s, {
+            x1: promptRect.x + promptRect.w,
+            y1: promptRect.y + promptRect.h / 2,
+            x2: refRect.x,
+            y2: refRect.y + refRect.h / 2,
+            start: connectionStartTime, duration: 0.5, mode: 1,
+            strokeweight: 7, square: true, color: colors.outline
+        });
+        connect2 = new Line(s, {
+            x1: refRect.x + refRect.w,
+            y1: refRect.y + refRect.h / 2,
+            x2: outRect.x,
+            y2: outRect.y + outRect.h / 2,
+            start: connectionStartTime, duration: 0.5, mode: 1,
+            strokeweight: 7, square: true, color: colors.outline
+        });
+        referenceModel = new BrainBase(s, {
+            start: pipelineStartTime, duration: frames(1.5)
+        });
+        referenceLabel = new TextFade(s, {
+            str: "trainable\nmodel",
+            x: refX + 210, y: refY + 150,
+            size: 27, mode: 1, color: colors.foreground,
+            start: pipelineStartTime, duration: 0.7, font: font
+        });
+    };
+
+    s.draw = function () {
+        s.background(8, 12, 22);
+        updateTextTransitions();
+
+        if (s.frameCount === winnerJumpStartTime) {
+            winnerSubtitle.jump(winnerJumpHeight, winnerJumpDuration);
+            winnerWords.forEach(function (word) {
+                word.jump(winnerJumpHeight, winnerJumpDuration);
+            });
+        }
+
+        promptRect.show();
+        refRect.show();
+        outRect.show();
+        connect1.show();
+        connect2.show();
+        referenceModel.showAt(refX, refY, 420);
+        referenceLabel.show();
+        prompt.show();
+        winnerSubtitle.show();
+        winnerWords.forEach(function (word) { word.show(); });
+        loserSubtitle.show();
+        loserWords.forEach(function (word) { word.show(); });
+        showTableShell(winnerTable);
+        showTableShell(loserTable);
+        winnerEndToken.show();
+        loserEndToken.show();
+        showFR(s);
+    };
+};
+
+const DPOScene20 = function (s, args) {
     args = args || {};
     // Scene palette. Edit these defaults or pass matching keys in args.colors.
     const colors = Object.assign({
@@ -92,18 +386,21 @@ const DPOScene19 = function (s, args) {
         [0.74, 0.81, 0.69, 0.88, 0.63, 0.71, 0.86, 0.95, 0.98];
     const loserProbabilities = args.loserProbabilities || [0.43, 0.52, 0.91, 0.96];
     const showAttention = args.showAttention !== false;
-    const modelLabelText = args.modelLabel || "current\nmodel";
+    const modelLabelText = args.modelLabel || "trainable\nmodel";
     const modelSubscript = args.modelSubscript || "\\theta";
+    const scene19ElementsStartTime = frames(0.5);
     const timing = Object.assign({
-        pipelineStart: frames(1),
+        pipelineStart: scene19ElementsStartTime,
         subtitleStart: frames(0.8),
-        promptStart: frames(1.2),
-        modelStart: frames(1.5),
-        connectionStart: frames(1.7),
-        tableAStart: frames(2),
-        tableBStart: frames(4),
-        titleAStart: frames(1.5),
-        titleBStart: frames(2.5),
+        promptStart: scene19ElementsStartTime,
+        modelStart: scene19ElementsStartTime,
+        connectionStart: scene19ElementsStartTime,
+        tableAStart: scene19ElementsStartTime,
+        tableBStart: scene19ElementsStartTime,
+        titleAStart: scene19ElementsStartTime,
+        titleBStart: scene19ElementsStartTime,
+        winnerProbabilitiesStart: frames(10),
+        loserProbabilitiesStart: frames(3),
         loserEquationStart: frames(7),
         loserNllStart: frames(10),
         rigorousEquationStart: frames(13)
@@ -131,9 +428,12 @@ const DPOScene19 = function (s, args) {
     let loserEquationStartTime = timing.loserEquationStart,
         loserNllStartTime = timing.loserNllStart,
         loserRigorousEquationStartTime = timing.rigorousEquationStart;
+    let winnerProbabilitiesStartTime = timing.winnerProbabilitiesStart,
+        loserProbabilitiesStartTime = timing.loserProbabilitiesStart;
+    const probabilityEntryStagger = frames(0.1);
     let tableAStart = timing.tableAStart, tableBStart = timing.tableBStart;
 
-    function createProbabilityTexts(values, table, color) {
+    function createProbabilityTexts(values, table, color, start) {
         let texts = [];
         for (let i = 0; i < values.length; i++) {
             texts[i] = new TextFade(s, {
@@ -143,7 +443,7 @@ const DPOScene19 = function (s, args) {
                 mode: 1,
                 size: table.sizeY,
                 color: color,
-                start: table.start + table.duration * (i + 1) / (table.numPts + 1),
+                start: start + probabilityEntryStagger * i,
                 duration: 0.5,
                 font: font
             });
@@ -341,11 +641,11 @@ const DPOScene19 = function (s, args) {
 
         probabilityTexts[0] = createProbabilityTexts(
             chosenProbabilities.map(function (p) { return p.toFixed(2); }),
-            tables[0], chosen_color
+            tables[0], chosen_color, winnerProbabilitiesStartTime
         );
         probabilityTexts[1] = createProbabilityTexts(
             loserProbabilities.map(function (p) { return p.toFixed(2); }),
-            tables[1], rejected_color
+            tables[1], rejected_color, loserProbabilitiesStartTime
         );
     }
 
@@ -467,7 +767,6 @@ const DPOScene19 = function (s, args) {
     };
 
     s.draw = function () {
-        s.background(8, 12, 22);
         // title.show();
         // subtitle.show();
         showModelPipeline();
@@ -518,8 +817,6 @@ const DPOScene28 = function (s) {
     };
 
     s.draw = function () {
-        s.background(8, 12, 22);
-
         if (!expressionsMoveStarted && s.frameCount >= expressionsMoveTime) {
             preferenceLikelihoodExpressions.moveToCenter(1.2);
             expressionsMoveStarted = true;
@@ -550,7 +847,7 @@ const DPOScene33 = function (s) {
         {start: frames(4.9), end: frames(5.5)}
     ];
 
-    DPOScene19(s, {
+    DPOScene20(s, {
         modelLabel: "reference\nmodel",
         modelSubscript: "\\mathrm{ref}",
         showAttention: false,
@@ -608,7 +905,7 @@ const DPOScene03 = function (s) {
 
     let font, emojiFont, title, dataRect, modelRect, tokenRect;
     let connect1, connect2, transmit1, transmit2, model;
-    let contextText, tokenText, firstThought, secondThought, insightBulb;
+    let contextText, tokenText, firstThought, helpfulThought, secondThought, insightBulb;
 
     s.preload = function () {
         font = s.loadFont("../../lib/font/times.ttf");
@@ -625,13 +922,13 @@ const DPOScene03 = function (s) {
             size: 48,
             mode: 1,
             color: colors.foreground,
-            start: frames(1),
+            start: frames(3),
             font: font,
-            end: frames(5),
+            end: frames(7),
             duration: 0.7
         });
 
-        // Reuse the three-stage pipeline geometry from DPOScene19.
+        // Reuse the three-stage pipeline geometry from DPOScene20.
         dataRect = new LinedRect(s, {
             x: refX - 940, y: refY - 20, w: 790, h: 220,
             start: pipelineStart, duration: 1.4, mode: 2,
@@ -701,27 +998,36 @@ const DPOScene03 = function (s) {
             x: refX + 127, y: refY - 25, w: 500, h: 250,
             font: font, size: 37,
             str: "Predict the next token.",
-            start: frames(5), fill: colors.background, opacity: 230
+            start: frames(7), end: frames(11),
+            fill: colors.background, opacity: 230
+        });
+        helpfulThought = new Bubble(s, {
+            x: refX + 127, y: refY - 25, w: 500, h: 250,
+            font: font, size: 37,
+            str: "I want to be a\nhelpful assistant.",
+            start: frames(12), end: frames(16),
+            fill: colors.background, opacity: 230
         });
         secondThought = new Bubble(s, {
             x: refX + 127, y: refY - 25, w: 500, h: 250,
             font: font, size: 37,
             str: "I need post-training.",
-            start: frames(10), fill: colors.background, opacity: 230
+            start: frames(17), fill: colors.background, opacity: 230
         });
         insightBulb = new Bulb(s, {
             emoji: emojiFont,
             str: "💡",
             color: [247, 248, 7],
-            x: refX + 80,
-            y: refY + 20,
+            x: refX + 25,
+            y: refY - 35,
             size: 60,
-            start: frames(10),
-            end: frames(14)
+            start: frames(17),
+            end: frames(20)
         });
         // Bubble normally delays its text; these thoughts begin at the named times.
-        firstThought.text.start = frames(5);
-        secondThought.text.start = frames(10);
+        firstThought.text.start = frames(7);
+        helpfulThought.text.start = frames(13);
+        secondThought.text.start = frames(17);
         contextText = new Text(s, {
             str: textTokenPairs[0][0],
             x: dataRect.x + dataRect.w / 2,
@@ -760,20 +1066,170 @@ const DPOScene03 = function (s) {
         dataRect.show();
         modelRect.show();
         tokenRect.show();
-        connect1.show();
-        connect2.show();
         transmit1.show();
         transmit2.show();
+        connect1.show();
+        connect2.show();
         contextText.show();
         tokenText.show();
         model.showAt(refX + 10, refY, modelSize);
-        if (s.frameCount >= frames(10))
-            secondThought.show();
-        else if (s.frameCount >= frames(5))
-            firstThought.show();
+        firstThought.show();
+        helpfulThought.show();
+        secondThought.show();
         insightBulb.show();
-        showFR(s);
+        // showFR(s);
     };
 };
 
-let dpo1 = new p5(DPOScene03);
+const DPOScene04 = function (s) {
+    const colors = {
+        foreground: [235, 241, 250],
+        outline: [255, 255, 255],
+        user: [77, 177, 255],
+        assistant: [177, 125, 255],
+        transmit: [247, 227, 47]
+    };
+    const examples = [
+        ["What is the capital of Japan?", "Tokyo."],
+        ["Why is the sky blue?", "Air scatters blue light most strongly."],
+        ["Write a synonym for happy.", "Joyful."],
+        ["What does DNA store?", "Genetic information."],
+        ["How many sides does a hexagon have?", "Six."],
+        ["Translate 'thank you' into Spanish.", "Gracias."],
+        ["What gas do plants absorb?", "Carbon dioxide."],
+        ["Who wrote Pride and Prejudice?", "Jane Austen."],
+        ["What is the largest ocean?", "The Pacific Ocean."],
+        ["How do bees communicate?", "Through dances and pheromones."]
+    ];
+    const pipelineStart = frames(1);
+    const connectionStart = frames(1.7);
+    const exampleStart = frames(3.2);
+    const exampleCycleFrames = frames(0.1);
+    const leftRectArgs = {x: 315, y: 439, w: 850, h: 220};
+    const modelRectArgs = {x: 1275, y: 439, w: 330, h: 220};
+    let font, title, dataRect, modelRect, connection, transmission, model, learningThought;
+    let userLabel, questionText, assistantLabel, answerText;
+
+    s.preload = function () {
+        font = s.loadFont("../../lib/font/times.ttf");
+    };
+
+    s.setup = function () {
+        setup2D(s);
+        const titleString = "Supervised fine-tuning (SFT)";
+        s.textFont(font);
+        s.textSize(50);
+        title = new TextWriteIn(s, {
+            str: titleString,
+            x: s.width / 2 - s.textWidth(titleString) / 2,
+            y: 105,
+            mode: 0,
+            size: 50,
+            color: colors.foreground,
+            start: frames(3.4),
+            duration: 0.8,
+            font: font
+        });
+        dataRect = new LinedRect(s, Object.assign({}, leftRectArgs, {
+            start: pipelineStart,
+            duration: 1.4,
+            mode: 2,
+            strokeweight: 2,
+            color: colors.outline
+        }));
+        modelRect = new LinedRect(s, Object.assign({}, modelRectArgs, {
+            start: pipelineStart,
+            duration: 1.4,
+            mode: 2,
+            strokeweight: 2,
+            color: colors.outline
+        }));
+
+        const connectionArgs = {
+            x1: leftRectArgs.x + leftRectArgs.w,
+            y1: leftRectArgs.y + leftRectArgs.h / 2,
+            x2: modelRectArgs.x,
+            y2: modelRectArgs.y + modelRectArgs.h / 2
+        };
+        connection = new Line(s, Object.assign({}, connectionArgs, {
+            start: connectionStart,
+            duration: 0.5,
+            mode: 1,
+            strokeweight: 7,
+            square: true,
+            color: colors.outline
+        }));
+
+        const intervals = [];
+        for (let i = 0; i < 18; i++) {
+            const startSeconds = 3 + i * 0.8;
+            intervals.push({
+                start: frames(startSeconds),
+                end: frames(startSeconds + 0.55)
+            });
+        }
+        transmission = new TransmitLine(s, Object.assign({}, connectionArgs, {
+            intervals: intervals,
+            strokeweight: 17,
+            square: true,
+            color: colors.transmit
+        }));
+
+        model = new BrainBase(s, {
+            start: frames(1.3),
+            duration: frames(1.5)
+        });
+        learningThought = new Bubble(s, {
+            x: modelRectArgs.x + 127,
+            y: modelRectArgs.y - 5,
+            w: 390,
+            h: 245,
+            font: font,
+            size: 32,
+            str: "Learning how to\nanswer questions.",
+            start: frames(11),
+            fill: [8, 12, 22],
+            opacity: 230
+        });
+        learningThought.text.start = frames(11.2);
+
+        userLabel = new TextFade(s, {
+            str: "User:", x: 360, y: 485, size: 34,
+            color: colors.user, start: exampleStart, duration: 0.4, font: font
+        });
+        questionText = new TextFade(s, {
+            str: examples[0][0], x: 480, y: 485, size: 34,
+            color: colors.foreground, start: exampleStart, duration: 0.4, font: font
+        });
+        assistantLabel = new TextFade(s, {
+            str: "Assistant:", x: 360, y: 565, size: 34,
+            color: colors.assistant, start: exampleStart, duration: 0.4, font: font
+        });
+        answerText = new TextFade(s, {
+            str: examples[0][1], x: 530, y: 565, size: 34,
+            color: colors.foreground, start: exampleStart, duration: 0.4, font: font
+        });
+    };
+
+    s.draw = function () {
+        const exampleIndex = Math.floor(
+            Math.max(0, s.frameCount - exampleStart) / exampleCycleFrames
+        ) % examples.length;
+        questionText.reset({str: examples[exampleIndex][0]});
+        answerText.reset({str: examples[exampleIndex][1]});
+
+        title.show();
+        dataRect.show();
+        modelRect.show();
+        transmission.show();
+        connection.show();
+        userLabel.show();
+        questionText.show();
+        assistantLabel.show();
+        answerText.show();
+        model.showAt(modelRectArgs.x + 50, modelRectArgs.y + 20, 420);
+        learningThought.show();
+    };
+};
+
+let dpo1 = new p5(DPOScene04);

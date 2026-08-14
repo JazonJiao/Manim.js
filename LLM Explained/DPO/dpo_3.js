@@ -11,6 +11,7 @@ function createTrainableModel(s, font, timing) {
     const x = s.width * 3 / 4 - 79;
     const network = new NeuralNetwork(s, Object.assign({}, TRAINABLE_NETWORK_ARGS, {
         x: x,
+        y: timing.networkY,
         start: timing.networkStart
     }));
     const backpropagation = animateBackpropagation(s, {
@@ -18,7 +19,7 @@ function createTrainableModel(s, font, timing) {
         start: timing.backpropagationStart,
         seed: TRAINABLE_NETWORK_ARGS.seed
     });
-    const title = new TextWriteIn(s, {
+    const title = timing.showTitle === false ? null : new TextWriteIn(s, {
         str: "Trainable model",
         x: x,
         y: 130,
@@ -35,7 +36,8 @@ function showTrainableModel(model) {
     model.network.showEdges();
     model.backpropagation.show();
     model.network.showNeurons();
-    model.title.show();
+    if (model.title)
+        model.title.show();
 }
 
 const DPOScene32 = function (s) {
@@ -87,7 +89,6 @@ const DPOScene32 = function (s) {
     };
 
     s.draw = function () {
-        s.background(8, 12, 22);
         referenceNetwork.show();
         showTrainableModel(trainableModel);
         referenceTitle.show();
@@ -97,12 +98,11 @@ const DPOScene32 = function (s) {
 
 const DPOScene02 = function (s) {
     let font, emojiFont;
-    let trainableModel, questioningBrain;
-    let brainStartTime = frames(0.5);
-    let questionMarkStartTime = frames(1.4);
-    let trainableNetworkStartTime = frames(3);
-    let trainableTitleStartTime = frames(4);
-    let trainableBackpropagationStartTime = frames(6);
+    let trainableModel, questioningBrain, responseA, preferenceSign, responseB, preferenceArrow;
+    let brainStartTime = frames(1);
+    let questionMarkStartTime = frames(2);
+    let trainableNetworkStartTime = frames(5);
+    let trainableBackpropagationStartTime = frames(7.8);
 
     s.preload = function () {
         font = s.loadFont("../../lib/font/times.ttf");
@@ -113,8 +113,53 @@ const DPOScene02 = function (s) {
         setup2D(s);
         trainableModel = createTrainableModel(s, font, {
             networkStart: trainableNetworkStartTime,
-            titleStart: trainableTitleStartTime,
-            backpropagationStart: trainableBackpropagationStartTime
+            backpropagationStart: trainableBackpropagationStartTime,
+            networkY: s.height / 2 + 50,
+            showTitle: false
+        });
+        responseA = new TextFade(s, {
+            str: "Response A",
+            x: 1230,
+            y: 150,
+            mode: 1,
+            size: 42,
+            color: [77, 217, 153],
+            start: frames(5),
+            duration: 0.25,
+            font: font
+        });
+        preferenceSign = new TextFade(s, {
+            str: ">",
+            x: 1361,
+            y: 150,
+            mode: 1,
+            size: 42,
+            color: [217, 222, 229],
+            start: frames(5.3),
+            duration: 0.25,
+            font: font
+        });
+        responseB = new TextFade(s, {
+            str: "Response B",
+            x: 1492,
+            y: 150,
+            mode: 1,
+            size: 42,
+            color: [255, 112, 128],
+            start: frames(5.6),
+            duration: 0.25,
+            font: font
+        });
+        preferenceArrow = new Arrow(s, {
+            x1: 1361,
+            y1: 209,
+            x2: 1361,
+            y2: 265,
+            start: frames(7),
+            duration: 0.35,
+            strokeweight: 4,
+            color: [217, 222, 229],
+            tipLen: 14
         });
         questioningBrain = new ThoughtBrain(s, {
             x: 240,
@@ -135,10 +180,13 @@ const DPOScene02 = function (s) {
     };
 
     s.draw = function () {
-        s.background(8, 12, 22);
         s.push();
         questioningBrain.show();
         s.pop();
+        responseA.show();
+        preferenceSign.show();
+        responseB.show();
+        preferenceArrow.show();
         showTrainableModel(trainableModel);
     };
 };
@@ -339,7 +387,6 @@ const DPOScene44 = function (s) {
     };
 
     s.draw = function () {
-        s.background(8, 12, 22);
         title.show();
         subtitle.show();
         preferenceDataTitle.show();
@@ -359,4 +406,4 @@ const DPOScene44 = function (s) {
     };
 };
 
-let dpo3 = new p5(DPOScene44);
+let dpo3 = new p5(DPOScene02);

@@ -117,3 +117,39 @@ class AnimatedSVGPath {
         this.s.pop();
     }
 }
+
+/**
+ * Fades an image in while moving it upward into its final position.
+ *
+ * ----args list parameters----
+ * @mandatory (p5.Image) img; (number) x, y
+ * @optional (number) w, h, start [in frames], duration [in seconds], rise
+ */
+class ImageFadeUp {
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.img = args.img;
+        this.x = args.x;
+        this.y = args.y;
+        this.w = args.w === undefined ? this.img.width : args.w;
+        this.h = args.h === undefined ? this.img.height : args.h;
+        this.start = args.start === undefined ? 0 : Math.floor(args.start);
+        this.duration = Math.max(1, frames(args.duration === undefined ? 0.7 : args.duration));
+        this.rise = args.rise === undefined ? 45 : args.rise;
+    }
+
+    show() {
+        const elapsed = this.s.frameCount - this.start;
+        if (elapsed < 0)
+            return;
+
+        const linearProgress = this.s.constrain(elapsed / this.duration, 0, 1);
+        const progress = linearProgress * linearProgress * (3 - 2 * linearProgress);
+        const context = this.s.drawingContext;
+
+        context.save();
+        context.globalAlpha *= progress;
+        this.s.image(this.img, this.x, this.y + this.rise * (1 - progress), this.w, this.h);
+        context.restore();
+    }
+}

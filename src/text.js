@@ -74,9 +74,6 @@ class Text extends TextBase {
 
     jumping() {
         super.jumping();
-        if (this.mode === 1)
-            // the integral of sin(2*PI*x) over 0 to 2*PI is 0, so position doesn't change
-            this.size += Math.sin(this.move_timer.t * this.s.TWO_PI) * this.amp * 0.27;
     }
 
     // works the same way as move
@@ -392,6 +389,7 @@ class Katex extends TextBase {
         this.entryOffset = args.entryOffset === undefined ? 45 : args.entryOffset;
         this.entryDuration = args.entryDuration || 0.7;
         this.entryStarted = false;
+        this.katexOptions = args.katexOptions || {};
         this.domId = args.id || 'KATEX-' + parseInt(Math.random().toString().substr(2)); // Rand ID
         this.k = this.s.createP('');
         // Remove the browser's default paragraph margin so (x, y) addresses
@@ -423,7 +421,7 @@ class Katex extends TextBase {
 
         // The equation is immutable after construction, so typeset it once.
         // show() only updates animation-related DOM styles on each frame.
-        katex.render(this.text, this.k.elt);
+        katex.render(this.text, this.k.elt, this.katexOptions);
 
         if (this.entryMode === "moveUp") {
             this.entryTargetX = this.x;
@@ -470,5 +468,300 @@ class Katex extends TextBase {
         if ((this.timer2 !== undefined) && this.s.frameCount > this.end) {
             this.k.style('opacity', 1 - this.timer2.advance());
         }
+    }
+}
+
+/**
+ * A single KaTeX expression with independently animated named parts.
+ *
+ * KaTeX still lays out the complete expression, so relation spacing, kerning,
+ * delimiters, and baselines remain intact. Each part supports independent
+ * start/end times, fades, and entry/exit translations.
+ *
+ * args.parts: [{
+ *   key, text, color,
+ *   start, end,
+ *   enterDuration, exitDuration,
+ *   enterFrom: {x, y}, exitTo: {x, y},
+ *   fadeIn, fadeOut
+ * }]
+ */
+class AnimatedKatex extends Katex {
+    constructor(ctx, args) {
+        const instanceId = parseInt(Math.random().toString().substr(2));
+        const parts = args.parts || [];
+        const partClass = (key) => "animated-katex-" + instanceId + "-" +
+            String(key).replace(/[^a-zA-Z0-9_-]/g, "-");
+        const expression = parts.map((part) => {
+            const body = part.color ?
+                "\\textcolor{" + part.color + "}{" + part.text + "}" :
+                part.text;
+            return "\\htmlClass{" + partClass(part.key) + "}{" + body + "}";
+        }).join("");
+        const katexOptions = Object.assign({}, args.katexOptions, {
+            strict: "ignore",
+            trust: (context) => context.command === "\\htmlClass"
+        });
+
+        super(ctx, Object.assign({}, args, {
+            text: expression,
+            start: undefined,
+            end: undefined,
+            entryMode: undefined,
+            fadeIn: false,
+            fadeOut: false,
+            katexOptions: katexOptions
+        }));
+
+        this.animatedKatexArgs = Object.assign({}, args);
+        this.transitions = [];
+        this.partStates = {};
+        parts.forEach((part) => {
+            const element = this.k.elt.querySelector("." + partClass(part.key));
+            if (!element)
+                throw new Error("AnimatedKatex part not found: " + part.key);
+
+            element.style.display = "inline-block";
+            element.style.willChange = "opacity, transform";
+            this.partStates[part.key] = {
+                key: part.key,
+                text: part.text,
+                color: part.color,
+                element: element,
+                start: part.start === undefined ? 0 : part.start,
+                end: part.end === undefined ? Infinity : part.end,
+                enterFrames: frames(part.enterDuration === undefined ? 0.7 :
+                    part.enterDuration),
+                exitFrames: frames(part.exitDuration === undefined ? 0.7 :
+                    part.exitDuration),
+                enterFrom: part.enterFrom || {x: 0, y: 0},
+                exitTo: part.exitTo || {x: 0, y: 0},
+                fadeIn: part.fadeIn !== false,
+                fadeOut: part.fadeOut !== false,
+                offset: {x: 0, y: 0},
+                motion: undefined,
+                jump: undefined
+            };
+        });
+    }
+
+    static ease(progress) {
+        const t = Math.max(0, Math.min(1, progress));
+        return t * t * (3 - 2 * t);
+    }
+
+    partMotionOffset(state) {
+        if (!state.motion)
+            return state.offset;
+        const progress = (this.s.frameCount - state.motion.start) /
+            state.motion.duration;
+        if (progress >= 1) {
+            state.offset = {x: state.motion.x, y: state.motion.y};
+            state.motion = undefined;
+            return state.offset;
+        }
+        const t = AnimatedKatex.ease(progress);
+        return {
+            x: state.motion.fromX + (state.motion.x - state.motion.fromX) * t,
+            y: state.motion.fromY + (state.motion.y - state.motion.fromY) * t
+        };
+    }
+
+    /** Move one rendered part to an offset relative to its KaTeX layout. */
+    movePart(key, x, y, duration) {
+        const state = this.partStates[key];
+        if (!state)
+            throw new Error("Unknown AnimatedKatex part: " + key);
+        const current = this.partMotionOffset(state);
+        state.motion = {
+            fromX: current.x,
+            fromY: current.y,
+            x: x,
+            y: y,
+            start: this.s.frameCount,
+            duration: Math.max(1, frames(duration || 0.7))
+        };
+    }
+
+    /** Jump one rendered part vertically, returning to its layout position. */
+    jumpPart(key, height, duration) {
+        const state = this.partStates[key];
+        if (!state)
+            throw new Error("Unknown AnimatedKatex part: " + key);
+        state.jump = {
+            height: height,
+            start: this.s.frameCount,
+            duration: Math.max(1, frames(duration || 0.7))
+        };
+    }
+
+    partJumpOffset(state) {
+        if (!state.jump)
+            return 0;
+        const progress = (this.s.frameCount - state.jump.start) /
+            state.jump.duration;
+        if (progress >= 1) {
+            state.jump = undefined;
+            return 0;
+        }
+        return -state.jump.height * Math.sin(Math.PI * Math.max(0, progress));
+    }
+
+    /** Return a named part's bounds in canvas coordinates. */
+    getPartBounds(key) {
+        const state = this.partStates[key];
+        if (!state)
+            throw new Error("Unknown AnimatedKatex part: " + key);
+        const rect = state.element.getBoundingClientRect();
+        const canvasRect = this.s.canvas.getBoundingClientRect();
+        const scaleX = canvasRect.width / this.s.width;
+        const scaleY = canvasRect.height / this.s.height;
+        return {
+            x: (rect.left - canvasRect.left) / scaleX,
+            y: (rect.top - canvasRect.top) / scaleY,
+            width: rect.width / scaleX,
+            height: rect.height / scaleY,
+            centerX: (rect.left + rect.width / 2 - canvasRect.left) / scaleX,
+            centerY: (rect.top + rect.height / 2 - canvasRect.top) / scaleY
+        };
+    }
+
+    getAllPartBounds() {
+        const bounds = {};
+        Object.keys(this.partStates).forEach((key) => {
+            bounds[key] = this.getPartBounds(key);
+        });
+        return bounds;
+    }
+
+    /**
+     * Re-typeset the expression and morph to KaTeX's new layout.
+     * Unchanged keyed parts slide to their new positions. Changed parts crossfade;
+     * by default the old content moves down while the new content enters from
+     * above and also moves down into place.
+     */
+    transitionTo(parts, args = {}) {
+        const start = args.start === undefined ? this.s.frameCount : args.start;
+        const duration = args.duration === undefined ? 0.7 : args.duration;
+        const offsetY = args.offsetY === undefined ? 22 : args.offsetY;
+        const hiddenParts = parts.map((part) => Object.assign({}, part, {
+            start: Infinity
+        }));
+        const next = new AnimatedKatex(this.s, Object.assign(
+            {}, this.animatedKatexArgs, {parts: hiddenParts}
+        ));
+        this.transitions.push({
+            next: next,
+            parts: parts,
+            start: start,
+            duration: duration,
+            durationFrames: Math.max(1, frames(duration)),
+            offsetY: offsetY,
+            initialized: false
+        });
+        return next;
+    }
+
+    initializeTransition(transition) {
+        const next = transition.next;
+        const frame = this.s.frameCount;
+        transition.parts.forEach((part) => {
+            const oldState = this.partStates[part.key];
+            const newState = next.partStates[part.key];
+            if (!newState)
+                return;
+            const unchanged = oldState && oldState.text === part.text &&
+                oldState.color === part.color;
+
+            if (unchanged) {
+                const oldRect = oldState.element.getBoundingClientRect();
+                const newRect = newState.element.getBoundingClientRect();
+                oldState.suppressed = true;
+                newState.start = frame;
+                newState.fadeIn = false;
+                newState.enterFrames = 0;
+                newState.offset = {
+                    x: oldRect.left - newRect.left,
+                    y: oldRect.top - newRect.top
+                };
+                newState.motion = {
+                    fromX: newState.offset.x,
+                    fromY: newState.offset.y,
+                    x: 0,
+                    y: 0,
+                    start: frame,
+                    duration: transition.durationFrames
+                };
+            } else {
+                if (oldState) {
+                    oldState.end = frame;
+                    oldState.exitFrames = transition.durationFrames;
+                    oldState.exitTo = {x: 0, y: transition.offsetY};
+                    oldState.fadeOut = true;
+                }
+                newState.start = frame;
+                newState.enterFrames = transition.durationFrames;
+                newState.enterFrom = {x: 0, y: -transition.offsetY};
+                newState.fadeIn = true;
+            }
+        });
+
+        Object.values(this.partStates).forEach((oldState) => {
+            if (!next.partStates[oldState.key]) {
+                oldState.end = frame;
+                oldState.exitFrames = transition.durationFrames;
+                oldState.exitTo = {x: 0, y: transition.offsetY};
+            }
+        });
+        transition.initialized = true;
+    }
+
+    updatePart(state) {
+        const frame = this.s.frameCount;
+        let opacity = 1;
+        let x = 0, y = 0;
+
+        if (frame < state.start) {
+            opacity = state.fadeIn ? 0 : 1;
+            x = state.enterFrom.x || 0;
+            y = state.enterFrom.y || 0;
+        } else if (frame < state.start + state.enterFrames) {
+            const t = AnimatedKatex.ease(
+                (frame - state.start) / Math.max(1, state.enterFrames)
+            );
+            opacity = state.fadeIn ? t : 1;
+            x = (state.enterFrom.x || 0) * (1 - t);
+            y = (state.enterFrom.y || 0) * (1 - t);
+        }
+
+        if (frame >= state.end) {
+            const t = AnimatedKatex.ease(
+                (frame - state.end) / Math.max(1, state.exitFrames)
+            );
+            opacity = state.fadeOut ? 1 - t : opacity;
+            x = (state.exitTo.x || 0) * t;
+            y = (state.exitTo.y || 0) * t;
+        }
+
+        const motion = this.partMotionOffset(state);
+        const jumpY = this.partJumpOffset(state);
+        state.element.style.opacity = state.suppressed ? 0 : opacity;
+        state.element.style.transform = "translate(" +
+            (x + motion.x) + "px, " + (y + motion.y + jumpY) + "px)";
+    }
+
+    show(x, y) {
+        super.show(x, y);
+        Object.values(this.partStates).forEach((state) => this.updatePart(state));
+        this.transitions.forEach((transition) => {
+            transition.next.show(x, y);
+            if (!transition.initialized &&
+                this.s.frameCount >= transition.start) {
+                this.initializeTransition(transition);
+                Object.values(transition.next.partStates).forEach((state) =>
+                    transition.next.updatePart(state)
+                );
+            }
+        });
     }
 }
