@@ -70,6 +70,58 @@ class PreferenceLikelihoodExpressions {
     }
 }
 
+class DPOTextBoundsHighlight {
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.bounds = args.bounds;
+        this.start = args.start;
+        this.end = args.end;
+        this.durationFrames = frames(args.duration || 1);
+        this.fadeFrames = frames(args.fadeDuration || 0.7);
+        this.padding = args.padding === undefined ? 7 : args.padding;
+        this.color = args.color || [249, 201, 17];
+        this.strokeweight = args.strokeweight || 2;
+        this.thinOnFade = args.thinOnFade === true;
+    }
+
+    show() {
+        const frame = this.s.frameCount;
+        if (frame < this.start || frame >= this.end + this.fadeFrames)
+            return;
+        const bounds = this.bounds();
+        const x = bounds.x - this.padding;
+        const y = bounds.y - this.padding;
+        const w = bounds.width + this.padding * 2;
+        const h = bounds.height + this.padding * 2;
+        const linearProgress = this.s.constrain(
+            (frame - this.start) / this.durationFrames, 0, 1
+        );
+        const progress = 1 - Math.pow(1 - linearProgress, 3);
+        const fadeProgress = frame < this.end ? 0 : this.s.constrain(
+            (frame - this.end) / this.fadeFrames, 0, 1
+        );
+        const alpha = 255 * (1 - fadeProgress);
+        let remaining = (w + h) * 2 * progress;
+        const sides = [[x, y, x + w, y, w], [x + w, y, x + w, y + h, h],
+            [x + w, y + h, x, y + h, w], [x, y + h, x, y, h]];
+        this.s.push();
+        this.s.noFill();
+        this.s.stroke(this.color[0], this.color[1], this.color[2], alpha);
+        this.s.strokeWeight(this.strokeweight *
+            (this.thinOnFade ? 1 - fadeProgress : 1));
+        for (const side of sides) {
+            if (remaining <= 0)
+                break;
+            const t = this.s.constrain(remaining / side[4], 0, 1);
+            this.s.line(side[0], side[1],
+                side[0] + (side[2] - side[0]) * t,
+                side[1] + (side[3] - side[1]) * t);
+            remaining -= side[4];
+        }
+        this.s.pop();
+    }
+}
+
 const DPOScene19 = function (s) {
     const colors = {
         chosen: [77, 217, 153],
@@ -101,6 +153,7 @@ const DPOScene19 = function (s) {
     const pipelineStartTime = frames(8);
     const rectangleStagger = frames(0.3);
     const rectangleAnimationDuration = 2;
+    const rightmostRectangleStartTime = pipelineStartTime + rectangleStagger * 2;
     const connectionStartTime = pipelineStartTime + rectangleStagger * 2 +
         frames(rectangleAnimationDuration);
     const tableX = 180, winnerTableY = 570, loserTableY = 775;
@@ -109,7 +162,7 @@ const DPOScene19 = function (s) {
     let font, prompt, winnerSubtitle, loserSubtitle;
     let winnerWords = [], loserWords = [];
     let winnerTable, loserTable, promptRect, refRect, outRect, referenceModel;
-    let referenceLabel;
+    let referenceLabel, outputLabel;
     let connect1, connect2;
     let winnerEndToken, loserEndToken;
     let textTransitions = [];
@@ -302,9 +355,20 @@ const DPOScene19 = function (s) {
         });
         outRect = new LinedRect(s, {
             x: refX + 400, y: refY - 20, w: 290, h: 220,
-            start: pipelineStartTime + rectangleStagger * 2,
+            start: rightmostRectangleStartTime,
             duration: rectangleAnimationDuration, mode: 2,
             strokeweight: 2, color: colors.outline
+        });
+        outputLabel = new TextFade(s, {
+            str: "Response\nprobabilities",
+            x: outRect.x + outRect.w / 2,
+            y: outRect.y + outRect.h / 2,
+            size: 37,
+            mode: 1,
+            color: colors.foreground,
+            start: rightmostRectangleStartTime,
+            duration: 0.7,
+            font: font
         });
         connect1 = new Line(s, {
             x1: promptRect.x + promptRect.w,
@@ -351,6 +415,7 @@ const DPOScene19 = function (s) {
         connect2.show();
         referenceModel.showAt(refX, refY, 420);
         referenceLabel.show();
+        outputLabel.show();
         prompt.show();
         winnerSubtitle.show();
         winnerWords.forEach(function (word) { word.show(); });
@@ -360,7 +425,7 @@ const DPOScene19 = function (s) {
         showTableShell(loserTable);
         winnerEndToken.show();
         loserEndToken.show();
-        showFR(s);
+        // showFR(s);
     };
 };
 
@@ -386,6 +451,10 @@ const DPOScene20 = function (s, args) {
         [0.74, 0.81, 0.69, 0.88, 0.63, 0.71, 0.86, 0.95, 0.98];
     const loserProbabilities = args.loserProbabilities || [0.43, 0.52, 0.91, 0.96];
     const showAttention = args.showAttention !== false;
+    const logProbabilitySequence = args.logProbabilitySequence === true;
+    const lossTransitionSequence = args.lossTransitionSequence === true;
+    const winnerDirectLogSequence = args.winnerDirectLogSequence === true;
+    const logSequenceDelay = args.logSequenceDelay || 0;
     const modelLabelText = args.modelLabel || "trainable\nmodel";
     const modelSubscript = args.modelSubscript || "\\theta";
     const scene19ElementsStartTime = frames(0.5);
@@ -400,30 +469,42 @@ const DPOScene20 = function (s, args) {
         titleAStart: scene19ElementsStartTime,
         titleBStart: scene19ElementsStartTime,
         winnerProbabilitiesStart: frames(10),
-        loserProbabilitiesStart: frames(3),
+        loserProbabilitiesStart: frames(11.5),
         loserEquationStart: frames(7),
         loserNllStart: frames(10),
         rigorousEquationStart: frames(13)
     }, args.timing || {});
-    let font, title, subtitle, prompt, promptRect;
+    let font, italicFont, title, subtitle, prompt, promptRect;
     let connect1, connect2;
     let inference1, inference2;
     let inference1Times = args.inference1Times || [
-        {start: frames(2.4), end: frames(3.0)},
-        {start: frames(3.6), end: frames(4.2)},
-        {start: frames(4.8), end: frames(5.4)}
+        {start: frames(10.5), end: frames(11.1)},
     ];
     let inference2Times = args.inference2Times || [
-        {start: frames(2.7), end: frames(3.3)},
-        {start: frames(3.9), end: frames(4.5)},
-        {start: frames(5.1), end: frames(5.7)}
+        {start: frames(11.1), end: frames(11.7)},
     ];
     let attentionWords = [], attentionEdges = [];
-    let referenceModel, referenceLabel, outRect, refRect;
+    let causalMaskingTitle, causalMaskingFadeStarted = false;
+    let referenceModel, referenceLabel, outputLabel, outRect, refRect;
+    let referenceHighlight;
     let referenceModelSize = 420, refX = 1070, refY = 249;
     let tableTitles = [], tables = [];
     let probabilityTexts = [[], []];
-    let loserProbabilityEquation, loserTextReplacement, preferenceLikelihoodExpressions;
+    let winnerProbabilityEquation, loserProbabilityEquation;
+    let loserTextReplacement, winnerLabelReplacement;
+    let preferenceLikelihoodExpressions, winnerFinalLogExpression;
+    let loserSummationExpression, loserValueExpression;
+    let winnerResponse, loserResponse, winnerLogEquation, loserLogEquation;
+    let rejectedArrow, rejectedLabel, leftRectHighlight, loserProbabilityHighlight;
+    let conditionalProbabilityExpression;
+    let promptProbabilityNote;
+    let conditionalFinalExpression;
+    let rightBoxWords = [], rightBoxCross = [];
+    let scene25WinnerLabel, scene25WinnerCopies = [], scene25WinnerMoves = [];
+    let scene25LeftHighlight, scene25WinnerMoveStarted = false;
+    let rightBoxFadeStarted = false, outputLabelFadeStarted = false;
+    let outputLabelReturnStarted = false, conditionalFadeStarted = false;
+    let rejectedTokenCopies = [], rejectedTokenMoves = [];
     let loserRigorousTransitionStarted = false;
     let loserEquationStartTime = timing.loserEquationStart,
         loserNllStartTime = timing.loserNllStart,
@@ -431,15 +512,20 @@ const DPOScene20 = function (s, args) {
     let winnerProbabilitiesStartTime = timing.winnerProbabilitiesStart,
         loserProbabilitiesStartTime = timing.loserProbabilitiesStart;
     const probabilityEntryStagger = frames(0.1);
+    const rejectedArrowStartTime = frames(4);
+    const rejectedArrowEndTime = frames(5);
+    const rejectedLineStartTime = frames(6.5);
+    const rejectedTokenMoveDuration = frames(1.2);
     let tableAStart = timing.tableAStart, tableBStart = timing.tableBStart;
 
     function createProbabilityTexts(values, table, color, start) {
         let texts = [];
         for (let i = 0; i < values.length; i++) {
+            const targetY = table.y + table.sizeY * 1.8;
             texts[i] = new TextFade(s, {
                 str: values[i],
                 x: table.x + table.sizeX * (0.6 + (i + 1) * 1.4),
-                y: table.y + table.sizeY * 1.8,
+                y: targetY + (logProbabilitySequence ? 35 : 0),
                 mode: 1,
                 size: table.sizeY,
                 color: color,
@@ -447,29 +533,41 @@ const DPOScene20 = function (s, args) {
                 duration: 0.5,
                 font: font
             });
+            if (logProbabilitySequence) {
+                texts[i].entryTargetY = targetY;
+                texts[i].entryStarted = false;
+            }
         }
         return texts;
     }
 
     function createAttentionMask() {
-        let attentionMaskStartTime = frames(1), attentionArcDelay = frames(1),
-            attentionArcStartRange = frames(2), attentionFadeDelay = frames(4),
-            attentionMaskSeed = 2035;
+        let attentionMaskStartTime = frames(42),
+            attentionArcStartTime = frames(45),
+            attentionArcStartRange = frames(2),
+            attentionMaskEndTime = frames(49), attentionMaskSeed = 2035;
         s.randomSeed(attentionMaskSeed);
+        causalMaskingTitle = new TextWriteIn(s, {
+            str: "Causal Masking",
+            x: s.width / 2,
+            y: 90,
+            mode: 1,
+            size: 47,
+            color: colors.foreground,
+            start: frames(39),
+            charactersPerSecond: 24,
+            font: font
+        });
         const words = [
             "When", "is", "the", "next", "total", "solar",
             "eclipse", "in", "Beijing", "Sept", "2035"
         ];
         const left = 570;
         const right = 1350;
-        const y = 170;
+        const y = 140;
         const spacing = (right - left) / (words.length - 1);
         const wordStagger = frames(0.07);
         const wordFadeDuration = 0.5;
-        const wordsMaterializedTime = attentionMaskStartTime +
-            wordStagger * (words.length - 1) + frames(wordFadeDuration);
-        const arcWindowStart = wordsMaterializedTime + attentionArcDelay;
-        const attentionMaskEndTime = wordsMaterializedTime + attentionFadeDelay;
 
         for (let i = 0; i < words.length; i++) {
             attentionWords[i] = new TextFade(s, {
@@ -521,7 +619,7 @@ const DPOScene20 = function (s, args) {
                 d: Math.min(20 + s.random(25), distance / 2 - 8),
                 node_r: 1,
                 directed: false,
-                start: arcWindowStart + Math.round(
+                start: attentionArcStartTime + Math.round(
                     attentionArcStartRange * i / 14
                 ),
                 end: attentionMaskEndTime,
@@ -549,16 +647,50 @@ const DPOScene20 = function (s, args) {
             start: timing.pipelineStart, duration: 0.7, mode: 2,
             strokeweight: 2, color: colors.outline
         });
+        outputLabel = new TextFade(s, {
+            str: "Response\nprobabilities",
+            x: outRect.x + outRect.w / 2,
+            y: outRect.y + outRect.h / 2,
+            size: 37,
+            mode: 1,
+            color: colors.foreground,
+            start: frames(1),
+            duration: 0.7,
+            font: font
+        });
 
         referenceModel = new BrainBase(s, {
             start: timing.modelStart, duration: frames(1.5),
-            respawnTimes: args.modelRespawnTimes || [frames(5), frames(10)]
+            respawnTimes: args.modelRespawnTimes || [frames(10.5)]
         });
         referenceLabel = new TextFade(s, {
             str: modelLabelText, x: refX + 210, y: refY + 150,
             size: 27, mode: 1, color: colors.foreground,
             start: timing.modelStart, duration: 1, font: font
         });
+        if (args.highlightReferenceModel) {
+            referenceHighlight = new DPOTextBoundsHighlight(s, {
+                bounds: function () {
+                    s.textFont(font);
+                    s.textSize(referenceLabel.size);
+                    const width = Math.max(
+                        s.textWidth("reference"), s.textWidth("model")
+                    );
+                    const height = referenceLabel.size * 2.4;
+                    return {
+                        x: referenceLabel.x - width / 2 - 5,
+                        y: referenceLabel.y - height / 2,
+                        width: width + 10,
+                        height: height
+                    };
+                },
+                start: frames(5.7),
+                end: frames(7),
+                duration: 1,
+                fadeDuration: 0.7,
+                padding: 7
+            });
+        }
 
         const firstConnection = {
             x1: promptRect.x + promptRect.w,
@@ -626,27 +758,109 @@ const DPOScene20 = function (s, args) {
             x: 180, y: 570,
             xs: ["It", "will", "happen", "on", "Sept", "2nd", "2035", ".", "<end>"],
             ys: ["", "", "", "", "", "", "", "", ""],
-            label1: "text", label2: "prob.", start: tableAStart,
+            label1: "text", label2: logProbabilitySequence ? "log(p)" : "prob.",
+            start: tableAStart,
             duration: frames(3), font: font,
             colorX: colors.foreground, colorY: chosen_color,
             size: 45, sizeX: 109
         });
         tables[1] = new Table(s, {
             x: 180, y: 775, xs: ["Sept", "2035", ".", "<end>"],
-            ys: ["", "", "", ""], label1: "text", label2: "prob.",
+            ys: ["", "", "", ""], label1: "text",
+            label2: logProbabilitySequence ? "log(p)" : "prob.",
             start: tableBStart, duration: frames(3), font: font,
             colorX: colors.foreground, colorY: rejected_color,
             size: 45, sizeX: 109
         });
 
         probabilityTexts[0] = createProbabilityTexts(
-            chosenProbabilities.map(function (p) { return p.toFixed(2); }),
+            chosenProbabilities.map(function (p) {
+                return (logProbabilitySequence || winnerDirectLogSequence) ?
+                    Math.log(p).toFixed(2) :
+                    p.toFixed(2);
+            }),
             tables[0], chosen_color, winnerProbabilitiesStartTime
         );
         probabilityTexts[1] = createProbabilityTexts(
-            loserProbabilities.map(function (p) { return p.toFixed(2); }),
+            loserProbabilities.map(function (p) {
+                return logProbabilitySequence ? Math.log(p).toFixed(2) :
+                    p.toFixed(2);
+            }),
             tables[1], rejected_color, loserProbabilitiesStartTime
         );
+        if (!logProbabilitySequence && !lossTransitionSequence) {
+            probabilityTexts[1].forEach(function (text) {
+                text.entryTargetY = text.y;
+                text.y += 35;
+                text.entryStarted = false;
+            });
+        }
+        if (winnerDirectLogSequence) {
+            probabilityTexts[0].forEach(function (text) {
+                text.entryTargetY = text.y;
+                text.y += 35;
+                text.entryStarted = false;
+            });
+        }
+    }
+
+    function createLogProbabilitySequence() {
+        const winnerLogProbability = chosenProbabilities.reduce(
+            function (sum, p) { return sum + Math.log(p); }, 0
+        ).toFixed(2);
+        const loserLogProbability = loserProbabilities.reduce(
+            function (sum, p) { return sum + Math.log(p); }, 0
+        ).toFixed(2);
+
+        winnerResponse = new TextFade(s, {
+            str: "Winner: It will happen on Sept 2nd 2035.",
+            x: promptRect.x + promptRect.w / 2,
+            y: promptRect.y + promptRect.h / 2 + 42,
+            mode: 1,
+            size: 31,
+            color: chosen_color,
+            start: frames(6.5) + logSequenceDelay,
+            end: frames(9.5) + logSequenceDelay,
+            duration: 1,
+            font: font
+        });
+        loserResponse = new TextFade(s, {
+            str: "Loser: Sept 2035.",
+            x: promptRect.x + promptRect.w / 2,
+            y: promptRect.y + promptRect.h / 2 + 42,
+            mode: 1,
+            size: 31,
+            color: rejected_color,
+            start: frames(9.5) + logSequenceDelay,
+            duration: 1,
+            font: font
+        });
+        winnerLogEquation = new Katex(s, {
+            text: "\\log \\pi_{\\mathrm{ref}}(y_w\\mid x)=" +
+                winnerLogProbability,
+            x: 1000,
+            y: 745,
+            mode: 0,
+            font_size: 40,
+            color: "#4dd999",
+            start: frames(8) + logSequenceDelay,
+            entryMode: "moveUp",
+            entryOffset: 45,
+            entryDuration: 0.7
+        });
+        loserLogEquation = new Katex(s, {
+            text: "\\log \\pi_{\\mathrm{ref}}(y_l\\mid x)=" +
+                loserLogProbability,
+            x: 1000,
+            y: 840,
+            mode: 0,
+            font_size: 40,
+            color: "#ff7080",
+            start: frames(10.5) + logSequenceDelay,
+            entryMode: "moveUp",
+            entryOffset: 45,
+            entryDuration: 0.7
+        });
     }
 
     function createLoserLossTransition() {
@@ -662,14 +876,22 @@ const DPOScene20 = function (s, args) {
         const loserLogProbability = Math.log(loserProbability).toFixed(2);
         const chosenLogProbability = Math.log(chosenProbability).toFixed(2);
 
-        loserProbabilityEquation = new TextFade(s, {
+        winnerProbabilityEquation = new TextFade(s, {
+            str: "P(winner) = " + chosenProbabilities.map(function (p) {
+                return p.toFixed(2);
+            }).join(" × ") + " = " + chosenProbability.toFixed(2),
+            x: 1000, y: 745, mode: 0, size: 40,
+            color: chosen_color, start: loserEquationStartTime,
+            duration: 0.7, font: font
+        });
+        loserProbabilityEquation = new TextWriteIn(s, {
             str: "P(loser) = " + loserProbabilities.map(function (p) {
                 return p.toFixed(2);
             }).join(" × ") + " = " +
                 loserProbability.toFixed(2),
             x: 1000, y: 840, mode: 0, size: 40,
             color: rejected_color, start: loserEquationStartTime,
-            duration: 0.7, font: font
+            charactersPerSecond: 45, font: font
         });
 
         let oldTexts = probabilityTexts[1].slice();
@@ -684,6 +906,39 @@ const DPOScene20 = function (s, args) {
             oldTexts: oldTexts, newStrings: newStrings,
             start: loserNllStartTime, duration: 0.8, offsetY: 45
         });
+        winnerLabelReplacement = new TextReplace(s, {
+            oldTexts: [tables[0].textY[0]],
+            newStrings: ["log(p)"],
+            start: loserNllStartTime,
+            duration: 0.8,
+            offsetY: 45
+        });
+
+        const winnerLastProbabilityStart = winnerProbabilitiesStartTime +
+            probabilityEntryStagger * (chosenProbabilities.length - 1);
+        winnerFinalLogExpression = new Katex(s, {
+            text: "\\log \\pi_{" + modelSubscript + "}(y_w\\mid x)=" +
+                chosenLogProbability,
+            x: 1000, y: 745, mode: 0, font_size: 40,
+            color: "#4dd999", start: winnerLastProbabilityStart,
+            entryMode: "moveDown", entryOffset: 45, entryDuration: 0.7
+        });
+        if (winnerDirectLogSequence) {
+            loserSummationExpression = new Katex(s, {
+                text: "\\log \\pi_{\\theta}(y_l\\mid x)=" +
+                    "\\sum_t \\log \\pi_{\\theta}" +
+                    "(y_{l_t}\\mid x,y_{l_{<t}})",
+                x: 1000, y: 840, mode: 0, font_size: 40,
+                color: "#ff7080", start: loserRigorousEquationStartTime,
+                end: frames(13), entryMode: "moveDown",
+                entryOffset: 45, entryDuration: 0.8
+            });
+            loserValueExpression = new Katex(s, {
+                text: "\\log \\pi_{\\theta}(y_l\\mid x)=-1.63",
+                x: 1000, y: 840, mode: 0, font_size: 40,
+                color: "#ff7080", start: frames(13), entryDuration: 0.8
+            });
+        }
 
         preferenceLikelihoodExpressions = new PreferenceLikelihoodExpressions(s, {
             x: loserProbabilityEquation.x,
@@ -701,6 +956,333 @@ const DPOScene20 = function (s, args) {
         });
     }
 
+    function createScene20Cues() {
+        const promptProbabilityNoteStartTime = frames(14);
+        promptProbabilityNote = new TextFade(s, {
+            str: "Note: prompt token probabilities are also calculated but ignored.",
+            x: 60,
+            y: 50,
+            mode: 0,
+            size: 29,
+            font: italicFont,
+            color: [190, 197, 207],
+            start: promptProbabilityNoteStartTime,
+            end: promptProbabilityNoteStartTime + frames(2.5),
+            duration: 0.7
+        });
+        function conditionalParts(sample, promptPart, history, initial) {
+            const specs = [
+                {key: "probability_open", text: "P\\!\\bigl(",
+                    color: "#ffffff", start: frames(18.5)},
+                {key: "sample_loser", text: sample,
+                    color: "#ff7080", start: frames(14)},
+                {key: "condition_bar", text: "\\mid",
+                    color: "#ffffff", start: frames(15.5)},
+                {key: "prompt_x", text: promptPart,
+                    color: "#4db1ff", start: frames(16)},
+                {key: "condition_comma", text: ",",
+                    color: "#ffffff", start: frames(16)},
+                {key: "rejection_condition", text: history,
+                    color: "#ff7080", start: frames(17)},
+                {key: "probability_close", text: "\\bigr)",
+                    color: "#ffffff", start: frames(18.5)}
+            ];
+            if (!initial)
+                return specs.map(function (part) {
+                    const copy = Object.assign({}, part);
+                    delete copy.start;
+                    return copy;
+                });
+            return specs.map(function (part) {
+                return Object.assign({}, part, {
+                    enterDuration: 0.5,
+                    enterFrom: {x: 0, y: -30}
+                });
+            });
+        }
+
+        conditionalProbabilityExpression = new AnimatedKatex(s, {
+            x: 1100, y: 820, mode: 0, font_size: 40,
+            parts: conditionalParts("y_t", "x", "y_{<t}", true)
+        });
+        let quotedYearExpression = conditionalProbabilityExpression.transitionTo(
+            conditionalParts("\\text{“2035”}", "x", "y_{<t}", false),
+            {start: frames(21.5), duration: 0.8, offsetY: 28,
+                anchorKey: "condition_bar"}
+        );
+        let promptNamedExpression = quotedYearExpression.transitionTo(
+            conditionalParts("\\text{“2035”}", "\\text{Prompt}",
+                "y_{<t}", false),
+            {start: frames(23.2), duration: 0.8, offsetY: 28,
+                anchorKey: "condition_bar"}
+        );
+        conditionalFinalExpression = promptNamedExpression.transitionTo(
+            conditionalParts("\\text{“2035”}", "\\text{Prompt}",
+                "\\text{“Sept”}", false),
+            {start: frames(25), duration: 0.8, offsetY: 28,
+                anchorKey: "condition_bar"}
+        );
+
+        loserProbabilityHighlight = new DPOTextBoundsHighlight(s, {
+            bounds: function () {
+                const probability = probabilityTexts[1][1];
+                s.textFont(font);
+                s.textSize(probability.size);
+                const width = s.textWidth(probability.str);
+                return {
+                    x: probability.x - width / 2,
+                    y: probability.y - probability.size / 2 + 5,
+                    width: width,
+                    height: probability.size - 5
+                };
+            },
+            start: frames(20),
+            end: frames(27),
+            duration: 0.7,
+            fadeDuration: 0.7,
+            padding: 7,
+            strokeweight: 3,
+            thinOnFade: true,
+            color: [247, 227, 47]
+        });
+
+        const rightBoxRows = [
+            ["The", "next", "total"],
+            ["solar", "eclipse"],
+            ["in", "Beijing"]
+        ];
+        let wordIndex = 0;
+        s.textFont(font);
+        s.textSize(31);
+        rightBoxRows.forEach(function (row, rowIndex) {
+            let wordX = outRect.x + 42;
+            row.forEach(function (word) {
+                const width = s.textWidth(word);
+                rightBoxWords.push(new TextFade(s, {
+                    str: word,
+                    x: wordX,
+                    y: outRect.y + 35 + rowIndex * 58,
+                    mode: 0,
+                    size: 31,
+                    color: colors.foreground,
+                    start: frames(30 + wordIndex * 0.5),
+                    duration: 0.5,
+                    font: font
+                }));
+                wordX += width + s.textWidth(" ");
+                wordIndex++;
+            });
+        });
+        rightBoxCross = [
+            new Line(s, {
+                x1: outRect.x + 24, y1: outRect.y + 24,
+                x2: outRect.x + outRect.w - 24,
+                y2: outRect.y + outRect.h - 24,
+                start: frames(32.5), end: frames(34),
+                duration: 1, mode: 1, strokeweight: 5,
+                color: colors.rejected
+            }),
+            new Line(s, {
+                x1: outRect.x + outRect.w - 24, y1: outRect.y + 24,
+                x2: outRect.x + 24,
+                y2: outRect.y + outRect.h - 24,
+                start: frames(32.5), end: frames(34),
+                duration: 1, mode: 1, strokeweight: 5,
+                color: colors.rejected
+            })
+        ];
+        rightBoxCross.forEach(function (line) {
+            line.timer_sw = new StrokeWeightTimer(s, frames(34), 5, 1);
+        });
+        leftRectHighlight = new DPOTextBoundsHighlight(s, {
+            bounds: function () {
+                return {
+                    x: promptRect.x,
+                    y: promptRect.y,
+                    width: promptRect.w,
+                    height: promptRect.h
+                };
+            },
+            start: frames(8.5),
+            end: frames(10),
+            duration: 1,
+            fadeDuration: 0.7,
+            padding: 0,
+            strokeweight: 5,
+            color: [247, 227, 47]
+        });
+        rejectedArrow = new Arrow(s, {
+            x1: 105, y1: 750,
+            x2: 165, y2: 750,
+            start: rejectedArrowStartTime,
+            end: rejectedArrowEndTime,
+            duration: 0.25,
+            strokeweight: 4,
+            color: colors.outline,
+            tipLen: 14
+        });
+
+        const rejectedText = "Rejected:";
+        const rejectedSize = 29;
+        s.textFont(font);
+        s.textSize(prompt.size);
+        const rejectedX = prompt.x - s.textWidth(prompt.str) / 2;
+        const rejectedY = promptRect.y + promptRect.h / 2 + 40;
+        rejectedLabel = new TextWriteIn(s, {
+            str: rejectedText,
+            x: rejectedX,
+            y: rejectedY,
+            mode: 3,
+            size: rejectedSize,
+            color: rejected_color,
+            start: rejectedLineStartTime,
+            charactersPerSecond: 22,
+            font: font
+        });
+
+        s.textSize(rejectedSize);
+        let targetX = rejectedX + s.textWidth(rejectedText) + s.textWidth(" ");
+        const copyStrings = ["Sept", "2035", "."];
+        copyStrings.forEach(function (str, index) {
+            const targetWidth = s.textWidth(str);
+            const source = tables[1].textX[index + 1];
+            const copy = new Text(s, {
+                str: str,
+                x: source.x,
+                y: source.y,
+                mode: 1,
+                size: source.size,
+                color: colors.foreground,
+                start: rejectedLineStartTime,
+                font: font
+            });
+            const targetCenterX = targetX + targetWidth / 2;
+            rejectedTokenCopies.push(copy);
+            rejectedTokenMoves.push({
+                text: copy,
+                fromX: copy.x,
+                fromY: copy.y,
+                fromSize: copy.size,
+                targetX: targetCenterX,
+                targetY: rejectedY,
+                targetSize: rejectedSize,
+                positionTimer: new Timer2(rejectedTokenMoveDuration),
+                sizeTimer: new Timer0(rejectedTokenMoveDuration)
+            });
+            targetX += targetWidth + (str === "2035" ? 0 : s.textWidth(" "));
+        });
+    }
+
+    function showScene20Cues() {
+        promptProbabilityNote.show();
+        if (!conditionalFadeStarted && s.frameCount >= frames(27)) {
+            Object.values(conditionalFinalExpression.partStates).forEach(
+                function (state) {
+                    state.end = s.frameCount;
+                    state.exitFrames = frames(1);
+                    state.exitTo = {x: 0, y: 0};
+                    state.fadeOut = true;
+                }
+            );
+            conditionalFadeStarted = true;
+        }
+        if (!outputLabelFadeStarted && s.frameCount >= frames(29)) {
+            outputLabel.ft.fadeOut(1);
+            outputLabelFadeStarted = true;
+        }
+        if (!rightBoxFadeStarted && s.frameCount >= frames(34)) {
+            rightBoxWords.forEach(function (word) { word.ft.fadeOut(1); });
+            rightBoxFadeStarted = true;
+        }
+        if (!outputLabelReturnStarted && s.frameCount >= frames(35)) {
+            outputLabel.ft.reColor(outputLabel.color, 1);
+            outputLabelReturnStarted = true;
+        }
+
+        conditionalProbabilityExpression.show();
+        loserProbabilityHighlight.show();
+        leftRectHighlight.show();
+        rejectedArrow.show();
+        rejectedLabel.show();
+        if (s.frameCount >= rejectedLineStartTime) {
+            rejectedTokenMoves.forEach(function (move) {
+                const positionT = move.positionTimer.advance();
+                const sizeT = move.sizeTimer.advance();
+                move.text.x = move.fromX +
+                    (move.targetX - move.fromX) * positionT;
+                move.text.y = move.fromY +
+                    (move.targetY - move.fromY) * positionT;
+                move.text.size = move.fromSize +
+                    (move.targetSize - move.fromSize) * sizeT;
+                move.text.show();
+            });
+        }
+        rightBoxWords.forEach(function (word) { word.show(); });
+        rightBoxCross.forEach(function (line) { line.show(); });
+    }
+
+    function createScene25WinnerSequence() {
+        const start = frames(15);
+        const duration = frames(1.5);
+        const labelText = "Winner:";
+        const labelSize = 29;
+        s.textFont(font);
+        s.textSize(prompt.size);
+        const lineX = prompt.x - s.textWidth(prompt.str) / 2;
+        const lineY = promptRect.y + promptRect.h / 2 + 40;
+        scene25WinnerLabel = new TextWriteIn(s, {
+            str: labelText, x: lineX, y: lineY, mode: 3,
+            size: labelSize, color: chosen_color, start: start,
+            charactersPerSecond: 22, font: font
+        });
+        s.textSize(labelSize);
+        let targetX = lineX + s.textWidth(labelText) + s.textWidth(" ");
+        const strings = ["It", "will", "happen", "on", "Sept", "2nd", "2035", "."];
+        strings.forEach(function (str, index) {
+            const width = s.textWidth(str);
+            const source = tables[0].textX[index + 1];
+            const copy = new Text(s, {
+                str: str, x: source.x, y: source.y, mode: 1,
+                size: source.size, color: colors.foreground,
+                start: start, font: font
+            });
+            scene25WinnerCopies.push(copy);
+            scene25WinnerMoves.push({
+                text: copy, fromX: copy.x, fromY: copy.y, fromSize: copy.size,
+                targetX: targetX + width / 2, targetY: lineY,
+                targetSize: labelSize,
+                positionTimer: new Timer2(duration),
+                sizeTimer: new Timer0(duration)
+            });
+            targetX += width + (str === "2035" ? 0 : s.textWidth(" "));
+        });
+        scene25LeftHighlight = new DPOTextBoundsHighlight(s, {
+            bounds: function () {
+                return {x: promptRect.x, y: promptRect.y,
+                    width: promptRect.w, height: promptRect.h};
+            },
+            start: start, end: frames(16.5), duration: 1,
+            fadeDuration: 0.7, padding: 0, strokeweight: 5,
+            color: [247, 227, 47]
+        });
+    }
+
+    function showScene25WinnerSequence() {
+        scene25LeftHighlight.show();
+        scene25WinnerLabel.show();
+        if (s.frameCount >= frames(15)) {
+            scene25WinnerMoves.forEach(function (move) {
+                const positionT = move.positionTimer.advance();
+                const sizeT = move.sizeTimer.advance();
+                move.text.x = move.fromX + (move.targetX - move.fromX) * positionT;
+                move.text.y = move.fromY + (move.targetY - move.fromY) * positionT;
+                move.text.size = move.fromSize +
+                    (move.targetSize - move.fromSize) * sizeT;
+                move.text.show();
+            });
+        }
+    }
+
     function showLoserRigorousTransition() {
         const loserNllEquation = loserTextReplacement.newTexts[
             loserTextReplacement.newTexts.length - 1
@@ -708,21 +1290,33 @@ const DPOScene20 = function (s, args) {
 
         if (!loserRigorousTransitionStarted &&
             s.frameCount >= loserRigorousEquationStartTime) {
-            loserNllEquation.ft.fadeOut(0.8);
-            loserNllEquation.move(
-                loserNllEquation.x, loserNllEquation.y + 45, 0.8, 1
-            );
-            preferenceLikelihoodExpressions.beginLoserMove();
+            if (winnerDirectLogSequence) {
+                loserNllEquation.ft.fadeOut(0.8);
+            } else {
+                winnerProbabilityEquation.ft.fadeOut(0.8);
+                loserNllEquation.ft.fadeOut(0.8);
+                loserNllEquation.move(
+                    loserNllEquation.x, loserNllEquation.y + 45, 0.8, 1
+                );
+                preferenceLikelihoodExpressions.beginLoserMove();
+            }
             loserRigorousTransitionStarted = true;
         }
 
-        preferenceLikelihoodExpressions.show();
+        if (winnerDirectLogSequence) {
+            loserSummationExpression.show();
+            loserValueExpression.show();
+        } else {
+            preferenceLikelihoodExpressions.show();
+        }
     }
 
     function showModelPipeline() {
         promptRect.show();
         outRect.show();
         refRect.show();
+        if (referenceHighlight)
+            referenceHighlight.show();
         inference1.show();
         inference2.show();
         connect1.show();
@@ -730,6 +1324,7 @@ const DPOScene20 = function (s, args) {
         prompt.show();
         referenceModel.showAt(refX, refY, referenceModelSize);
         referenceLabel.show();
+        outputLabel.show();
     }
 
     function showResponses() {
@@ -737,15 +1332,52 @@ const DPOScene20 = function (s, args) {
             text.show();
         for (let table of tables)
             table.show();
-        loserProbabilityEquation.show();
-        for (let texts of probabilityTexts)
-            for (let text of texts)
+        if (logProbabilitySequence || lossTransitionSequence) {
+            for (let texts of probabilityTexts) {
+                for (let text of texts) {
+                    if ((logProbabilitySequence || text.entryTargetY !== undefined) &&
+                        !text.entryStarted &&
+                        s.frameCount >= text.start) {
+                        text.move(text.x, text.entryTargetY, 0.5, 2);
+                        text.entryStarted = true;
+                    }
+                    text.show();
+                }
+            }
+        } else {
+            for (let text of probabilityTexts[1]) {
+                if (!text.entryStarted && s.frameCount >= text.start) {
+                    text.move(text.x, text.entryTargetY, 0.5, 2);
+                    text.entryStarted = true;
+                }
                 text.show();
-        loserTextReplacement.show();
-        showLoserRigorousTransition();
+            }
+        }
+        if (logProbabilitySequence) {
+            winnerResponse.show();
+            loserResponse.show();
+            winnerLogEquation.show();
+            loserLogEquation.show();
+        } else {
+            if (lossTransitionSequence) {
+                if (!winnerDirectLogSequence)
+                    winnerProbabilityEquation.show();
+                loserProbabilityEquation.show();
+                loserTextReplacement.show();
+                winnerLabelReplacement.show();
+                if (winnerDirectLogSequence)
+                    winnerFinalLogExpression.show();
+                showLoserRigorousTransition();
+            }
+        }
     }
 
     function showAttentionMask() {
+        if (!causalMaskingFadeStarted && s.frameCount >= frames(41)) {
+            causalMaskingTitle.ft.fadeOut(0.7);
+            causalMaskingFadeStarted = true;
+        }
+        causalMaskingTitle.show();
         for (let edge of attentionEdges)
             edge.show();
         for (let word of attentionWords)
@@ -754,6 +1386,7 @@ const DPOScene20 = function (s, args) {
 
     s.preload = function () {
         font = s.loadFont("../../lib/font/times.ttf");
+        italicFont = s.loadFont("../../lib/font/timesi.ttf");
     };
 
     s.setup = function () {
@@ -763,7 +1396,15 @@ const DPOScene20 = function (s, args) {
             createAttentionMask();
         createSceneText();
         createResponseTables();
-        createLoserLossTransition();
+        if (logProbabilitySequence)
+            createLogProbabilitySequence();
+        else {
+            createLoserLossTransition();
+            if (!lossTransitionSequence)
+                createScene20Cues();
+            if (winnerDirectLogSequence)
+                createScene25WinnerSequence();
+        }
     };
 
     s.draw = function () {
@@ -771,10 +1412,47 @@ const DPOScene20 = function (s, args) {
         // subtitle.show();
         showModelPipeline();
         showResponses();
+        if (!logProbabilitySequence && !lossTransitionSequence)
+            showScene20Cues();
+        if (winnerDirectLogSequence)
+            showScene25WinnerSequence();
         if (showAttention)
             showAttentionMask();
-        showFR(s);
+        // showFR(s);
     };
+};
+
+const DPOScene25 = function (s) {
+    const sharedSceneStartTime = frames(0.5);
+
+    DPOScene20(s, {
+        showAttention: false,
+        lossTransitionSequence: true,
+        winnerDirectLogSequence: true,
+        inference1Times: [
+            {start: frames(16.7), end: frames(17.3)}
+        ],
+        inference2Times: [
+            {start: frames(17), end: frames(17.6)}
+        ],
+        modelRespawnTimes: [frames(16.7)],
+        timing: {
+            pipelineStart: sharedSceneStartTime,
+            subtitleStart: sharedSceneStartTime,
+            promptStart: sharedSceneStartTime,
+            modelStart: sharedSceneStartTime,
+            connectionStart: sharedSceneStartTime,
+            tableAStart: sharedSceneStartTime,
+            tableBStart: sharedSceneStartTime,
+            titleAStart: sharedSceneStartTime,
+            titleBStart: sharedSceneStartTime,
+            winnerProbabilitiesStart: frames(17.7),
+            loserProbabilitiesStart: sharedSceneStartTime,
+            loserEquationStart: frames(6),
+            loserNllStart: frames(9),
+            rigorousEquationStart: frames(11)
+        }
+    });
 };
 
 const DPOScene28 = function (s) {
@@ -831,31 +1509,27 @@ const DPOScene33 = function (s) {
     let scene3PipelineStartTime = frames(0.8), scene3SubtitleStartTime = frames(0.6),
         scene3PromptStartTime = frames(1), scene3ModelStartTime = frames(1.3),
         scene3ConnectionStartTime = frames(1.5);
-    let scene3TableAStartTime = frames(1.8), scene3TableBStartTime = frames(3.8),
+    let scene3TableAStartTime = frames(1.8), scene3TableBStartTime = frames(1.8),
         scene3TitleAStartTime = frames(1.4), scene3TitleBStartTime = frames(2.4);
-    let scene3LoserEquationStartTime = frames(6.8),
-        scene3LoserNllStartTime = frames(9.8),
-        scene3RigorousEquationStartTime = frames(12.8);
-    let scene3Inference1Times = [
-        {start: frames(2.2), end: frames(2.8)},
-        {start: frames(3.4), end: frames(4.0)},
-        {start: frames(4.6), end: frames(5.2)}
-    ];
-    let scene3Inference2Times = [
-        {start: frames(2.5), end: frames(3.1)},
-        {start: frames(3.7), end: frames(4.3)},
-        {start: frames(4.9), end: frames(5.5)}
-    ];
 
     DPOScene20(s, {
         modelLabel: "reference\nmodel",
         modelSubscript: "\\mathrm{ref}",
         showAttention: false,
+        logProbabilitySequence: true,
+        logSequenceDelay: frames(3),
+        highlightReferenceModel: true,
         chosenProbabilities: [0.71, 0.79, 0.66, 0.86, 0.60, 0.69, 0.83, 0.93, 0.96],
         loserProbabilities: [0.47, 0.55, 0.93, 0.98],
-        inference1Times: scene3Inference1Times,
-        inference2Times: scene3Inference2Times,
-        modelRespawnTimes: [frames(4.8), frames(9.8)],
+        inference1Times: [
+            {start: frames(10), end: frames(10.6)},
+            {start: frames(13), end: frames(13.6)}
+        ],
+        inference2Times: [
+            {start: frames(10.3), end: frames(10.9)},
+            {start: frames(13.3), end: frames(13.9)}
+        ],
+        modelRespawnTimes: [frames(10), frames(13)],
         timing: {
             pipelineStart: scene3PipelineStartTime,
             subtitleStart: scene3SubtitleStartTime,
@@ -866,9 +1540,8 @@ const DPOScene33 = function (s) {
             tableBStart: scene3TableBStartTime,
             titleAStart: scene3TitleAStartTime,
             titleBStart: scene3TitleBStartTime,
-            loserEquationStart: scene3LoserEquationStartTime,
-            loserNllStart: scene3LoserNllStartTime,
-            rigorousEquationStart: scene3RigorousEquationStartTime
+            winnerProbabilitiesStart: frames(10),
+            loserProbabilitiesStart: frames(13)
         }
     });
 };
@@ -1232,4 +1905,4 @@ const DPOScene04 = function (s) {
     };
 };
 
-let dpo1 = new p5(DPOScene04);
+let dpo1 = new p5(DPOScene25);

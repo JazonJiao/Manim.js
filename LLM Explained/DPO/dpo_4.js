@@ -254,7 +254,9 @@ function preloadDPOChatGPTAssets(s) {
     };
 }
 
-function createDPOChatGPTSharedElements(s, assets, animate, includeResponseLogo) {
+function createDPOChatGPTSharedElements(
+    s, assets, animate, includeResponseLogo, prompt
+) {
     const completedStart = frames(0);
     const logoSvg = assets.logoSvg.join("");
     const titleLogo = new AnimatedSVGPath(s, {
@@ -295,7 +297,7 @@ function createDPOChatGPTSharedElements(s, assets, animate, includeResponseLogo)
     if (!animate)
         modelBrain.frCount = modelBrain.duration;
     const promptText = new PromptClass(s, {
-        str: "Do you have consciousness?",
+        str: prompt || "Do you have consciousness?",
         x: 515,
         y: 247,
         size: 38,
@@ -325,6 +327,65 @@ function showDPOChatGPTSharedElements(shared) {
         DPO_CHATGPT_LAYOUT.brainSize
     );
     shared.promptText.show();
+}
+
+function createDPOPreferenceUI(s, assets, timing) {
+    const buttonXs = [385, 1065];
+    const buttonY = 587;
+    const buttonWidth = 470;
+    const buttonTexts = ["I prefer response A", "I prefer response B"];
+    const preferenceQuestion = new TextFade(s, {
+        str: "Which response do you prefer?",
+        y: 435,
+        x: s.width / 2,
+        size: 34,
+        mode: 1,
+        color: [235, 241, 250],
+        font: assets.arial,
+        start: timing.question,
+        charactersPerSecond: 30
+    });
+    const preferenceHint = new TextFade(s, {
+        str: "Your choice will help make ChatGPT better.",
+        y: 485,
+        x: s.width / 2,
+        mode: 1,
+        size: 25,
+        color: [155, 169, 190],
+        font: assets.arial,
+        start: timing.hint,
+        charactersPerSecond: 30
+    });
+    const buttons = [], labels = [];
+    for (let i = 0; i < buttonXs.length; i++) {
+        buttons[i] = new RoundedRect(s, {
+            x: buttonXs[i],
+            y: buttonY,
+            w: buttonWidth,
+            h: 72,
+            radius: 19,
+            color: [29, 42, 61, 255],
+            start: timing.buttons,
+            duration: 0.5
+        });
+        labels[i] = new TextFade(s, {
+            str: buttonTexts[i],
+            x: buttonXs[i] + buttonWidth / 2,
+            y: buttonY + 33,
+            mode: 1,
+            size: 32,
+            color: [235, 241, 250],
+            font: assets.tnr,
+            start: timing.labels,
+            duration: 0.4
+        });
+    }
+    return {
+        question: preferenceQuestion,
+        hint: preferenceHint,
+        buttons: buttons,
+        labels: labels
+    };
 }
 
 const DPOScene05 = function (s) {
@@ -388,55 +449,21 @@ const DPOScene06 = function (s) {
 
     s.setup = function () {
         setup2D(s);
-        shared = createDPOChatGPTSharedElements(s, assets, false, false);
-        preferenceQuestion = new TextFade(s, {
-            str: "Which response do you prefer?",
-            y: 435,
-            x: s.width / 2,
-            size: 34,
-            mode: 1,
-            color: [235, 241, 250],
-            font: assets.arial,
-            start: frames(8),
-            charactersPerSecond: 30
-        });
-        preferenceHint = new TextFade(s, {
-            str: "Your choice will help make ChatGPT better.",
-            y: 485,
-            x: s.width / 2,
-            mode: 1,
-            size: 25,
-            color: [155, 169, 190],
-            font: assets.arial,
-            start: frames(9),
-            charactersPerSecond: 30
-        });
+        shared = createDPOChatGPTSharedElements(
+            s, assets, false, false
+        );
         const buttonY = 587;
         const buttonXs = [385, 1065];
-        const buttonTexts = ["I prefer response A", "I prefer response B"];
-        for (let i = 0; i < buttonXs.length; i++) {
-            preferenceButtons[i] = new RoundedRect(s, {
-                x: buttonXs[i],
-                y: buttonY,
-                w: 470,
-                h: 72,
-                radius: 19,
-                color: [29, 42, 61, 255],
-                start: frames(6.5),
-                duration: 0.5
-            });
-            preferenceButtonLabels[i] = new TextFade(s, {
-                str: buttonTexts[i],
-                x: buttonXs[i] + 235,
-                y: buttonY + 33,
-                mode: 1,
-                size: 32,
-                color: [235, 241, 250],
-                font: assets.tnr,
-                start: frames(6.7),
-                duration: 0.4
-            });
-        }
+        const preferenceUI = createDPOPreferenceUI(s, assets, {
+            question: frames(8),
+            hint: frames(9),
+            buttons: frames(6.5),
+            labels: frames(6.7)
+        });
+        preferenceQuestion = preferenceUI.question;
+        preferenceHint = preferenceUI.hint;
+        preferenceButtons = preferenceUI.buttons;
+        preferenceButtonLabels = preferenceUI.labels;
         const scoreSize = 38;
         const scoreX = buttonXs[0] + 235 - 75;
         const scoreY = buttonY - 57;
@@ -570,4 +597,190 @@ const DPOScene06 = function (s) {
     };
 };
 
-let dpo0 = new p5(DPOScene06);
+class DPOScene00TextHighlight {
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.bounds = args.bounds;
+        this.start = args.start;
+        this.end = args.end;
+        this.durationFrames = frames(args.duration || 1);
+        this.fadeFrames = frames(args.fadeDuration || 0.7);
+        this.padding = args.padding === undefined ? 7 : args.padding;
+    }
+
+    show() {
+        const frame = this.s.frameCount;
+        if (frame < this.start || frame >= this.end + this.fadeFrames)
+            return;
+        const bounds = this.bounds();
+        const x = bounds.x - this.padding;
+        const y = bounds.y - this.padding;
+        const w = bounds.width + this.padding * 2;
+        const h = bounds.height + this.padding * 2;
+        const linearProgress = this.s.constrain(
+            (frame - this.start) / this.durationFrames, 0, 1
+        );
+        const progress = 1 - Math.pow(1 - linearProgress, 3);
+        const alpha = frame < this.end ? 255 : 255 * (1 -
+            this.s.constrain((frame - this.end) / this.fadeFrames, 0, 1));
+        let remaining = (w + h) * 2 * progress;
+        const sides = [[x, y, x + w, y, w], [x + w, y, x + w, y + h, h],
+            [x + w, y + h, x, y + h, w], [x, y + h, x, y, h]];
+        this.s.push();
+        this.s.noFill();
+        this.s.stroke(249, 201, 17, alpha);
+        this.s.strokeWeight(1);
+        for (const side of sides) {
+            if (remaining <= 0)
+                break;
+            const t = this.s.constrain(remaining / side[4], 0, 1);
+            this.s.line(side[0], side[1],
+                side[0] + (side[2] - side[0]) * t,
+                side[1] + (side[3] - side[1]) * t);
+            remaining -= side[4];
+        }
+        this.s.pop();
+    }
+}
+
+const DPOScene00 = function (s) {
+    let assets, shared, emojiFont;
+    let preferenceQuestion, preferenceHint;
+    let responseA, responseB, responseAHighlight, preferenceHintHighlight;
+    let questioningBrain;
+    let preferenceButtons = [], preferenceButtonLabels = [];
+    const responseStrings = [
+        "Thank them and briefly explain.",
+        "Just say you cannot attend."
+    ];
+    const buttonXs = [385, 1065];
+    const buttonWidth = 470;
+    const responsesY = 697;
+    const responseSize = 30;
+    let responseAWidth;
+
+    s.preload = function () {
+        assets = preloadDPOChatGPTAssets(s);
+        emojiFont = s.loadFont("../../lib/font/emoji.ttf");
+    };
+
+    s.setup = function () {
+        setup2D(s);
+        shared = createDPOChatGPTSharedElements(
+            s, assets, true, false, "How to decline a meeting invite?"
+        );
+        const preferenceUI = createDPOPreferenceUI(s, assets, {
+            question: frames(4),
+            hint: frames(4.5),
+            buttons: frames(5),
+            labels: frames(5)
+        });
+        preferenceQuestion = preferenceUI.question;
+        preferenceHint = preferenceUI.hint;
+        preferenceButtons = preferenceUI.buttons;
+        preferenceButtonLabels = preferenceUI.labels;
+        s.textFont(assets.arial);
+        s.textSize(preferenceHint.size);
+        const preferenceHintWidth = s.textWidth(preferenceHint.str);
+        preferenceHintHighlight = new DPOScene00TextHighlight(s, {
+            bounds: () => ({
+                x: preferenceHint.x - preferenceHintWidth / 2,
+                y: preferenceHint.y - preferenceHint.size / 2,
+                width: preferenceHintWidth,
+                height: preferenceHint.size
+            }),
+            start: frames(17),
+            end: frames(19),
+            duration: 1,
+            fadeDuration: 0.7,
+            padding: 10
+        });
+        questioningBrain = new ThoughtBrain(s, {
+            x: 240,
+            y: 810,
+            size: 330,
+            start: frames(14),
+            bubbleStart: frames(14.5),
+            bubbleOpacity: 255,
+            bubbleFill: [14, 19, 27],
+            font: assets.tnr,
+            font_size: 37,
+            str: "Why am I given this choice?",
+            emoji: emojiFont,
+            question: true,
+            qStart: frames(15),
+            qEnd: frames(20.8)
+        });
+        s.textFont(assets.tnr);
+        s.textSize(responseSize);
+        const responseWidths = responseStrings.map((text) => s.textWidth(text));
+        responseAWidth = responseWidths[0];
+        responseA = new TextWriteIn(s, {
+            str: responseStrings[0],
+            x: buttonXs[0] + (buttonWidth - responseWidths[0]) / 2,
+            y: responsesY,
+            mode: 0,
+            size: responseSize,
+            color: [235, 241, 250],
+            font: assets.tnr,
+            start: frames(5.5),
+            charactersPerSecond: 45
+        });
+        responseB = new TextWriteIn(s, {
+            str: responseStrings[1],
+            x: buttonXs[1] + (buttonWidth - responseWidths[1]) / 2,
+            y: responsesY,
+            mode: 0,
+            size: responseSize,
+            color: [235, 241, 250],
+            font: assets.tnr,
+            start: frames(5.5),
+            charactersPerSecond: 45
+        });
+        responseAHighlight = new DPOScene00TextHighlight(s, {
+            bounds: () => ({
+                x: responseA.x,
+                y: responseA.y,
+                width: responseAWidth,
+                height: responseA.size
+            }),
+            start: frames(7),
+            end: frames(10),
+            duration: 1,
+            fadeDuration: 0.7,
+            padding: 10
+        });
+    };
+
+    s.draw = function () {
+        if (s.frameCount === frames(11.5)) {
+            const selectionDuration = 0.35;
+            preferenceButtons[0].growFromCenter(1.08, selectionDuration);
+            preferenceButtons[0].reColor([42, 125, 98, 255], selectionDuration);
+            preferenceButtonLabels[0].move(
+                preferenceButtonLabels[0].x,
+                preferenceButtonLabels[0].y,
+                selectionDuration,
+                0,
+                preferenceButtonLabels[0].size * 1.08
+            );
+        }
+
+        showDPOChatGPTSharedElements(shared);
+        preferenceQuestion.show();
+        preferenceHint.show();
+        preferenceHintHighlight.show();
+        for (let button of preferenceButtons)
+            button.show();
+        for (let label of preferenceButtonLabels)
+            label.show();
+        responseA.show();
+        responseB.show();
+        responseAHighlight.show();
+        s.push();
+        questioningBrain.show();
+        s.pop();
+    };
+};
+
+let dpo0 = new p5(DPOScene00);

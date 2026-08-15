@@ -392,6 +392,10 @@ class Katex extends TextBase {
         this.katexOptions = args.katexOptions || {};
         this.domId = args.id || 'KATEX-' + parseInt(Math.random().toString().substr(2)); // Rand ID
         this.k = this.s.createP('');
+        // KaTeX is a canvas overlay, never a flex/layout child. Position it
+        // immediately so its pre-animation DOM node cannot displace the canvas.
+        this.k.style('position', 'absolute');
+        this.k.position(0, 0);
         // Remove the browser's default paragraph margin so (x, y) addresses
         // the equation element itself instead of its surrounding margin box.
         this.k.style('margin', '0');
@@ -423,10 +427,11 @@ class Katex extends TextBase {
         // show() only updates animation-related DOM styles on each frame.
         katex.render(this.text, this.k.elt, this.katexOptions);
 
-        if (this.entryMode === "moveUp") {
+        if (this.entryMode === "moveUp" || this.entryMode === "moveDown") {
             this.entryTargetX = this.x;
             this.entryTargetY = this.y;
-            this.y += this.entryOffset;
+            this.y += this.entryMode === "moveUp" ?
+                this.entryOffset : -this.entryOffset;
         }
     }
 
@@ -438,7 +443,8 @@ class Katex extends TextBase {
      * show(this.x, this.y) on each Katex object. No need to move the Katex's one by one now.
      */
     show(x, y) {
-        if (this.entryMode === "moveUp" && !this.entryStarted &&
+        if ((this.entryMode === "moveUp" || this.entryMode === "moveDown") &&
+            !this.entryStarted &&
             this.s.frameCount >= this.start) {
             this.move(
                 this.entryTargetX,
@@ -653,6 +659,7 @@ class AnimatedKatex extends Katex {
         this.transitions.push({
             next: next,
             parts: parts,
+            anchorKey: args.anchorKey,
             start: start,
             duration: duration,
             durationFrames: Math.max(1, frames(duration)),
@@ -665,6 +672,21 @@ class AnimatedKatex extends Katex {
     initializeTransition(transition) {
         const next = transition.next;
         const frame = this.s.frameCount;
+        if (transition.anchorKey &&
+            this.partStates[transition.anchorKey] &&
+            next.partStates[transition.anchorKey]) {
+            const oldRect = this.partStates[transition.anchorKey].element
+                .getBoundingClientRect();
+            const newRect = next.partStates[transition.anchorKey].element
+                .getBoundingClientRect();
+            const canvasRect = this.s.canvas.getBoundingClientRect();
+            const scaleX = canvasRect.width / this.s.width;
+            next.x += (oldRect.left - newRect.left) / scaleX;
+            next.k.position(
+                canvasRect.left + next.x * scaleX,
+                canvasRect.top + next.y * (canvasRect.height / this.s.height)
+            );
+        }
         transition.parts.forEach((part) => {
             const oldState = this.partStates[part.key];
             const newState = next.partStates[part.key];

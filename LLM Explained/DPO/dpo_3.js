@@ -40,16 +40,87 @@ function showTrainableModel(model) {
         model.title.show();
 }
 
+const DPOScene31 = function (s) {
+    const centerSize = 67;
+    const cornerSize = 42;
+    const swapToSFT = frames(2);
+    const swapToReference = frames(4);
+    const moveStart = frames(6);
+    const animationDuration = 0.7;
+    const moveDuration = 1;
+    let initialReference, sftPolicy, finalReference;
+    let policySymbolsAligned = false;
+
+    class ResizableKatex extends Katex {
+        move(x, y, duration, timerNum, size) {
+            super.move(x, y, duration, timerNum);
+            this.startSize = this.size;
+            this.targetSize = size === undefined ? this.size : size;
+        }
+
+        moving() {
+            super.moving();
+            this.size = this.startSize +
+                this.move_timer.t * (this.targetSize - this.startSize);
+        }
+    }
+
+    s.setup = function () {
+        setup2D(s);
+        const sharedArgs = {
+            x: s.width / 2,
+            y: s.height / 2,
+            mode: 1,
+            font_size: centerSize,
+            color: "#ebf1fa",
+            entryDuration: animationDuration
+        };
+        initialReference = new Katex(s, Object.assign({}, sharedArgs, {
+            text: "\\pi_{\\mathrm{ref}}",
+            end: swapToSFT
+        }));
+        sftPolicy = new Katex(s, Object.assign({}, sharedArgs, {
+            text: "\\pi_{\\mathrm{SFT}}",
+            start: swapToSFT,
+            end: swapToReference
+        }));
+        finalReference = new ResizableKatex(s, Object.assign({}, sharedArgs, {
+            text: "\\pi_{\\mathrm{ref}}",
+            start: swapToReference
+        }));
+    };
+
+    s.draw = function () {
+        if (s.frameCount === moveStart)
+            finalReference.move(320, 129, moveDuration, 2, cornerSize);
+        initialReference.show();
+        sftPolicy.show();
+        finalReference.show();
+        if (!policySymbolsAligned && s.frameCount >= 5) {
+            const referencePi = initialReference.k.elt.querySelector(
+                ".mord.mathnormal"
+            ).getBoundingClientRect();
+            const sftPi = sftPolicy.k.elt.querySelector(
+                ".mord.mathnormal"
+            ).getBoundingClientRect();
+            sftPolicy.k.style(
+                "margin-left", referencePi.left - sftPi.left + "px"
+            );
+            policySymbolsAligned = true;
+        }
+    };
+};
+
 const DPOScene32 = function (s) {
     let font;
     let referenceNetwork, trainableModel;
-    let referenceTitle, referenceSubtitle;
-    let referenceNetworkStartTime = frames(0.5);
-    let referenceTitleStartTime = frames(2);
-    let trainableNetworkStartTime = frames(3);
-    let trainableTitleStartTime = frames(4);
+    let referencePolicy, trainablePolicy, referenceTitle, referenceSubtitle;
+    let referenceNetworkStartTime = frames(2);
+    let referenceTitleStartTime = frames(1);
+    let trainableNetworkStartTime = frames(6);
+    let trainableTitleStartTime = frames(5);
     let referenceSubtitleStartTime = frames(5);
-    let trainableBackpropagationStartTime = frames(6);
+    let trainableBackpropagationStartTime = frames(8);
 
     s.preload = function () {
         font = s.loadFont("../../lib/font/times.ttf");
@@ -57,6 +128,23 @@ const DPOScene32 = function (s) {
 
     s.setup = function () {
         setup2D(s);
+        referencePolicy = new Katex(s, {
+            text: "\\pi_{\\mathrm{ref}}",
+            x: 320,
+            y: 129,
+            mode: 1,
+            font_size: 42,
+            color: "#ebf1fa"
+        });
+        trainablePolicy = new Katex(s, {
+            text: "\\pi_{\\theta}",
+            x: 1122,
+            y: 129,
+            mode: 1,
+            font_size: 42,
+            color: "#ebf1fa",
+            start: trainableTitleStartTime
+        });
         referenceNetwork = new NeuralNetwork(s, Object.assign({}, TRAINABLE_NETWORK_ARGS, {
             x: s.width / 4 + 79,
             start: referenceNetworkStartTime
@@ -89,6 +177,8 @@ const DPOScene32 = function (s) {
     };
 
     s.draw = function () {
+        referencePolicy.show();
+        trainablePolicy.show();
         referenceNetwork.show();
         showTrainableModel(trainableModel);
         referenceTitle.show();
@@ -335,7 +425,7 @@ const DPOScene44 = function (s) {
             y: 559,
             mode: 1,
             size: 21,
-            color: [235, 241, 50],
+            color: [244, 195, 10],
             start: rewardTextStartTime,
             font: font
         })
@@ -406,4 +496,4 @@ const DPOScene44 = function (s) {
     };
 };
 
-let dpo3 = new p5(DPOScene02);
+let dpo3 = new p5(DPOScene44);
