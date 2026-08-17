@@ -96,6 +96,7 @@ const DPOScene09 = function (s, args) {
     let monoFont, rewardCube, rewardEq;
     let xEq, responseText, yEq, promptText;
     let rewardStartTime = frames(2.5), variableStartTime = frames(1);
+    const rewardEntryDuration = 0.7;
 
     s.preload = function () {
         monoFont = s.loadFont("../../lib/font/CascadiaMono.ttf");
@@ -120,7 +121,8 @@ const DPOScene09 = function (s, args) {
             x: s.width / 2,
             y: s.height / 2 - 90,
             size: 27,
-            start: rewardStartTime
+            start: rewardStartTime,
+            entryDuration: rewardEntryDuration
         });
         xEq = new Katex(s, {
             text: "\\textcolor{#4db1ff}{x =}",
@@ -160,12 +162,49 @@ const DPOScene09 = function (s, args) {
         });
     };
 
+    function showRewardGlow() {
+        const linearProgress = s.constrain(
+            (s.frameCount - rewardStartTime) / frames(rewardEntryDuration),
+            0,
+            1
+        );
+        if (linearProgress <= 0)
+            return;
+        const strength = linearProgress * linearProgress *
+            (3 - 2 * linearProgress);
+        const centerX = s.width / 2;
+        const centerY = s.height / 2 - 90;
+        const radius = 80;
+        const context = s.drawingContext;
+        const glow = context.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, radius
+        );
+        glow.addColorStop(
+            0, "rgba(247, 227, 47, " + 0.18 * strength + ")"
+        );
+        glow.addColorStop(
+            0.45, "rgba(247, 227, 47, " + 0.07 * strength + ")"
+        );
+        glow.addColorStop(1, "rgba(247, 227, 47, 0)");
+        context.save();
+        context.fillStyle = glow;
+        context.fillRect(
+            centerX - radius,
+            centerY - radius,
+            radius * 2,
+            radius * 2
+        );
+        context.restore();
+    }
+
     s.draw = function () {
         if (s.frameCount === frames(6))
             responseText.jump(35, 0.6);
         if (s.frameCount === frames(8))
             rewardEq.jump(35, 0.6);
 
+        showRewardGlow();
         rewardEq.show();
         rewardCube.show();
         xEq.show();
@@ -462,8 +501,7 @@ const DPOScene10 = function (s, args) {
     s.setup = function () {
         setup2D(s);
         paperReference = new Citation(s, {
-            text: "R. Bradley and M. Terry (1952). Rank analysis of " +
-                "incomplete block designs: I. the method of paired comparisons.",
+            text: "R. Bradley and M. Terry (1952)",
             font: font,
             start: referenceStartTime,
             end: referenceEndTime,
@@ -1213,4 +1251,4 @@ const DPOScene15 = function (s, args) {
     };
 };
 
-let dpo2 = new p5(DPOScene15);
+let dpo2 = new p5(DPOScene09);

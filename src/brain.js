@@ -331,7 +331,7 @@ class Bulb extends Emoji {
  *
  * ---- args list parameters ----
  * @mandatory (number) x, y; (font) font; (string) str
- * @optional (number) start, duration, size, font_size, bubbleStart,
+ * @optional (number) start, duration, size, font_size, bubbleStart, bubbleScale,
  *       [used for the light bulb:] (font) emoji; (number) bulbStart, bulbEnd
  *       [used for the question mark:] (bool) question; (font) emoji; (number) qStart, qEnd
  */
@@ -341,12 +341,13 @@ class ThoughtBrain extends BrainBase {
         this.x = args.x || 170;
         this.y = args.y || 440;
         this.size = args.size || 400;  // when displaying, size of the brain (w is already defined)
+        const bubbleScale = args.bubbleScale === undefined ? 1 : args.bubbleScale;
 
         this.bubble = new Bubble(this.s, {
             x: this.x + this.size / 2,
             y: this.y + this.size / 8,
-            w: this.size * 1.5,
-            h: this.size,
+            w: this.size * 1.5 * bubbleScale,
+            h: this.size * bubbleScale,
             font: args.font,
             size: args.font_size,  // font size
             str: args.str,

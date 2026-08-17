@@ -672,11 +672,11 @@ const DPOScene36 = function (s) {
             sign.show();
 
         if (!greaterEntryStarted && s.frameCount >= frames(1)) {
-            beginDownwardEntry(greaterSigns);
+            beginDownwardEntry(greaterSigns.slice(0, 2));
             greaterEntryStarted = true;
         }
         if (!lessEntryStarted && s.frameCount >= frames(3)) {
-            beginDownwardEntry(lessSigns);
+            beginDownwardEntry(lessSigns.slice(2, 4));
             lessEntryStarted = true;
         }
         if (!finalMinusEntryStarted && s.frameCount >= frames(5)) {
@@ -692,29 +692,35 @@ const DPOScene36 = function (s) {
             loserEntryStarted = true;
         }
 
-        let originalOpacity = 1, greaterOpacity = 0;
-        let lessOpacity = 0, finalMinusOpacity = 0;
+        let winnerOriginalOpacity = 1, loserOriginalOpacity = 1;
+        let greaterOpacity = 0, lessOpacity = 0, finalMinusOpacity = 0;
         if (s.frameCount >= frames(1)) {
-            originalOpacity = 1 - s.constrain(
+            winnerOriginalOpacity = 1 - s.constrain(
                 (s.frameCount - frames(1)) / frames(0.5), 0, 1
             );
             greaterOpacity = transitionProgress(1);
         }
         if (s.frameCount >= frames(3)) {
-            greaterOpacity = 1 - s.constrain(
+            loserOriginalOpacity = 1 - s.constrain(
                 (s.frameCount - frames(3)) / frames(0.5), 0, 1
             );
             lessOpacity = transitionProgress(3);
         }
         if (s.frameCount >= frames(5)) {
+            greaterOpacity = 1 - s.constrain(
+                (s.frameCount - frames(5)) / frames(0.5), 0, 1
+            );
             lessOpacity = 1 - s.constrain(
                 (s.frameCount - frames(5)) / frames(0.5), 0, 1
             );
             finalMinusOpacity = transitionProgress(5);
         }
-        setOpacity(originalMinuses, originalOpacity);
-        setOpacity(greaterSigns, greaterOpacity);
-        setOpacity(lessSigns, lessOpacity);
+        setOpacity(originalMinuses.slice(0, 2), winnerOriginalOpacity);
+        setOpacity(originalMinuses.slice(2, 4), loserOriginalOpacity);
+        setOpacity(greaterSigns.slice(0, 2), greaterOpacity);
+        setOpacity(greaterSigns.slice(2, 4), 0);
+        setOpacity(lessSigns.slice(0, 2), 0);
+        setOpacity(lessSigns.slice(2, 4), lessOpacity);
         setOpacity(finalMinuses, finalMinusOpacity);
 
         winnerDifference.show();
@@ -983,4 +989,209 @@ const DPOScene37 = function (s) {
     };
 };
 
-let dpo5 = new p5(DPOScene37);
+class DPOScene38TextHighlight {
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.bounds = args.bounds;
+        this.start = args.start;
+        this.end = args.end;
+        this.durationFrames = frames(args.duration || 1);
+        this.fadeFrames = frames(args.fadeDuration || 0.7);
+        this.padding = args.padding === undefined ? 7 : args.padding;
+    }
+
+    show() {
+        const frame = this.s.frameCount;
+        if (frame < this.start || frame >= this.end + this.fadeFrames)
+            return;
+        const bounds = this.bounds();
+        const x = bounds.x - this.padding;
+        const y = bounds.y - this.padding;
+        const w = bounds.width + this.padding * 2;
+        const h = bounds.height + this.padding * 2;
+        const linearProgress = this.s.constrain(
+            (frame - this.start) / this.durationFrames, 0, 1
+        );
+        const progress = 1 - Math.pow(1 - linearProgress, 3);
+        const alpha = frame < this.end ? 255 : 255 * (1 -
+            this.s.constrain((frame - this.end) / this.fadeFrames, 0, 1));
+        let remaining = (w + h) * 2 * progress;
+        const sides = [[x, y, x + w, y, w], [x + w, y, x + w, y + h, h],
+            [x + w, y + h, x, y + h, w], [x, y + h, x, y, h]];
+        this.s.push();
+        this.s.noFill();
+        this.s.stroke(249, 201, 17, alpha);
+        this.s.strokeWeight(2);
+        for (const side of sides) {
+            if (remaining <= 0)
+                break;
+            const t = this.s.constrain(remaining / side[4], 0, 1);
+            this.s.line(side[0], side[1],
+                side[0] + (side[2] - side[0]) * t,
+                side[1] + (side[3] - side[1]) * t);
+            remaining -= side[4];
+        }
+        this.s.pop();
+    }
+}
+
+const DPOScene38 = function (s) {
+    const colors = {
+        foreground: "#ebf1fa",
+        chosen: "#4dd999",
+        rejected: "#ff7080",
+        beta: "#f4c30a"
+    };
+    let font;
+    let lossY;
+    let title;
+    let lossEquation, substitutedEquation, halfEquation, resultEquation;
+    let termHighlights = [];
+    let halfEntryStarted = false, resultEntryStarted = false;
+
+    const lossParts = [
+        {key: "loss", text: "\\mathcal{L}_{\\mathrm{DPO}}", color: colors.foreground},
+        {key: "equals", text: "=", color: colors.foreground},
+        {key: "negLog", text: "-\\log\\,\\sigma(", color: colors.foreground},
+        {key: "beta", text: "\\beta", color: colors.beta},
+        {key: "openBracket", text: "[(", color: colors.foreground},
+        {key: "winnerTheta", text: "\\log\\pi_{\\theta}(y_w\\mid x)",
+            color: colors.chosen},
+        {key: "winnerMinus", text: "-", color: colors.foreground},
+        {key: "winnerRef", text: "\\log\\pi_{\\mathrm{ref}}(y_w\\mid x)",
+            color: colors.chosen},
+        {key: "middle", text: ")-(", color: colors.foreground},
+        {key: "loserTheta", text: "\\log\\pi_{\\theta}(y_l\\mid x)",
+            color: colors.rejected},
+        {key: "loserMinus", text: "-", color: colors.foreground},
+        {key: "loserRef", text: "\\log\\pi_{\\mathrm{ref}}(y_l\\mid x)",
+            color: colors.rejected},
+        {key: "close", text: ")])", color: colors.foreground}
+    ];
+
+    function enteringParts(parts, start) {
+        return parts.map(function (part) {
+            return Object.assign({}, part, {
+                start: frames(start), enterDuration: 1,
+                enterFrom: {x: 0, y: -45}, fadeIn: true
+            });
+        });
+    }
+
+    function symbolBounds(partKey, symbolText) {
+        const part = lossEquation.partStates[partKey].element;
+        const normalizedTarget = symbolText.replace(/\s/g, "");
+        const candidates = Array.from(part.querySelectorAll("span")).filter(
+            function (element) {
+                return element.textContent.replace(/[\s\u200b]/g, "") ===
+                    normalizedTarget;
+            }
+        );
+        const element = candidates.sort(function (a, b) {
+            const aRect = a.getBoundingClientRect();
+            const bRect = b.getBoundingClientRect();
+            return aRect.width * aRect.height - bRect.width * bRect.height;
+        })[0] || part;
+        const rect = element.getBoundingClientRect();
+        const canvasRect = s.canvas.getBoundingClientRect();
+        return {
+            x: (rect.left - canvasRect.left) * s.width / canvasRect.width,
+            y: (rect.top - canvasRect.top) * s.height / canvasRect.height,
+            width: rect.width * s.width / canvasRect.width,
+            height: rect.height * s.height / canvasRect.height
+        };
+    }
+
+    s.preload = function () {
+        font = s.loadFont("../../lib/font/times.ttf");
+    };
+
+    s.setup = function () {
+        setup2D(s);
+        lossY = s.height / 2 - 125 - 100;
+        title = new Text(s, {
+            str: "At training start",
+            x: s.width / 2, y: 140, mode: 1,
+            size: 47, color: [235, 241, 250],
+            start: 0, font: font
+        });
+        lossEquation = new AnimatedKatex(s, {
+            parts: lossParts.map(function (part) {
+                return Object.assign({}, part, {
+                    start: 0, enterDuration: 0, fadeIn: false
+                });
+            }),
+            x: s.width / 2, y: lossY, mode: 1,
+            font_size: 32, color: colors.foreground
+        });
+        substitutedEquation = new AnimatedKatex(s, {
+            parts: enteringParts([
+                {key: "equals", text: "=", color: colors.foreground},
+                {key: "negLog", text: "-\\log\\,\\sigma(",
+                    color: colors.foreground},
+                {key: "beta", text: "\\beta", color: colors.beta},
+                {key: "openBracket", text: "[", color: colors.foreground},
+                {key: "winnerZero", text: "0", color: colors.chosen},
+                {key: "minus", text: "-", color: colors.foreground},
+                {key: "loserZero", text: "0", color: colors.rejected},
+                {key: "close", text: "])", color: colors.foreground}
+            ], 7),
+            x: 0, y: lossY + 70, mode: 0,
+            font_size: 36, color: colors.foreground
+        });
+        halfEquation = new Katex(s, {
+            text: "=-\\log(0.5)", x: 0, y: lossY + 105, mode: 0,
+            font_size: 36, color: colors.foreground,
+            start: frames(9), entryDuration: 1
+        });
+        halfEquation.entryTargetY = lossY + 150;
+        resultEquation = new Katex(s, {
+            text: "=0.69", x: 0, y: lossY + 185, mode: 0,
+            font_size: 36, color: colors.foreground,
+            start: frames(11), entryDuration: 1
+        });
+        resultEquation.entryTargetY = lossY + 230;
+        termHighlights = [
+            ["winnerTheta", "πθ", 1], ["loserTheta", "πθ", 1],
+            ["winnerRef", "πref", 3], ["loserRef", "πref", 3]
+        ].map(function (spec) {
+            return new DPOScene38TextHighlight(s, {
+                bounds: () => symbolBounds(spec[0], spec[1]),
+                start: frames(spec[2]), end: frames(5),
+                duration: 1, fadeDuration: 0.7, padding: 7
+            });
+        });
+    };
+
+    s.draw = function () {
+        s.background(8, 12, 22);
+        title.show();
+        lossEquation.show();
+        for (const highlight of termHighlights)
+            highlight.show();
+
+        const equalsBounds = lossEquation.getPartBounds("equals");
+        substitutedEquation.x = equalsBounds.x;
+        halfEquation.x = equalsBounds.x;
+        resultEquation.x = equalsBounds.x;
+
+        if (!halfEntryStarted && s.frameCount >= frames(9)) {
+            halfEquation.move(
+                halfEquation.x, halfEquation.entryTargetY, 1, 1
+            );
+            halfEntryStarted = true;
+        }
+        if (!resultEntryStarted && s.frameCount >= frames(11)) {
+            resultEquation.move(
+                resultEquation.x, resultEquation.entryTargetY, 1, 1
+            );
+            resultEntryStarted = true;
+        }
+
+        substitutedEquation.show();
+        halfEquation.show();
+        resultEquation.show();
+    };
+};
+
+let dpo5 = new p5(DPOScene38);

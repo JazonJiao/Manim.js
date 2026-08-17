@@ -8,6 +8,7 @@ const DPO_VARIABLE_COLORS = Object.freeze({
 const DPOScene01 = function (s) {
     let tnr, tnr_bold, arial, abstractTitle, citationCount;
     let titleBorders = [], paperTitle = [], authorTexts = [], abstractLines = [];
+    let algorithmAbbreviations = [];
     const titleStrings = [
         "Direct Preference Optimization:",
         "Your Language Model is Secretly a Reward Model"
@@ -37,6 +38,15 @@ const DPOScene01 = function (s) {
     const linesStartTime = frames(3.4);
     const titleStagger = frames(0.25), authorStagger = frames(0.1);
     const lineStagger = frames(0.09), lineFadeDuration = 0.22;
+    const algorithmStrings = ["PPO", "KTO", "ORPO", "SimPO", "..."];
+    const algorithmStartTime = frames(10);
+    const algorithmStagger = frames(0.25);
+    const algorithmEndTime = frames(13);
+    const algorithmX = 1610;
+    const algorithmStartY = 377;
+    const algorithmSpacing = 70;
+    const algorithmDrop = 35;
+    const algorithmMoveDuration = 0.5;
 
     s.preload = function () {
         tnr = s.loadFont("../../lib/font/times.ttf");
@@ -136,13 +146,36 @@ const DPOScene01 = function (s) {
             size: 32,
             font: arial,
             color: [255, 255, 255],
-            start: frames(12),
-            end: frames(15),
+            start: frames(15),
+            end: frames(17),
             duration: 0.7
         });
+        for (let i = 0; i < algorithmStrings.length; i++) {
+            const targetY = algorithmStartY + i * algorithmSpacing;
+            algorithmAbbreviations[i] = new TextFade(s, {
+                str: algorithmStrings[i],
+                x: algorithmX,
+                y: targetY - algorithmDrop,
+                mode: 1,
+                size: 42,
+                font: tnr_bold,
+                color: [255, 255, 255],
+                start: algorithmStartTime + i * algorithmStagger,
+                end: algorithmEndTime,
+                duration: algorithmMoveDuration
+            });
+            algorithmAbbreviations[i].targetY = targetY;
+        }
     };
 
     s.draw = function () {
+        for (let i = 0; i < algorithmAbbreviations.length; i++) {
+            const algorithm = algorithmAbbreviations[i];
+            if (s.frameCount === algorithm.start)
+                algorithm.move(
+                    algorithm.x, algorithm.targetY, algorithmMoveDuration, 1
+                );
+        }
         for (let border of titleBorders)
             border.show();
         for (let titleLine of paperTitle)
@@ -152,6 +185,8 @@ const DPOScene01 = function (s) {
         abstractTitle.show();
         for (let line of abstractLines)
             line.show();
+        for (let algorithm of algorithmAbbreviations)
+            algorithm.show();
         citationCount.show();
     };
 };
@@ -529,6 +564,8 @@ const DPOScene06 = function (s) {
             font_size: 34,
             color: DPO_VARIABLE_COLORS.prompt,
             start: promptVariableStartTime,
+            entryMode: "moveDown",
+            entryOffset: 45,
             entryDuration: 0.5
         });
         chosenVariable = new Katex(s, {
@@ -539,6 +576,8 @@ const DPOScene06 = function (s) {
             font_size: 34,
             color: DPO_VARIABLE_COLORS.chosen,
             start: chosenVariableStartTime,
+            entryMode: "moveDown",
+            entryOffset: 45,
             entryDuration: 0.5
         });
         rejectedVariable = new Katex(s, {
@@ -549,6 +588,8 @@ const DPOScene06 = function (s) {
             font_size: 34,
             color: DPO_VARIABLE_COLORS.rejected,
             start: rejectedVariableStartTime,
+            entryMode: "moveDown",
+            entryOffset: 45,
             entryDuration: 0.5
         });
         notationNote = new TextFade(s, {
@@ -646,7 +687,8 @@ class DPOScene00TextHighlight {
 const DPOScene00 = function (s) {
     let assets, shared, emojiFont;
     let preferenceQuestion, preferenceHint;
-    let responseA, responseB, responseAHighlight, preferenceHintHighlight;
+    let responseA, responseB, responseAHighlight, responseBHighlight;
+    let preferenceHintHighlight;
     let questioningBrain;
     let preferenceButtons = [], preferenceButtonLabels = [];
     const responseStrings = [
@@ -657,7 +699,7 @@ const DPOScene00 = function (s) {
     const buttonWidth = 470;
     const responsesY = 697;
     const responseSize = 30;
-    let responseAWidth;
+    let responseAWidth, responseBWidth;
 
     s.preload = function () {
         assets = preloadDPOChatGPTAssets(s);
@@ -672,8 +714,8 @@ const DPOScene00 = function (s) {
         const preferenceUI = createDPOPreferenceUI(s, assets, {
             question: frames(4),
             hint: frames(4.5),
-            buttons: frames(5),
-            labels: frames(5)
+            buttons: frames(5.5),
+            labels: frames(5.5)
         });
         preferenceQuestion = preferenceUI.question;
         preferenceHint = preferenceUI.hint;
@@ -689,32 +731,34 @@ const DPOScene00 = function (s) {
                 width: preferenceHintWidth,
                 height: preferenceHint.size
             }),
-            start: frames(17),
-            end: frames(19),
+            start: frames(20),
+            end: frames(22),
             duration: 1,
             fadeDuration: 0.7,
             padding: 10
         });
         questioningBrain = new ThoughtBrain(s, {
             x: 240,
-            y: 810,
+            y: 827,
             size: 330,
-            start: frames(14),
-            bubbleStart: frames(14.5),
+            bubbleScale: 0.7,
+            start: frames(17),
+            bubbleStart: frames(17.5),
             bubbleOpacity: 255,
             bubbleFill: [14, 19, 27],
             font: assets.tnr,
-            font_size: 37,
-            str: "Why am I given this choice?",
+            font_size: 32,
+            str: "Why am I given\nthis choice?",
             emoji: emojiFont,
             question: true,
-            qStart: frames(15),
-            qEnd: frames(20.8)
+            qStart: frames(18),
+            qEnd: frames(23.8)
         });
         s.textFont(assets.tnr);
         s.textSize(responseSize);
         const responseWidths = responseStrings.map((text) => s.textWidth(text));
         responseAWidth = responseWidths[0];
+        responseBWidth = responseWidths[1];
         responseA = new TextWriteIn(s, {
             str: responseStrings[0],
             x: buttonXs[0] + (buttonWidth - responseWidths[0]) / 2,
@@ -745,6 +789,19 @@ const DPOScene00 = function (s) {
                 height: responseA.size
             }),
             start: frames(7),
+            end: frames(13),
+            duration: 1,
+            fadeDuration: 0.7,
+            padding: 10
+        });
+        responseBHighlight = new DPOScene00TextHighlight(s, {
+            bounds: () => ({
+                x: responseB.x,
+                y: responseB.y,
+                width: responseBWidth,
+                height: responseB.size
+            }),
+            start: frames(7),
             end: frames(10),
             duration: 1,
             fadeDuration: 0.7,
@@ -753,7 +810,7 @@ const DPOScene00 = function (s) {
     };
 
     s.draw = function () {
-        if (s.frameCount === frames(11.5)) {
+        if (s.frameCount === frames(14.5)) {
             const selectionDuration = 0.35;
             preferenceButtons[0].growFromCenter(1.08, selectionDuration);
             preferenceButtons[0].reColor([42, 125, 98, 255], selectionDuration);
@@ -777,10 +834,11 @@ const DPOScene00 = function (s) {
         responseA.show();
         responseB.show();
         responseAHighlight.show();
+        responseBHighlight.show();
         s.push();
         questioningBrain.show();
         s.pop();
     };
 };
 
-let dpo0 = new p5(DPOScene00);
+let dpo0 = new p5(DPOScene39);

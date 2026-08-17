@@ -137,9 +137,9 @@ const DPOScene19 = function (s) {
     const tokenSize = 45;
     const tokenGap = 14;
     const wordStagger = frames(0.08);
-    const promptStartTime = frames(0.5);
-    const winnerResponseStartTime = frames(1.3);
-    const loserResponseStartTime = winnerResponseStartTime + frames(2);
+    const promptStartTime = frames(0.05);
+    const winnerResponseStartTime = frames(0.3);
+    const loserResponseStartTime = winnerResponseStartTime + frames(0.67);
     const winnerJumpStartTime = frames(3.5);
     const winnerJumpHeight = 35;
     const winnerJumpDuration = 0.6;
@@ -263,6 +263,7 @@ const DPOScene19 = function (s) {
             size: promptSize,
             color: colors.prompt,
             start: promptStartTime,
+            duration: 0.1,
             font: font
         });
         s.textSize(31);
@@ -454,6 +455,8 @@ const DPOScene20 = function (s, args) {
     const logProbabilitySequence = args.logProbabilitySequence === true;
     const lossTransitionSequence = args.lossTransitionSequence === true;
     const winnerDirectLogSequence = args.winnerDirectLogSequence === true;
+    const winnerSequenceDelay = args.winnerSequenceDelay || 0;
+    const subsequentAnimationDelay = args.subsequentAnimationDelay || 0;
     const logSequenceDelay = args.logSequenceDelay || 0;
     const modelLabelText = args.modelLabel || "trainable\nmodel";
     const modelSubscript = args.modelSubscript || "\\theta";
@@ -493,7 +496,7 @@ const DPOScene20 = function (s, args) {
     let winnerProbabilityEquation, loserProbabilityEquation;
     let loserTextReplacement, winnerLabelReplacement;
     let preferenceLikelihoodExpressions, winnerFinalLogExpression;
-    let loserSummationExpression, loserValueExpression;
+    let loserValueExpression, loserTextSumHighlight;
     let winnerResponse, loserResponse, winnerLogEquation, loserLogEquation;
     let rejectedArrow, rejectedLabel, leftRectHighlight, loserProbabilityHighlight;
     let conditionalProbabilityExpression;
@@ -501,22 +504,34 @@ const DPOScene20 = function (s, args) {
     let conditionalFinalExpression;
     let rightBoxWords = [], rightBoxCross = [];
     let scene25WinnerLabel, scene25WinnerCopies = [], scene25WinnerMoves = [];
+    let scene25LoserLabel, scene25LoserResponse;
     let scene25LeftHighlight, scene25WinnerMoveStarted = false;
+    let scene25WinnerStartTime;
     let rightBoxFadeStarted = false, outputLabelFadeStarted = false;
     let outputLabelReturnStarted = false, conditionalFadeStarted = false;
     let rejectedTokenCopies = [], rejectedTokenMoves = [];
     let loserRigorousTransitionStarted = false;
+    let loserValueTransitionStarted = false;
     let loserEquationStartTime = timing.loserEquationStart,
         loserNllStartTime = timing.loserNllStart,
         loserRigorousEquationStartTime = timing.rigorousEquationStart;
     let winnerProbabilitiesStartTime = timing.winnerProbabilitiesStart,
         loserProbabilitiesStartTime = timing.loserProbabilitiesStart;
     const probabilityEntryStagger = frames(0.1);
+    const attentionMaskEndTime = frames(49);
+    const attentionFadeDuration = 0.7;
+    const loserArrowStartTime = attentionMaskEndTime +
+        frames(attentionFadeDuration + 1);
+    const loserArrowEndTime = loserArrowStartTime + frames(2);
     const rejectedArrowStartTime = frames(4);
     const rejectedArrowEndTime = frames(5);
     const rejectedLineStartTime = frames(6.5);
     const rejectedTokenMoveDuration = frames(1.2);
+    const loserValueStartTime = frames(13);
+    const loserValueTransitionTime = loserValueStartTime +
+        subsequentAnimationDelay;
     let tableAStart = timing.tableAStart, tableBStart = timing.tableBStart;
+    let loserProbabilityArrows = [];
 
     function createProbabilityTexts(values, table, color, start) {
         let texts = [];
@@ -545,7 +560,7 @@ const DPOScene20 = function (s, args) {
         let attentionMaskStartTime = frames(42),
             attentionArcStartTime = frames(45),
             attentionArcStartRange = frames(2),
-            attentionMaskEndTime = frames(49), attentionMaskSeed = 2035;
+            attentionMaskSeed = 2035;
         s.randomSeed(attentionMaskSeed);
         causalMaskingTitle = new TextWriteIn(s, {
             str: "Causal Masking",
@@ -804,6 +819,27 @@ const DPOScene20 = function (s, args) {
         }
     }
 
+    function createLoserProbabilityArrows() {
+        for (let i = 0; i < probabilityTexts[1].length; i++) {
+            const probability = probabilityTexts[1][i];
+            const targetY = probability.entryTargetY === undefined ?
+                probability.y : probability.entryTargetY;
+            const arrowTipY = targetY + probability.size / 2 + 10;
+            loserProbabilityArrows[i] = new Arrow(s, {
+                x1: probability.x,
+                y1: arrowTipY + 50,
+                x2: probability.x,
+                y2: arrowTipY,
+                start: loserArrowStartTime,
+                end: loserArrowEndTime,
+                duration: 0.5,
+                strokeweight: 4,
+                tipLen: 13,
+                color: colors.transmit
+            });
+        }
+    }
+
     function createLogProbabilitySequence() {
         const winnerLogProbability = chosenProbabilities.reduce(
             function (sum, p) { return sum + Math.log(p); }, 0
@@ -924,19 +960,34 @@ const DPOScene20 = function (s, args) {
             entryMode: "moveDown", entryOffset: 45, entryDuration: 0.7
         });
         if (winnerDirectLogSequence) {
-            loserSummationExpression = new Katex(s, {
-                text: "\\log \\pi_{\\theta}(y_l\\mid x)=" +
-                    "\\sum_t \\log \\pi_{\\theta}" +
-                    "(y_{l_t}\\mid x,y_{l_{<t}})",
-                x: 1000, y: 840, mode: 0, font_size: 40,
-                color: "#ff7080", start: loserRigorousEquationStartTime,
-                end: frames(13), entryMode: "moveDown",
-                entryOffset: 45, entryDuration: 0.8
+            const loserNllEquation = loserTextReplacement.newTexts[
+                loserTextReplacement.newTexts.length - 1
+            ];
+            loserTextSumHighlight = new DPOTextBoundsHighlight(s, {
+                bounds: function () {
+                    s.textFont(font);
+                    s.textSize(loserNllEquation.size);
+                    return {
+                        x: loserNllEquation.x,
+                        y: loserNllEquation.y,
+                        width: s.textWidth(loserNllEquation.str),
+                        height: loserNllEquation.size
+                    };
+                },
+                start: loserRigorousEquationStartTime,
+                end: loserValueStartTime,
+                duration: 1,
+                fadeDuration: 0.7,
+                padding: 7,
+                strokeweight: 2,
+                color: [247, 227, 47]
             });
             loserValueExpression = new Katex(s, {
                 text: "\\log \\pi_{\\theta}(y_l\\mid x)=-1.63",
                 x: 1000, y: 840, mode: 0, font_size: 40,
-                color: "#ff7080", start: frames(13), entryDuration: 0.8
+                color: "#ff7080", start: loserValueTransitionTime,
+                entryMode: "moveDown", entryOffset: 45,
+                entryDuration: 0.8
             });
         }
 
@@ -1222,7 +1273,7 @@ const DPOScene20 = function (s, args) {
     }
 
     function createScene25WinnerSequence() {
-        const start = frames(15);
+        const start = frames(15) + winnerSequenceDelay;
         const duration = frames(1.5);
         const labelText = "Winner:";
         const labelSize = 29;
@@ -1230,6 +1281,30 @@ const DPOScene20 = function (s, args) {
         s.textSize(prompt.size);
         const lineX = prompt.x - s.textWidth(prompt.str) / 2;
         const lineY = promptRect.y + promptRect.h / 2 + 40;
+        scene25WinnerStartTime = start;
+
+        scene25LoserLabel = new TextFade(s, {
+            str: "Rejected:", x: lineX, y: lineY, mode: 3,
+            size: labelSize, color: rejected_color, start: -1,
+            end: loserValueStartTime + frames(2.5) + subsequentAnimationDelay,
+            duration: 0.7,
+            font: font
+        });
+        scene25LoserLabel.ft = new FillChanger(s, rejected_color.slice());
+        s.textSize(labelSize);
+        scene25LoserResponse = new TextFade(s, {
+            str: "Sept 2035.",
+            x: lineX + s.textWidth("Rejected:") + s.textWidth(" "),
+            y: lineY, mode: 3, size: labelSize,
+            color: colors.foreground, start: -1,
+            end: loserValueStartTime + frames(2.5) + subsequentAnimationDelay,
+            duration: 0.7,
+            font: font
+        });
+        scene25LoserResponse.ft = new FillChanger(
+            s, colors.foreground.slice()
+        );
+
         scene25WinnerLabel = new TextWriteIn(s, {
             str: labelText, x: lineX, y: lineY, mode: 3,
             size: labelSize, color: chosen_color, start: start,
@@ -1261,16 +1336,18 @@ const DPOScene20 = function (s, args) {
                 return {x: promptRect.x, y: promptRect.y,
                     width: promptRect.w, height: promptRect.h};
             },
-            start: start, end: frames(16.5), duration: 1,
+            start: start, end: start + frames(1.5), duration: 1,
             fadeDuration: 0.7, padding: 0, strokeweight: 5,
             color: [247, 227, 47]
         });
     }
 
     function showScene25WinnerSequence() {
+        scene25LoserLabel.show();
+        scene25LoserResponse.show();
         scene25LeftHighlight.show();
         scene25WinnerLabel.show();
-        if (s.frameCount >= frames(15)) {
+        if (s.frameCount >= scene25WinnerStartTime) {
             scene25WinnerMoves.forEach(function (move) {
                 const positionT = move.positionTimer.advance();
                 const sizeT = move.sizeTimer.advance();
@@ -1290,9 +1367,7 @@ const DPOScene20 = function (s, args) {
 
         if (!loserRigorousTransitionStarted &&
             s.frameCount >= loserRigorousEquationStartTime) {
-            if (winnerDirectLogSequence) {
-                loserNllEquation.ft.fadeOut(0.8);
-            } else {
+            if (!winnerDirectLogSequence) {
                 winnerProbabilityEquation.ft.fadeOut(0.8);
                 loserNllEquation.ft.fadeOut(0.8);
                 loserNllEquation.move(
@@ -1304,7 +1379,15 @@ const DPOScene20 = function (s, args) {
         }
 
         if (winnerDirectLogSequence) {
-            loserSummationExpression.show();
+            if (!loserValueTransitionStarted &&
+                s.frameCount >= loserValueTransitionTime) {
+                loserNllEquation.ft.fadeOut(0.8);
+                loserNllEquation.move(
+                    loserNllEquation.x, loserNllEquation.y + 45, 0.8, 1
+                );
+                loserValueTransitionStarted = true;
+            }
+            loserTextSumHighlight.show();
             loserValueExpression.show();
         } else {
             preferenceLikelihoodExpressions.show();
@@ -1382,6 +1465,8 @@ const DPOScene20 = function (s, args) {
             edge.show();
         for (let word of attentionWords)
             word.show();
+        for (let arrow of loserProbabilityArrows)
+            arrow.show();
     }
 
     s.preload = function () {
@@ -1396,6 +1481,8 @@ const DPOScene20 = function (s, args) {
             createAttentionMask();
         createSceneText();
         createResponseTables();
+        if (showAttention)
+            createLoserProbabilityArrows();
         if (logProbabilitySequence)
             createLogProbabilitySequence();
         else {
@@ -1424,18 +1511,24 @@ const DPOScene20 = function (s, args) {
 
 const DPOScene25 = function (s) {
     const sharedSceneStartTime = frames(0.5);
+    const subsequentDelay = frames(2);
+    const winnerDelay = frames(4) + subsequentDelay;
 
     DPOScene20(s, {
         showAttention: false,
         lossTransitionSequence: true,
         winnerDirectLogSequence: true,
+        winnerSequenceDelay: winnerDelay,
+        subsequentAnimationDelay: subsequentDelay,
         inference1Times: [
-            {start: frames(16.7), end: frames(17.3)}
+            {start: frames(16.7) + winnerDelay,
+                end: frames(17.3) + winnerDelay}
         ],
         inference2Times: [
-            {start: frames(17), end: frames(17.6)}
+            {start: frames(17) + winnerDelay,
+                end: frames(17.6) + winnerDelay}
         ],
-        modelRespawnTimes: [frames(16.7)],
+        modelRespawnTimes: [frames(16.7) + winnerDelay],
         timing: {
             pipelineStart: sharedSceneStartTime,
             subtitleStart: sharedSceneStartTime,
@@ -1446,7 +1539,7 @@ const DPOScene25 = function (s) {
             tableBStart: sharedSceneStartTime,
             titleAStart: sharedSceneStartTime,
             titleBStart: sharedSceneStartTime,
-            winnerProbabilitiesStart: frames(17.7),
+            winnerProbabilitiesStart: frames(17.7) + winnerDelay,
             loserProbabilitiesStart: sharedSceneStartTime,
             loserEquationStart: frames(6),
             loserNllStart: frames(9),

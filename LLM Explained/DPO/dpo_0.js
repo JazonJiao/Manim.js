@@ -1,5 +1,5 @@
 // Select the section highlighted by the outline: 1, 2, 3, 4a, 4b, 5, 6, or 7.
-const DPO_OUTLINE_SECTION = "4b";
+const DPO_OUTLINE_SECTION = "7";
 
 const DPOEmpty = function (s) {
     s.setup = function () {
@@ -227,13 +227,16 @@ const DPOEclipse = function (s) {
     const sunStartTime = frames(2);
     const sunFadeDuration = frames(1);
     const eclipseStartTime = frames(5);
-    const eclipseFadeDuration = frames(0.5);
-    const eclipseCruiseEndTime = frames(6);
+    const eclipseDurationScale = 1.5;
+    const eclipseFadeDuration = frames(0.5 * eclipseDurationScale);
+    const eclipseCruiseEndTime = eclipseStartTime +
+        frames(1 * eclipseDurationScale);
     const baseBackground = [8, 12, 22];
     const brightBackground = [16, 24, 35];
     const moonRadius = sunRadius;
-    const moonSpeed = 200;
-    const moonTouchTime = frames(5.5);
+    const moonSpeed = 200 / eclipseDurationScale;
+    const moonTouchTime = eclipseStartTime +
+        frames(0.5 * eclipseDurationScale);
     const moonDecelerationStartOffset =
         sunRadius + featherWidth + moonRadius - sunRadius;
     const moonDecelerationDuration =
@@ -243,8 +246,9 @@ const DPOEclipse = function (s) {
     const reverseStartTime = eclipseEndTime + totalityHoldDuration;
     const reverseEclipseDuration = eclipseEndTime - eclipseStartTime;
     const reverseEclipseEndTime = reverseStartTime + reverseEclipseDuration;
+    const sunFadeOutStartTime = reverseEclipseEndTime + frames(0.7);
     const sunFadeOutDuration = frames(1);
-    let font, prompt;
+    let font, prompt, eclipseDate;
 
     s.preload = function () {
         font = s.loadFont("../../lib/font/times.ttf");
@@ -267,6 +271,18 @@ const DPOEclipse = function (s) {
             start: frames(0.5),
             font: font
         });
+        eclipseDate = new TextFade(s, {
+            str: "Aug 12, 2026",
+            x: 90, // s.width / 2,
+            y: 60, // s.height * 3 / 5 + sunRadius + 129,
+            mode: 0,
+            size: 24,
+            color: [99, 103, 117],
+            start: frames(9),
+            end: frames(11),
+            duration: 0.5,
+            font: font
+        });
     };
 
     function eclipseFrame() {
@@ -281,7 +297,7 @@ const DPOEclipse = function (s) {
 
     function sunExitProgress() {
         return s.constrain(
-            (s.frameCount - reverseEclipseEndTime) / sunFadeOutDuration,
+            (s.frameCount - sunFadeOutStartTime) / sunFadeOutDuration,
             0,
             1
         );
@@ -400,7 +416,237 @@ const DPOEclipse = function (s) {
         drawSun(sunProgress);
         drawMoon();
         prompt.show();
+        eclipseDate.show();
     };
 };
 
-let dpo0 = new p5(DPOOutline);
+const DPOThumbnail = function (s) {
+    const foreground = [235, 241, 250];
+    const chosen = [77, 217, 153];
+    const rejected = [255, 112, 128];
+    const chosenMark = [40, 255, 90];
+    const rejectedMark = [255, 45, 55];
+    const panelCenterXs = [350, 960, 1570];
+    const panelCenterY = 385 + 585 / 2;
+    const panelSize = 585 * 0.75;
+    const panelY = panelCenterY - panelSize / 2;
+    const panelXs = panelCenterXs.map((x) => x - panelSize / 2);
+    let font;
+    let titlePrefix, titleReward, preferredAnswer, rejectedAnswer, dpoLabel;
+    let brain, rewardCube, rewardLabel;
+
+    s.preload = function () {
+        font = s.loadFont("../../lib/font/times.ttf");
+    };
+
+    s.setup = function () {
+        setup2D(s);
+        const titlePrefixString = "Your LLM is a ";
+        const titleRewardString = "Reward Model";
+        const titleSize = 137;
+        s.textFont(font);
+        s.textSize(titleSize);
+        const titleStartX = (s.width - s.textWidth(
+            titlePrefixString + titleRewardString
+        )) / 2;
+        titlePrefix = new Text(s, {
+            str: titlePrefixString,
+            x: titleStartX,
+            y: 202,
+            mode: 3,
+            size: titleSize,
+            color: foreground,
+            font: font,
+            start: 1
+        });
+        titleReward = new Text(s, {
+            str: titleRewardString,
+            x: titleStartX + s.textWidth(titlePrefixString),
+            y: 202,
+            mode: 3,
+            size: titleSize,
+            color: [248, 238, 75],
+            font: font,
+            start: 1
+        });
+        preferredAnswer = new Text(s, {
+            str: "Preferred\nAnswer",
+            x: panelCenterXs[0] - 45,
+            y: panelCenterY - 115,
+            mode: 1,
+            size: 57,
+            color: chosen,
+            font: font,
+            start: 1
+        });
+        rejectedAnswer = new Text(s, {
+            str: "Rejected\nAnswer",
+            x: panelCenterXs[0] - 45,
+            y: panelCenterY + 99,
+            mode: 1,
+            size: 57,
+            color: rejected,
+            font: font,
+            start: 1
+        });
+        dpoLabel = new Text(s, {
+            str: "DPO",
+            x: (panelXs[0] + panelSize + panelXs[1]) / 2,
+            y: panelCenterY - 61,
+            mode: 1,
+            size: 49,
+            color: [247, 227, 47],
+            font: font,
+            start: 1
+        });
+        brain = new BrainBase(s, {start: -1, duration: frames(1)});
+        brain.frCount = brain.duration;
+        rewardCube = new RotatingRewardCube(s, {
+            x: panelCenterXs[2],
+            y: panelCenterY - 70,
+            size: 79,
+            strokeweight: 6,
+            start: -1,
+            wiggleAmplitude: 0,
+            entryDuration: 0.2
+        });
+        rewardLabel = new Katex(s, {
+            text: "r(\\textcolor{#4db1ff}{x}, " +
+                "\\textcolor{#c54fb1}{y})",
+            x: panelCenterXs[2],
+            y: panelCenterY + 99,
+            mode: 1,
+            font_size: 72,
+            color: "#ebf1fa"
+        });
+    };
+
+    function showPipeline() {
+        s.push();
+        s.noFill();
+        s.strokeJoin(s.ROUND);
+        s.strokeCap(s.SQUARE);
+        s.stroke(247, 227, 47);
+        s.strokeWeight(10);
+        for (let i = 0; i < panelXs.length - 1; i++) {
+            const arrowTipX = panelXs[i + 1] - 4;
+            s.strokeCap(s.SQUARE);
+            s.line(
+                panelXs[i] + panelSize,
+                panelCenterY,
+                arrowTipX,
+                panelCenterY
+            );
+            s.strokeCap(s.ROUND);
+            s.line(
+                arrowTipX,
+                panelCenterY,
+                arrowTipX - 24,
+                panelCenterY - 16
+            );
+            s.line(
+                arrowTipX,
+                panelCenterY,
+                arrowTipX - 24,
+                panelCenterY + 16
+            );
+        }
+        s.strokeCap(s.SQUARE);
+        s.stroke(foreground);
+        s.strokeWeight(5);
+        for (let x of panelXs)
+            s.rect(x, panelY, panelSize, panelSize, 22);
+        for (let i = 0; i < panelXs.length - 1; i++) {
+            s.line(
+                panelXs[i] + panelSize,
+                panelCenterY,
+                panelXs[i + 1],
+                panelCenterY
+            );
+        }
+        s.strokeWeight(2);
+        s.line(
+            panelXs[0] + 55,
+            panelCenterY,
+            panelXs[0] + panelSize - 55,
+            panelCenterY
+        );
+        s.pop();
+    }
+
+    function showBackgroundGradient() {
+        const context = s.drawingContext;
+        const gradient = context.createLinearGradient(0, s.height, s.width, 0);
+        gradient.addColorStop(0, "rgb(8, 12, 22)");
+        gradient.addColorStop(1, "rgb(14, 28, 46)");
+        context.save();
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, s.width, s.height);
+        context.restore();
+    }
+
+    function showRewardGlow() {
+        const context = s.drawingContext;
+        const centerX = panelCenterXs[2];
+        const centerY = panelCenterY - 70;
+        const radius = 175;
+        const glow = context.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, radius
+        );
+        glow.addColorStop(0, "rgba(247, 227, 47, 0.18)");
+        glow.addColorStop(0.45, "rgba(247, 227, 47, 0.07)");
+        glow.addColorStop(1, "rgba(247, 227, 47, 0)");
+        context.save();
+        context.fillStyle = glow;
+        context.fillRect(
+            centerX - radius,
+            centerY - radius,
+            radius * 2,
+            radius * 2
+        );
+        context.restore();
+    }
+
+    function showAnswerMarks() {
+        const markX = panelCenterXs[0] + 130;
+        s.push();
+        s.noFill();
+        s.strokeCap(s.ROUND);
+        s.strokeJoin(s.ROUND);
+        s.strokeWeight(12);
+        s.stroke(chosenMark);
+        s.line(markX - 30, panelCenterY - 115,
+            markX - 9, panelCenterY - 92);
+        s.line(markX - 9, panelCenterY - 92,
+            markX + 34, panelCenterY - 142);
+        s.stroke(rejectedMark);
+        s.line(markX - 25, panelCenterY + 90,
+            markX + 25, panelCenterY + 140);
+        s.line(markX + 25, panelCenterY + 90,
+            markX - 25, panelCenterY + 140);
+        s.pop();
+    }
+
+    s.draw = function () {
+        showBackgroundGradient();
+        showRewardGlow();
+        showPipeline();
+        titlePrefix.show();
+        titleReward.show();
+        preferredAnswer.show();
+        rejectedAnswer.show();
+        dpoLabel.show();
+        showAnswerMarks();
+        const brainSize = 860 * 0.65;
+        brain.showAt(
+            panelCenterXs[1] - brainSize * 110 / 430,
+            panelCenterY - brainSize * 100 / 430,
+            brainSize
+        );
+        rewardCube.show();
+        rewardLabel.show();
+    };
+};
+
+let dpo0 = new p5(DPOEclipse);

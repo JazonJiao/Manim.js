@@ -284,21 +284,23 @@ const DPOScene02 = function (s) {
 const DPOScene44 = function (s) {
     let font;
     let title, subtitle, preferenceDataTitle, preferenceEllipsis, rewardModelTitle, rewardModel, rewardText;
+    let rewardScoreArrow;
     let rewardModelBackpropagation, llmTitle, llmNetwork, llmBackpropagation, crossoutLine;
+    let actsLikeArrow, actsLikeText;
     let preferenceTriplets = [];
-    let titleStartTime = frames(0.5);
-    let subtitleStartTime = frames(1.1);
-    let preferenceDataTitleStartTime = frames(1.4);
-    let rewardModelTitleStartTime = frames(1.4);
-    let firstTripletStartTime = frames(2);
-    let preferenceEllipsisStartTime = frames(2.8);
-    let rewardModelStartTime = frames(2);
-    let rewardModelBackpropagationStartTime = frames(4);
-    let llmStartTime = frames(4.5);
-    let llmBackpropagationStartTime = frames(6);
-    let rewardTextStartTime = frames(4);
-    let rewardModelCrossoutStartTime = frames(8);
-    let tripletStagger = frames(0.18);
+    let titleStartTime = frames(3);
+    let subtitleStartTime = frames(6);
+    let preferenceDataTitleStartTime = frames(1);
+    let rewardModelTitleStartTime = frames(7.5);
+    let firstTripletStartTime = frames(1.5);
+    let preferenceEllipsisStartTime = frames(2.4);
+    let rewardModelStartTime = frames(7.5);
+    let rewardModelBackpropagationStartTime = frames(9);
+    let llmStartTime = frames(11);
+    let llmBackpropagationStartTime = frames(12.5);
+    let rewardTextStartTime = frames(16.5);
+    let rewardModelCrossoutStartTime = frames(21.7);
+    let tripletStagger = frames(0.2);
     let tripletEntryDuration = 0.4;
 
     class FallingTriplet {
@@ -394,6 +396,7 @@ const DPOScene44 = function (s) {
             x2: rewardModelTitleX + s.textWidth("Reward Model") + 8,
             y2: 275,
             start: rewardModelCrossoutStartTime,
+            end: frames(24),
             duration: 0.5,
             mode: 1,
             strokeweight: 4,
@@ -427,8 +430,21 @@ const DPOScene44 = function (s) {
             size: 21,
             color: [244, 195, 10],
             start: rewardTextStartTime,
+            end: frames(20),
             font: font
-        })
+        });
+        rewardScoreArrow = new Arrow(s, {
+            x1: s.width / 2 + 160,
+            y1: 575,
+            x2: s.width / 2 + 160,
+            y2: 545,
+            start: frames(18.5),
+            end: frames(20),
+            duration: 0.3,
+            strokeweight: 3,
+            color: [244, 195, 10],
+            tipLen: 10
+        });
         llmNetwork = new NeuralNetwork(s, {
             layers: [7, 11, 11, 7],
             x: s.width * 3 / 4 + 60,
@@ -455,18 +471,41 @@ const DPOScene44 = function (s) {
             start: llmStartTime,
             font: font
         });
+        actsLikeArrow = new Arrow(s, {
+            x1: s.width * 3 / 4 - 67,
+            y1: 300,
+            x2: s.width / 2 + 135 + 67,
+            y2: 300,
+            start: frames(26),
+            end: frames(30),
+            duration: 0.6,
+            strokeweight: 4,
+            color: [255, 255, 255],
+            tipLen: 14
+        });
+        actsLikeText = new TextFade(s, {
+            str: "“acts like”",
+            x: (s.width * 3 / 4 + s.width / 2 + 135) / 2,
+            y: 267,
+            mode: 1,
+            size: 27,
+            color: [255, 255, 255],
+            start: frames(26),
+            duration: 0.6,
+            font: font
+        });
         for (let index = 1; index <= 4; index++) {
             preferenceTriplets.push(new FallingTriplet(
                 index,
                 450,
-                495 + (index - 1) * 75,
+                445 + (index - 1) * 84,
                 firstTripletStartTime + (index - 1) * tripletStagger
             ));
         }
         preferenceEllipsis = new Katex(s, {
             text: "\\cdots",
             x: 450,
-            y: 805,
+            y: 795,
             mode: 1,
             font_size: 45,
             color: "#edf2f7",
@@ -489,6 +528,9 @@ const DPOScene44 = function (s) {
         rewardModelBackpropagation.show();
         rewardModel.showNeurons();
         rewardText.show();
+        rewardScoreArrow.show();
+        actsLikeArrow.show();
+        actsLikeText.show();
         llmNetwork.showEdges();
         llmBackpropagation.show();
         llmNetwork.showNeurons();

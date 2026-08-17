@@ -576,6 +576,7 @@ class RotatingRewardCube {
         this.x = args.x === undefined ? ctx.width / 2 : args.x;
         this.y = args.y === undefined ? ctx.height / 2 : args.y;
         this.size = args.size || 27;
+        this.strokeweight = args.strokeweight || 2;
         this.start = args.start || 0;
         this.wiggleAmplitude = args.wiggleAmplitude === undefined ? 6 : args.wiggleAmplitude;
         this.wigglePeriod = args.wigglePeriod || 2.4;
@@ -598,7 +599,7 @@ class RotatingRewardCube {
         this.g.push();
         this.g.scale(scale);
         this.g.stroke(247, 77, 7);
-        this.g.strokeWeight(2);
+        this.g.strokeWeight(this.strokeweight);
         this.g.fill(197, 197, 17);
         this.g.rotateX(elapsed / 17);
         this.g.rotateY(elapsed / 27);
