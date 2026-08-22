@@ -157,65 +157,156 @@ const DPOAssume = function (s) {
 };
 
 
-const DPOScene50 = function (s) {
-    let font, boldFont, title;
-    let topics = [];
-    let topicStartTime = frames(0.8);
-    let topicStagger = frames(0.35);
-    let topicMoveDuration = 0.45;
-    const topicStrings = [
+const DPOScene48 = function (s) {
+    let font, titleFont, limitationsTitle, relatedMethodsTitle;
+    let limitationsEllipsis, relatedMethodsEllipsis;
+    let limitations = [];
+    let relatedMethods = [];
+    const limitationsStartTime = frames(1);
+    const relatedMethodsStartTime = frames(4);
+    const pointsDelay = frames(0.4);
+    const pointStagger = frames(0.1);
+    const entryDuration = 0.45;
+    const limitationStrings = [
+        "1. DPO cannot create new data",
+        "2. Binary labels throw away information",
+        "3. No exploration beyond static preference set"
+    ];
+    const relatedMethodStrings = [
         "Online and Iterative DPO",
         "PPO-Based RLHF",
         "SimPO, ORPO, and KTO",
-        "GRPO for Reasoning Models",
-        "Reward Hacking and Length Bias"
+        "GRPO for Reasoning Models"
     ];
 
     s.preload = function () {
         font = s.loadFont("../../lib/font/times.ttf");
-        boldFont = s.loadFont("../../lib/font/timesbd.ttf");
+        titleFont = s.loadFont("../../lib/font/arial.ttf");
     };
 
     s.setup = function () {
         setup2D(s);
-        title = new Text(s, {
-            str: "Related topics",
+        limitationsTitle = new TextFade(s, {
+            str: "Limitations of DPO",
             x: s.width / 2,
-            y: 115,
+            y: 75,
             mode: 1,
-            size: 52,
-            color: [235, 241, 250],
-            start: 1,
-            font: font
+            size: 48,
+            color: [255, 112, 128],
+            start: limitationsStartTime,
+            duration: entryDuration,
+            font: titleFont
+        });
+        relatedMethodsTitle = new TextFade(s, {
+            str: "Related methods",
+            x: s.width / 2,
+            y: 485,
+            mode: 1,
+            size: 44,
+            color: [77, 177, 255],
+            start: relatedMethodsStartTime,
+            duration: entryDuration,
+            font: titleFont
         });
 
-        for (let index = 0; index < topicStrings.length; index++) {
-            const targetY = 265 + index * 115;
-            const start = topicStartTime + index * topicStagger;
-            const topic = new TextFade(s, {
-                str: topicStrings[index],
+        for (let index = 0; index < limitationStrings.length; index++) {
+            const targetY = 165 + index * 78;
+            const start = limitationsStartTime + pointsDelay + index * pointStagger;
+            const limitation = new TextFade(s, {
+                str: limitationStrings[index],
                 x: s.width / 2,
                 y: targetY - 45,
                 mode: 1,
-                size: 43,
+                size: 36,
                 color: [235, 241, 250],
                 start: start,
-                duration: topicMoveDuration,
-                font: boldFont
+                duration: entryDuration,
+                font: font
             });
-            topics.push({text: topic, targetY: targetY, start: start, moving: false});
+            limitations.push({
+                text: limitation,
+                targetY: targetY,
+                start: start,
+                moving: false
+            });
         }
+        limitationsEllipsis = new TextFade(s, {
+            str: "...",
+            x: s.width / 2,
+            y: 365,
+            mode: 1,
+            size: 42,
+            color: [235, 241, 250],
+            start: limitationsStartTime + pointsDelay +
+                limitationStrings.length * pointStagger,
+            duration: entryDuration,
+            font: font
+        });
+
+        for (let index = 0; index < relatedMethodStrings.length; index++) {
+            const targetY = 565 + index * 65;
+            const start = relatedMethodsStartTime + pointsDelay + index * pointStagger;
+            const method = new TextFade(s, {
+                str: relatedMethodStrings[index],
+                x: s.width / 2,
+                y: targetY - 35,
+                mode: 1,
+                size: 34,
+                color: [235, 241, 250],
+                start: start,
+                duration: entryDuration,
+                font: font
+            });
+            relatedMethods.push({
+                text: method,
+                targetY: targetY,
+                start: start,
+                moving: false
+            });
+        }
+        relatedMethodsEllipsis = new TextFade(s, {
+            str: "...",
+            x: s.width / 2,
+            y: 810,
+            mode: 1,
+            size: 42,
+            color: [235, 241, 250],
+            start: relatedMethodsStartTime + pointsDelay +
+                relatedMethodStrings.length * pointStagger,
+            duration: entryDuration,
+            font: font
+        });
     };
 
     s.draw = function () {
-        title.show();
-        for (let topic of topics) {
-            if (!topic.moving && s.frameCount >= topic.start) {
-                topic.text.move(topic.text.x, topic.targetY, topicMoveDuration, 1);
-                topic.moving = true;
+        limitationsTitle.show();
+        for (let limitation of limitations) {
+            if (!limitation.moving && s.frameCount >= limitation.start) {
+                limitation.text.move(
+                    limitation.text.x,
+                    limitation.targetY,
+                    entryDuration,
+                    1
+                );
+                limitation.moving = true;
             }
-            topic.text.show();
+            limitation.text.show();
         }
+        limitationsEllipsis.show();
+        relatedMethodsTitle.show();
+        for (let method of relatedMethods) {
+            if (!method.moving && s.frameCount >= method.start) {
+                method.text.move(
+                    method.text.x,
+                    method.targetY,
+                    entryDuration,
+                    1
+                );
+                method.moving = true;
+            }
+            method.text.show();
+        }
+        relatedMethodsEllipsis.show();
     };
 };
 
@@ -649,4 +740,4 @@ const DPOThumbnail = function (s) {
     };
 };
 
-let dpo0 = new p5(DPOEclipse);
+let dpo0 = new p5(DPOScene48);

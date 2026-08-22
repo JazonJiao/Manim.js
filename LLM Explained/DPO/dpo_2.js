@@ -107,7 +107,7 @@ const DPOScene09 = function (s, args) {
         rewardEq = new Katex(s, {
             text: "Reward = r(" +
                 "\\textcolor{#4db1ff}{x}, " +
-                "\\textcolor{#c54fb1}{y})",
+                "\\textcolor{#e58b3f}{y})",
             x: s.width / 2,
             y: s.height / 2 - 170,
             font_size: 40,
@@ -139,11 +139,11 @@ const DPOScene09 = function (s, args) {
             mode: 3,
             size: 37,
             font: monoFont,
-            color: [197, 79, 177],
+            color: [229, 139, 63],
             start: variableStartTime
         });
         yEq = new Katex(s, {
-            text: "\\textcolor{#c54fb1}{y =}",
+            text: "\\textcolor{#e58b3f}{y =}",
             x: s.width / 2 - 49,
             y: s.height / 2 + 150,
             mode: 4,

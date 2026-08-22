@@ -76,6 +76,159 @@ const DPOScene18 = function (s) {
     };
 };
 
+const DPOScene52 = function (s) {
+    const colors = {
+        foreground: "#ebf1fa",
+        chosen: "#4dd999",
+        rejected: "#ff7080",
+        beta: "#f4c30a"
+    };
+    const baseSize = 32;
+    const entryStart = frames(1);
+    const entryDelay = frames(0.05);
+    const referenceJumpStart = frames(4);
+    const thetaJumpStart = frames(6);
+    const jumpHeight = 24;
+    const jumpDuration = 0.45;
+    const referenceKeys = ["reference_winner", "reference_loser"];
+    const thetaKeys = ["theta_winner", "theta_loser"];
+    let equation, winnerUnderline, loserUnderline;
+    let referenceJumped = false, thetaJumped = false;
+
+    class PartUnderline {
+        constructor(partKey, targetText, start) {
+            this.partKey = partKey;
+            this.targetText = targetText;
+            this.start = start;
+            this.durationFrames = frames(1);
+        }
+
+        bounds() {
+            const part = equation.partStates[this.partKey].element;
+            const candidates = Array.from(part.querySelectorAll(".mord"))
+                .filter((element) => element.textContent.replace(
+                    /[\s\u200b]/g, ""
+                ) === this.targetText);
+            if (!candidates.length)
+                return null;
+            const element = candidates.reduce((smallest, candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const smallestRect = smallest.getBoundingClientRect();
+                return rect.width * rect.height <
+                    smallestRect.width * smallestRect.height ?
+                    candidate : smallest;
+            });
+            const rect = element.getBoundingClientRect();
+            const canvas = s.canvas.getBoundingClientRect();
+            return {
+                x1: (rect.left - canvas.left) * s.width / canvas.width,
+                x2: (rect.right - canvas.left) * s.width / canvas.width,
+                y: (rect.bottom - canvas.top) * s.height / canvas.height + 4
+            };
+        }
+
+        easeOut(progress) {
+            const t = s.constrain(progress, 0, 1);
+            return 1 - (1 - t) * (1 - t);
+        }
+
+        show() {
+            const elapsed = s.frameCount - this.start;
+            if (elapsed < 0 || elapsed >= this.durationFrames * 2)
+                return;
+            const bounds = this.bounds();
+            if (!bounds)
+                return;
+            let left = bounds.x1, right = bounds.x2;
+            if (elapsed < this.durationFrames) {
+                right = bounds.x1 + (bounds.x2 - bounds.x1) *
+                    this.easeOut(elapsed / this.durationFrames);
+            } else {
+                left = bounds.x1 + (bounds.x2 - bounds.x1) * this.easeOut(
+                    (elapsed - this.durationFrames) / this.durationFrames
+                );
+            }
+            s.push();
+            s.stroke(249, 201, 17);
+            s.strokeWeight(3);
+            s.strokeCap(s.ROUND);
+            s.line(left, bounds.y, right, bounds.y);
+            s.pop();
+        }
+    }
+
+    const tokenSpecs = [
+        {key: "loss", text: "\\mathcal{L}_{\\mathrm{DPO}}",
+            color: colors.foreground},
+        {text: "=", color: colors.foreground},
+        {text: "-\\log\\,\\sigma(", color: colors.foreground},
+        {text: "\\beta", color: colors.beta},
+        {text: "[", color: colors.foreground},
+        {text: "(", color: colors.foreground},
+        {text: "\\log", color: colors.chosen},
+        {key: "theta_winner", text: "\\pi_{\\theta}(y_w\\mid x)",
+            color: colors.chosen},
+        {text: "-", color: colors.foreground},
+        {text: "\\log", color: colors.chosen},
+        {key: "reference_winner",
+            text: "\\pi_{\\mathrm{ref}}(y_w\\mid x)",
+            color: colors.chosen},
+        {text: ")", color: colors.foreground},
+        {text: "-", color: colors.foreground},
+        {text: "(", color: colors.foreground},
+        {text: "\\log", color: colors.rejected},
+        {key: "theta_loser", text: "\\pi_{\\theta}(y_l\\mid x)",
+            color: colors.rejected},
+        {text: "-", color: colors.foreground},
+        {text: "\\log", color: colors.rejected},
+        {key: "reference_loser",
+            text: "\\pi_{\\mathrm{ref}}(y_l\\mid x)",
+            color: colors.rejected},
+        {text: ")", color: colors.foreground},
+        {text: "]", color: colors.foreground},
+        {text: ")", color: colors.foreground}
+    ];
+
+    s.setup = function () {
+        setup2D(s);
+        equation = new AnimatedKatex(s, {
+            parts: tokenSpecs.map(function (spec, index) {
+                return Object.assign({}, spec, {
+                    key: spec.key || "token" + index,
+                    start: entryStart + index * entryDelay
+                });
+            }),
+            x: s.width / 2,
+            y: s.height / 2 - 125,
+            mode: 1,
+            font_size: baseSize,
+            color: colors.foreground
+        });
+        winnerUnderline = new PartUnderline(
+            "theta_winner", "yw", frames(8)
+        );
+        loserUnderline = new PartUnderline(
+            "theta_loser", "yl", frames(10)
+        );
+    };
+
+    s.draw = function () {
+        if (!referenceJumped && s.frameCount >= referenceJumpStart) {
+            for (const key of referenceKeys)
+                equation.jumpPart(key, jumpHeight, jumpDuration);
+            referenceJumped = true;
+        }
+        if (!thetaJumped && s.frameCount >= thetaJumpStart) {
+            for (const key of thetaKeys)
+                equation.jumpPart(key, jumpHeight, jumpDuration);
+            thetaJumped = true;
+        }
+        equation.show();
+        winnerUnderline.show();
+        loserUnderline.show();
+    };
+};
+
 class DPOScene34BoundsHighlight {
     constructor(ctx, args) {
         this.s = ctx;
@@ -1194,4 +1347,338 @@ const DPOScene38 = function (s) {
     };
 };
 
-let dpo5 = new p5(DPOScene38);
+const DPOScene45 = function (s) {
+    const colors = {
+        foreground: "#ebf1fa",
+        chosen: "#4dd999",
+        rejected: "#ff7080",
+        beta: "#f4c30a",
+        prompt: "#4db1ff",
+        response: "#f5ab5f",
+        muted: "#9299a5",
+        mutedPrompt: "#547b99"
+    };
+    const objectiveStart = frames(1);
+    const jumpStart = frames(7);
+    const jumpStagger = frames(0.03);
+    const reentryStart = frames(25);
+    const reentryStagger = frames(0.03);
+    const implicitRewardLabelStart = frames(25);
+    const focusStart = frames(31.5);
+    const focusDuration = 1.2;
+    const rewardCubeTransitionDuration = 0.8;
+    const policyJumpTime = frames(33);
+    const referenceJumpTime = frames(35.5);
+    const partitionJumpTime = frames(38.2);
+    const betaJumpTime = frames(40.1);
+    const rewardSymbolJumpTime = frames(30);
+    const objectiveHighlightStart = frames(14);
+    const objectiveHighlightEnd = frames(18);
+    const labelTransitionStart = frames(45);
+    const labelTransitionDuration = 0.8;
+    const comparisonStart = frames(49);
+    const comparisonScaleStart = frames(51);
+    const comparisonBaseSize = 40;
+    let font;
+    let lossEquation, implicitRewardEquation;
+    let objectiveLabel, objectiveEquation, klNote, connector;
+    let objectiveHighlight;
+    let implicitRewardOverlay, implicitRewardLabel, secretRewardLabel;
+    let rewardCube;
+    let winnerReward, loserReward, comparisonScaleTimer;
+    let rewardFocusStarted = false;
+    let labelTransitionStarted = false;
+    let comparisonScaleStarted = false;
+    let cubeFocusStartX, cubeFocusStartY;
+
+    const lossParts = [
+        {key: "loss", text: "\\mathcal{L}_{\\mathrm{DPO}}", color: colors.foreground},
+        {text: "=", color: colors.foreground},
+        {text: "-\\log\\,\\sigma(", color: colors.foreground},
+        {text: "\\beta", color: colors.beta},
+        {text: "[", color: colors.foreground},
+        {text: "(", color: colors.foreground},
+        {text: "\\log", color: colors.chosen},
+        {text: "\\pi_{\\theta}(y_w\\mid x)", color: colors.chosen},
+        {text: "-", color: colors.foreground},
+        {text: "\\log", color: colors.chosen},
+        {text: "\\pi_{\\mathrm{ref}}(y_w\\mid x)", color: colors.chosen},
+        {text: ")", color: colors.foreground},
+        {text: "-", color: colors.foreground},
+        {text: "(", color: colors.foreground},
+        {text: "\\log", color: colors.rejected},
+        {text: "\\pi_{\\theta}(y_l\\mid x)", color: colors.rejected},
+        {text: "-", color: colors.foreground},
+        {text: "\\log", color: colors.rejected},
+        {text: "\\pi_{\\mathrm{ref}}(y_l\\mid x)", color: colors.rejected},
+        {text: ")", color: colors.foreground},
+        {text: "]", color: colors.foreground},
+        {text: ")", color: colors.foreground}
+    ];
+
+    const rewardParts = [
+        {key: "reward", text: "r(\\textcolor{" + colors.prompt + "}{x}," +
+            "\\textcolor{" + colors.response + "}{y})",
+            color: colors.foreground},
+        {key: "rewardEquals", text: "=", color: colors.foreground},
+        {key: "rewardBeta", text: "\\beta", color: colors.beta},
+        {key: "rewardOpen", text: "(", color: colors.foreground},
+        {key: "policyLog", text: "\\log", color: colors.foreground},
+        {key: "policyProbability", text: "\\pi_r(" +
+            "\\textcolor{" + colors.response + "}{y}\\mid" +
+            "\\textcolor{" + colors.prompt + "}{x})",
+            color: colors.foreground},
+        {key: "rewardMinus", text: "-", color: colors.foreground},
+        {key: "referenceLog", text: "\\log", color: colors.foreground},
+        {key: "referenceProbability",
+            text: "\\pi_{\\mathrm{ref}}(" +
+                "\\textcolor{" + colors.response + "}{y}\\mid" +
+                "\\textcolor{" + colors.prompt + "}{x})",
+            color: colors.foreground},
+        {key: "rewardPlus", text: "+", color: colors.muted},
+        {key: "partitionLog", text: "\\log Z(\\textcolor{" +
+            colors.mutedPrompt + "}{x})", color: colors.muted},
+        {key: "rewardClose", text: ")", color: colors.foreground}
+    ];
+
+    s.preload = function () {
+        font = s.loadFont("../../lib/font/times.ttf");
+    };
+
+    s.setup = function () {
+        setup2D(s);
+        lossEquation = new AnimatedKatex(s, {
+            parts: lossParts.map(function (part, index) {
+                return Object.assign({}, part, {
+                    key: part.key || "token" + index,
+                    start: 0, end: reentryStart + index * reentryStagger,
+                    enterDuration: 0, exitDuration: 0.7,
+                    fadeIn: false, fadeOut: true
+                });
+            }),
+            x: s.width / 2, y: s.height / 2 - 325, mode: 1,
+            font_size: 32, color: colors.foreground
+        });
+        implicitRewardEquation = new AnimatedKatex(s, {
+            parts: rewardParts.map(function (part, index) {
+                return Object.assign({}, part, {
+                    start: reentryStart + index * reentryStagger,
+                    enterDuration: 0.7,
+                    enterFrom: {x: 0, y: -45}, fadeIn: true
+                });
+            }),
+            x: s.width / 2, y: s.height / 2 - 325, mode: 1,
+            font_size: 32, color: colors.foreground
+        });
+        connector = new Arrow(s, {
+            x1: s.width / 2, y1: 525,
+            x2: s.width / 2, y2: 300,
+            start: objectiveStart, duration: 0.8, mode: 1,
+            strokeweight: 3, tipLen: 16, color: [235, 241, 250],
+            end: focusStart
+        });
+        implicitRewardOverlay = new RoundedRect(s, {
+            x: s.width / 2 - 176, y: 375,
+            w: 352, h: 80, radius: 19.2,
+            color: [77, 57, 17, 247],
+            start: implicitRewardLabelStart,
+            end: focusStart, duration: 0.8
+        });
+        implicitRewardLabel = new TextFade(s, {
+            str: "implicit reward",
+            x: s.width / 2, y: 410, mode: 1,
+            size: 42, color: [247, 227, 47],
+            start: implicitRewardLabelStart,
+            end: labelTransitionStart,
+            duration: labelTransitionDuration, font: font
+        });
+        secretRewardLabel = new TextFade(s, {
+            str: "secretly a reward model",
+            x: s.width / 2, y: s.height / 4 - 45, mode: 1,
+            size: 42, color: [247, 227, 47],
+            start: labelTransitionStart,
+            duration: labelTransitionDuration, font: font
+        });
+        objectiveLabel = new TextFade(s, {
+            str: "Reward-maximization*\nobjective in RLHF:",
+            x: s.width / 2, y: 595, mode: 1,
+            size: 43, color: [235, 241, 250], font: font,
+            start: objectiveStart, duration: 0.8, end: focusStart
+        });
+        objectiveEquation = new Katex(s, {
+            text: "\\underset{\\theta}{\\max}\\;\\mathbb{E}[r(" +
+                "\\textcolor{" + colors.prompt + "}{x}," +
+                "\\textcolor{" + colors.response + "}{y})]",
+            x: s.width / 2, y: 745, mode: 1,
+            font_size: 45, color: colors.foreground,
+            start: objectiveStart, entryDuration: 0.8, end: focusStart
+        });
+        objectiveHighlight = new DPOScene38TextHighlight(s, {
+            bounds: function () {
+                const rect = objectiveEquation.k.elt.getBoundingClientRect();
+                const canvasRect = s.canvas.getBoundingClientRect();
+                return {
+                    x: (rect.left - canvasRect.left) *
+                        s.width / canvasRect.width,
+                    y: (rect.top - canvasRect.top) *
+                        s.height / canvasRect.height,
+                    width: rect.width * s.width / canvasRect.width,
+                    height: rect.height * s.height / canvasRect.height
+                };
+            },
+            start: objectiveHighlightStart,
+            end: objectiveHighlightEnd,
+            duration: 1, fadeDuration: 0.7, padding: 10
+        });
+        rewardCube = new RotatingRewardCube(s, {
+            x: s.width / 2 - 340, y: 610, size: 35,
+            start: objectiveStart,
+            entryDuration: rewardCubeTransitionDuration
+        });
+        winnerReward = new Katex(s, {
+            text: "r(\\textcolor{" + colors.prompt + "}{x}," +
+                "\\textcolor{" + colors.chosen + "}{y_w})",
+            x: s.width * 0.36, y: s.height * 0.7, mode: 1,
+            font_size: comparisonBaseSize, color: colors.foreground,
+            start: comparisonStart, entryDuration: 0.7
+        });
+        loserReward = new Katex(s, {
+            text: "r(\\textcolor{" + colors.prompt + "}{x}," +
+                "\\textcolor{" + colors.rejected + "}{y_l})",
+            x: s.width * 0.64, y: s.height * 0.7, mode: 1,
+            font_size: comparisonBaseSize, color: colors.foreground,
+            start: comparisonStart, entryDuration: 0.7
+        });
+        klNote = new TextFade(s, {
+            str: "*Subject to a KL-penalty,\n" +
+            "which penalizes changing the model too much from reference model",
+            x: s.width / 2, y: 870, mode: 1,
+            size: 30, color: [99, 99, 99], font: font,
+            start: frames(2), duration: 1, end: frames(18)
+        });
+    };
+
+    function showRewardCubeGlow() {
+        const fadeFrames = frames(rewardCubeTransitionDuration);
+        const entryProgress = s.constrain(
+            (s.frameCount - objectiveStart) / fadeFrames, 0, 1
+        );
+        const linearStrength = entryProgress;
+        if (linearStrength <= 0)
+            return;
+        const strength = linearStrength * linearStrength *
+            (3 - 2 * linearStrength);
+        const radius = 90;
+        const context = s.drawingContext;
+        const glow = context.createRadialGradient(
+            rewardCube.x, rewardCube.y, 0,
+            rewardCube.x, rewardCube.y, radius
+        );
+        glow.addColorStop(
+            0, "rgba(247, 227, 47, " + 0.18 * strength + ")"
+        );
+        glow.addColorStop(
+            0.45, "rgba(247, 227, 47, " + 0.07 * strength + ")"
+        );
+        glow.addColorStop(1, "rgba(247, 227, 47, 0)");
+        context.save();
+        context.fillStyle = glow;
+        context.fillRect(
+            rewardCube.x - radius, rewardCube.y - radius,
+            radius * 2, radius * 2
+        );
+        context.restore();
+    }
+
+    s.draw = function () {
+        s.background(8, 12, 22);
+        if (!rewardFocusStarted && s.frameCount >= focusStart) {
+            cubeFocusStartX = rewardCube.x;
+            cubeFocusStartY = rewardCube.y;
+            implicitRewardEquation.move(
+                s.width / 2, s.height / 2, focusDuration, 1
+            );
+            implicitRewardLabel.move(
+                s.width / 2, s.height / 4, focusDuration, 1
+            );
+            rewardFocusStarted = true;
+        }
+        if (!comparisonScaleStarted &&
+            s.frameCount >= comparisonScaleStart) {
+            comparisonScaleTimer = new Timer2(frames(1));
+            comparisonScaleStarted = true;
+        }
+        if (!labelTransitionStarted &&
+            s.frameCount >= labelTransitionStart) {
+            implicitRewardLabel.move(
+                s.width / 2, s.height / 4 + 45,
+                labelTransitionDuration, 1
+            );
+            secretRewardLabel.move(
+                s.width / 2, s.height / 4,
+                labelTransitionDuration, 1
+            );
+            labelTransitionStarted = true;
+        }
+        if (comparisonScaleStarted) {
+            const scaleProgress = comparisonScaleTimer.advance();
+            winnerReward.size = comparisonBaseSize *
+                (1 + 0.3 * scaleProgress);
+            loserReward.size = comparisonBaseSize *
+                (1 - 0.3 * scaleProgress);
+        }
+        if (s.frameCount >= focusStart) {
+            const progress = s.constrain(
+                (s.frameCount - focusStart) / frames(focusDuration), 0, 1
+            );
+            const eased = progress * progress * (3 - 2 * progress);
+            implicitRewardEquation.size = 32 + 8 * eased;
+        }
+        for (let i = 0; i < lossParts.length; i++) {
+            if (s.frameCount === jumpStart + i * jumpStagger) {
+                lossEquation.jumpPart(
+                    lossParts[i].key || "token" + i, 24, 0.45
+                );
+            }
+        }
+        if (s.frameCount === policyJumpTime)
+            implicitRewardEquation.jumpPart("policyProbability", 24, 0.45);
+        if (s.frameCount === referenceJumpTime)
+            implicitRewardEquation.jumpPart("referenceProbability", 24, 0.45);
+        if (s.frameCount === partitionJumpTime)
+            implicitRewardEquation.jumpPart("partitionLog", 24, 0.45);
+        if (s.frameCount === betaJumpTime)
+            implicitRewardEquation.jumpPart("rewardBeta", 24, 0.45);
+        if (s.frameCount === rewardSymbolJumpTime)
+            implicitRewardEquation.jumpPart("reward", 24, 0.45);
+        lossEquation.show();
+        implicitRewardEquation.show();
+        if (s.frameCount >= focusStart) {
+            const progress = s.constrain(
+                (s.frameCount - focusStart) / frames(focusDuration), 0, 1
+            );
+            const eased = progress * progress * (3 - 2 * progress);
+            const rewardBounds = implicitRewardEquation.getPartBounds("reward");
+            const targetX = rewardBounds.x - 120;
+            const targetY = rewardBounds.centerY;
+            rewardCube.x = cubeFocusStartX +
+                (targetX - cubeFocusStartX) * eased;
+            rewardCube.y = cubeFocusStartY +
+                (targetY - cubeFocusStartY) * eased;
+        }
+        connector.show();
+        implicitRewardOverlay.show();
+        implicitRewardLabel.show();
+        secretRewardLabel.show();
+        objectiveLabel.show();
+        objectiveEquation.show();
+        objectiveHighlight.show();
+        showRewardCubeGlow();
+        rewardCube.show();
+        winnerReward.show();
+        loserReward.show();
+        klNote.show();
+    };
+};
+
+let dpo5 = new p5(DPOScene52);

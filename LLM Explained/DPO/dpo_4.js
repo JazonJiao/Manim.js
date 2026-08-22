@@ -470,6 +470,7 @@ const DPOScene06 = function (s) {
     let notationNote;
     let responseAScore, responseAScoreStrike;
     let preferenceButtons = [], preferenceButtonLabels = [];
+    let responseAJumpTime;
     const responsesY = 697;
     const promptVariableStartTime = frames(15);
     const chosenVariableStartTime = frames(17);
@@ -807,9 +808,12 @@ const DPOScene00 = function (s) {
             fadeDuration: 0.7,
             padding: 10
         });
+        responseAJumpTime = responseBHighlight.end + responseBHighlight.fadeFrames;
     };
 
     s.draw = function () {
+        if (s.frameCount === responseAJumpTime)
+            responseA.jump(16, 0.55);
         if (s.frameCount === frames(14.5)) {
             const selectionDuration = 0.35;
             preferenceButtons[0].growFromCenter(1.08, selectionDuration);
@@ -841,4 +845,366 @@ const DPOScene00 = function (s) {
     };
 };
 
-let dpo0 = new p5(DPOScene39);
+const DPOScene49 = function (s) {
+    let font, humansSvg;
+    let humanPaths = [];
+    let preferencePairs = [];
+    let preferenceArrow, preferenceEllipsis;
+    let humanCrossLines = [];
+    let replacementNetwork;
+    const humansStartTime = frames(3);
+    const arrowStartTime = frames(2);
+    const firstPairStartTime = frames(1);
+    const pairStagger = frames(0.2);
+    const pairEntryDuration = 0.45;
+    const crossoutStartTime = frames(4);
+    const humanFadeStartTime = frames(6);
+    const replacementNetworkStartTime = frames(7);
+
+    class FallingPreferencePair {
+        constructor(index, x, y, start) {
+            this.start = start;
+            this.targetY = y;
+            this.started = false;
+            this.pair = new Katex(s, {
+                text: "(\\textcolor{#4db1ff}{x_" + index + "},\\;" +
+                    "\\textcolor{#4dd999}{y_{w_" + index + "}},\\;" +
+                    "\\textcolor{#ff7080}{y_{l_" + index + "}})",
+                x: x,
+                y: y - 45,
+                mode: 1,
+                font_size: 45,
+                color: "#edf2f7",
+                start: start,
+                fadeIn: true,
+                entryDuration: pairEntryDuration
+            });
+        }
+
+        show() {
+            if (!this.started && s.frameCount >= this.start) {
+                this.pair.move(this.pair.x, this.targetY, pairEntryDuration, 1);
+                this.started = true;
+            }
+            this.pair.show();
+        }
+    }
+
+    s.preload = function () {
+        font = s.loadFont("../../lib/font/times.ttf");
+        humansSvg = s.loadStrings("../pic/3humans.svg");
+    };
+
+    s.setup = function () {
+        setup2D(s);
+        const svg = humansSvg.join("");
+        const viewBox = [0, 0, 127.5, 94.8];
+        const humanX = 280;
+        const humanY = 390;
+        const humanWidth = 340;
+        const humanHeight = humanWidth * viewBox[3] / viewBox[2];
+        const pathMatches = svg.matchAll(/<path\b[^>]*\sd=(["'])([\s\S]*?)\1/g);
+
+        for (const match of pathMatches) {
+            humanPaths.push(new AnimatedSVGPath(s, {
+                pathData: match[2],
+                viewBox: viewBox,
+                x: humanX,
+                y: humanY,
+                w: humanWidth,
+                h: humanHeight,
+                start: humansStartTime,
+                outlineDuration: 0.9,
+                fillStart: 0.7,
+                fillDuration: 0.7,
+                strokeweight: 0.8
+            }));
+        }
+
+        const circleMatches = svg.matchAll(
+            /<circle\b[^>]*\bcx="([^"]+)"[^>]*\bcy="([^"]+)"[^>]*\br="([^"]+)"[^>]*\/>/g
+        );
+        for (const match of circleMatches) {
+            const cx = Number(match[1]);
+            const cy = Number(match[2]);
+            const radius = Number(match[3]);
+            const circlePath = "M " + (cx - radius) + " " + cy +
+                " a " + radius + " " + radius + " 0 1 0 " + (radius * 2) + " 0" +
+                " a " + radius + " " + radius + " 0 1 0 " + (-radius * 2) + " 0";
+            humanPaths.push(new AnimatedSVGPath(s, {
+                pathData: circlePath,
+                viewBox: viewBox,
+                x: humanX,
+                y: humanY,
+                w: humanWidth,
+                h: humanHeight,
+                start: humansStartTime,
+                outlineDuration: 0.9,
+                fillStart: 0.7,
+                fillDuration: 0.7,
+                strokeweight: 0.8
+            }));
+        }
+
+        preferenceArrow = new Arrow(s, {
+            x1: 810,
+            y1: 535,
+            x2: 1110,
+            y2: 535,
+            start: arrowStartTime,
+            duration: 0.7,
+            strokeweight: 5,
+            color: [235, 241, 250],
+            tipLen: 18
+        });
+
+        humanCrossLines = [
+            new Line(s, {
+                x1: 260,
+                y1: 370,
+                x2: 690,
+                y2: 700,
+                start: crossoutStartTime,
+                end: humanFadeStartTime,
+                duration: 0.45,
+                mode: 1,
+                strokeweight: 7,
+                color: [255, 112, 128]
+            }),
+            new Line(s, {
+                x1: 690,
+                y1: 370,
+                x2: 260,
+                y2: 700,
+                start: crossoutStartTime,
+                end: humanFadeStartTime,
+                duration: 0.45,
+                mode: 1,
+                strokeweight: 7,
+                color: [255, 112, 128]
+            })
+        ];
+
+        replacementNetwork = new NeuralNetwork(s, {
+            layers: [4, 7, 4],
+            x: 475,
+            y: 535,
+            neuronDistanceY: 58,
+            layerDistanceX: 180,
+            radius: 32,
+            seed: 20260830,
+            start: replacementNetworkStartTime,
+            duration: 1
+        });
+
+        for (let index = 1; index <= 4; index++) {
+            preferencePairs.push(new FallingPreferencePair(
+                index,
+                1390,
+                370 + (index - 1) * 100,
+                firstPairStartTime + (index - 1) * pairStagger
+            ));
+        }
+        preferenceEllipsis = new Katex(s, {
+            text: "\\cdots",
+            x: 1390,
+            y: 770,
+            mode: 1,
+            font_size: 45,
+            color: "#edf2f7",
+            start: firstPairStartTime + 4 * pairStagger,
+            fadeIn: true,
+            entryDuration: 0.4
+        });
+    };
+
+    s.draw = function () {
+        const humanFadeProgress = s.constrain(
+            (s.frameCount - humanFadeStartTime) / frames(0.7), 0, 1
+        );
+        s.drawingContext.save();
+        s.drawingContext.globalAlpha *= 1 - humanFadeProgress;
+        for (let humanPath of humanPaths)
+            humanPath.show();
+        s.drawingContext.restore();
+        for (let crossLine of humanCrossLines)
+            crossLine.show();
+        replacementNetwork.showEdges();
+        replacementNetwork.showNeurons();
+        preferenceArrow.show();
+        for (let pair of preferencePairs)
+            pair.show();
+        preferenceEllipsis.show();
+    };
+};
+
+const DPOScene51 = function (s) {
+    let font, paperSvg;
+    let preferenceArrow, preferenceEllipsis, network;
+    let reliableJudgeText, rubricText, rlaifTitle, rlaifCitation;
+    let paperPaths = [];
+    let preferencePairs = [];
+    const entryStartTime = frames(1);
+    const pairEntryDuration = 0.45;
+    const reliableJudgeStartTime = frames(4);
+    const paperStartTime = frames(6);
+    const rubricStartTime = frames(6.5);
+    const rlaifTitleStartTime = frames(9);
+
+    class FallingPreferencePair {
+        constructor(index, x, y) {
+            this.targetY = y;
+            this.started = false;
+            this.pair = new Katex(s, {
+                text: "(\\textcolor{#4db1ff}{x_" + index + "},\\;" +
+                    "\\textcolor{#4dd999}{y_{w_" + index + "}},\\;" +
+                    "\\textcolor{#ff7080}{y_{l_" + index + "}})",
+                x: x,
+                y: y - 45,
+                mode: 1,
+                font_size: 45,
+                color: "#edf2f7",
+                start: entryStartTime,
+                fadeIn: true,
+                entryDuration: pairEntryDuration
+            });
+        }
+
+        show() {
+            if (!this.started && s.frameCount >= entryStartTime) {
+                this.pair.move(this.pair.x, this.targetY, pairEntryDuration, 1);
+                this.started = true;
+            }
+            this.pair.show();
+        }
+    }
+
+    s.preload = function () {
+        font = s.loadFont("../../lib/font/times.ttf");
+        paperSvg = s.loadStrings("../pic/paper.svg");
+    };
+
+    s.setup = function () {
+        setup2D(s);
+        s.textFont(font);
+        network = new NeuralNetwork(s, {
+            layers: [4, 7, 4],
+            x: 475,
+            y: 535,
+            neuronDistanceY: 58,
+            layerDistanceX: 180,
+            radius: 32,
+            seed: 20260830,
+            start: entryStartTime,
+            duration: 1
+        });
+        preferenceArrow = new Arrow(s, {
+            x1: 810,
+            y1: 535,
+            x2: 1110,
+            y2: 535,
+            start: entryStartTime + 59,
+            duration: 0.7,
+            strokeweight: 5,
+            color: [235, 241, 250],
+            tipLen: 18
+        });
+        s.textSize(36);
+        reliableJudgeText = new TextWriteIn(s, {
+            str: "reliable judge",
+            x: 475 - s.textWidth("reliable judge") / 2,
+            y: 267,
+            mode: 0,
+            size: 36,
+            color: [235, 241, 250],
+            start: reliableJudgeStartTime,
+            font: font
+        });
+
+        const paperSource = paperSvg.join("");
+        const paperViewBox = [0, 0, 307.454, 307.454];
+        const paperMatches = paperSource.matchAll(
+            /<path\b[^>]*\sd=(["'])([\s\S]*?)\1/g
+        );
+        for (const match of paperMatches) {
+            paperPaths.push(new AnimatedSVGPath(s, {
+                pathData: match[2],
+                viewBox: paperViewBox,
+                x: 900,
+                y: 350,
+                w: 120,
+                h: 120,
+                start: paperStartTime,
+                outlineDuration: 0.8,
+                fillStart: 0.4,
+                fillDuration: 0.6,
+                strokeweight: 0.8
+            }));
+        }
+
+        s.textSize(32);
+        rubricText = new TextWriteIn(s, {
+            str: "rubric",
+            x: 960 - s.textWidth("rubric") / 2,
+            y: 295,
+            mode: 0,
+            size: 32,
+            color: [235, 241, 250],
+            start: rubricStartTime,
+            font: font
+        });
+        s.textSize(52);
+        rlaifTitle = new TextWriteIn(s, {
+            str: "RLAIF",
+            x: s.width / 2 - s.textWidth("RLAIF") / 2,
+            y: 140,
+            mode: 0,
+            size: 52,
+            color: [235, 241, 250],
+            start: rlaifTitleStartTime,
+            font: font
+        });
+        rlaifCitation = new Citation(s, {
+            text: "Bai et al. (2022)",
+            font: font,
+            start: rlaifTitleStartTime,
+            end: frames(11),
+            duration: 0.8
+        });
+        for (let index = 1; index <= 4; index++) {
+            preferencePairs.push(new FallingPreferencePair(
+                index,
+                1390,
+                370 + (index - 1) * 100
+            ));
+        }
+        preferenceEllipsis = new Katex(s, {
+            text: "\\cdots",
+            x: 1390,
+            y: 770,
+            mode: 1,
+            font_size: 45,
+            color: "#edf2f7",
+            start: entryStartTime,
+            fadeIn: true,
+            entryDuration: 0.4
+        });
+    };
+
+    s.draw = function () {
+        network.showEdges();
+        network.showNeurons();
+        reliableJudgeText.show();
+        preferenceArrow.show();
+        for (let paperPath of paperPaths)
+            paperPath.show();
+        rubricText.show();
+        rlaifTitle.show();
+        rlaifCitation.show();
+        for (let pair of preferencePairs)
+            pair.show();
+        preferenceEllipsis.show();
+    };
+};
+
+let dpo4 = new p5(DPOScene51);

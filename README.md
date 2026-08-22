@@ -7,7 +7,7 @@ Subscribe to my new YouTube channel, **Jazon Jiao**!: https://www.youtube.com/@J
 
 I am honored that in 2019, Grant Sanderson from 3b1b [recommended](https://x.com/3blue1brown/status/1110272030610345985) my videos, but my original channel no longer exists. Grant also approved the use of "Manim.js" as the name of this project.
 
-All util classes are located in `/src`, with detailed documentation. Feel free to use my tools to make your own visualizations of math or CS concepts! As an example, here's how you could create an simple graph. Include this code and other necessary source files in an html file (see, for example, Graph Algorithms/graph.html), and then open the browser.
+Usage: All util classes are located in `/src`, with detailed documentation. Feel free to use my tools to make your own visualizations of math or CS concepts! As an example, here's how you could create an simple graph. Include this code and other necessary source files in an html file (see, for example, Graph Algorithms/graph.html), and then open the browser.
 
 ```JavaScript
 let G = {
@@ -46,3 +46,6 @@ const GraphExample = function(s) {
 
 let p = new p5(GraphExample);   // creates the p5 object to render the animation
 ```
+
+PS: I created Manim.js in 2018 because I could not get manim to work at the time.
+I chose p5.js since I was greatly inspired by [the Coding Train](https://www.youtube.com/@TheCodingTrain) who made hundreds of wonderful videos with p5.js.

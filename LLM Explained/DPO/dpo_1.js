@@ -1549,52 +1549,364 @@ const DPOScene25 = function (s) {
 };
 
 const DPOScene28 = function (s) {
-    let preferenceLikelihoodExpressions, dpoLossEquation;
-    let expressionsMoveStarted = false, expressionsMoveTime = frames(2),
-        dpoLossEquationStartTime = frames(3.5);
+    const scene25EndFrame = frames(30);
+    const highlightStart = frames(1);
+    const highlightMoveStart = frames(3);
+    const annotationStart = frames(5);
+    const annotationFadeStart = frames(7);
+    const arrowsStart = frames(9);
+    const arrowsMoveStart = frames(11);
+    const arrowJumpDuration = 0.8;
+    const arrowJumpInterval = 0.2;
+    const arrowsFadeStart = frames(13.5);
+    const tableHighlightStart = frames(15);
+    const tableHighlightEntryDuration = 1.2;
+    const tableHighlightMoveStart = tableHighlightStart +
+        frames(tableHighlightEntryDuration + 1);
+    const tableHighlightMoveDuration = 1;
+    const tableHighlightFadeStart = tableHighlightMoveStart +
+        frames(tableHighlightMoveDuration + 1);
+    const thoughtStart = tableHighlightFadeStart + frames(1);
+    const thoughtEnd = thoughtStart + frames(3);
+    const chosenArrowColor = [62, 235, 160];
+    const rejectedArrowColor = [255, 92, 112];
+    let overlayFont, lessLikely, logProbabilityNote;
+    let highlight, upArrow, downArrow, tableHighlight, winnerThought;
+    let annotationFadeStarted = false;
+
+    function valueBounds(value) {
+        const numberText = value.replace(/^[−-]/, "");
+        const candidates = Array.from(document.querySelectorAll(
+            ".katex-html *"
+        )).filter(function (element) {
+            return element.textContent.replace(/[\s\u200b]/g, "") ===
+                numberText;
+        });
+        if (!candidates.length)
+            return null;
+        const element = candidates.reduce(function (smallest, candidate) {
+            const rect = candidate.getBoundingClientRect();
+            const smallestRect = smallest.getBoundingClientRect();
+            return rect.width * rect.height <
+                smallestRect.width * smallestRect.height ? candidate : smallest;
+        });
+        const numberRect = element.getBoundingClientRect();
+        let numberContainer = element;
+        let previous = numberContainer.previousElementSibling;
+        while (!previous && numberContainer.parentElement &&
+            !numberContainer.parentElement.classList.contains("katex-html")) {
+            numberContainer = numberContainer.parentElement;
+            previous = numberContainer.previousElementSibling;
+        }
+        const previousText = previous ? previous.textContent.replace(
+            /[\s\u200b]/g, ""
+        ) : "";
+        const minusRect = (previousText === "−" || previousText === "-") ?
+            previous.getBoundingClientRect() : numberRect;
+        const left = Math.min(numberRect.left, minusRect.left);
+        const top = Math.min(numberRect.top, minusRect.top);
+        const right = Math.max(numberRect.right, minusRect.right);
+        const bottom = Math.max(numberRect.bottom, minusRect.bottom);
+        const canvas = s.canvas.getBoundingClientRect();
+        return {
+            x: (left - canvas.left) * s.width / canvas.width,
+            y: (top - canvas.top) * s.height / canvas.height,
+            width: (right - left) * s.width / canvas.width,
+            height: (bottom - top) * s.height / canvas.height
+        };
+    }
+
+    class ValueHighlight {
+        constructor() {
+            this.bounds = undefined;
+            this.motion = undefined;
+            this.fadeTimer = undefined;
+        }
+
+        show(winner, loser) {
+            const frame = s.frameCount;
+            if (frame < highlightStart || !winner || !loser)
+                return;
+            const padding = 7;
+            if (!this.bounds) {
+                const left = Math.min(winner.x, loser.x) - padding;
+                const top = Math.min(winner.y, loser.y) - padding;
+                const right = Math.max(
+                    winner.x + winner.width, loser.x + loser.width
+                ) + padding;
+                const bottom = Math.max(
+                    winner.y + winner.height, loser.y + loser.height
+                ) + padding;
+                this.bounds = {x: left, y: top,
+                    width: right - left, height: bottom - top};
+            }
+            if (!this.motion && frame >= highlightMoveStart &&
+                this.bounds.height > winner.height + padding * 2 + 1) {
+                this.motion = {
+                    from: Object.assign({}, this.bounds),
+                    to: {x: winner.x - padding, y: winner.y - padding,
+                        width: winner.width + padding * 2,
+                        height: winner.height + padding * 2},
+                    timer: new Timer2(frames(1))
+                };
+            }
+            if (this.motion) {
+                const t = this.motion.timer.advance();
+                for (const key of ["x", "y", "width", "height"])
+                    this.bounds[key] = this.motion.from[key] +
+                        (this.motion.to[key] - this.motion.from[key]) * t;
+                if (t >= 1)
+                    this.motion = undefined;
+            }
+            if (!this.fadeTimer && frame >= annotationFadeStart)
+                this.fadeTimer = new Timer0(frames(0.7));
+            const alpha = this.fadeTimer ?
+                255 * (1 - this.fadeTimer.advance()) : 255;
+            const entryLinear = s.constrain(
+                (frame - highlightStart) / frames(0.8), 0, 1
+            );
+            const entryProgress = 1 - Math.pow(1 - entryLinear, 3);
+            const w = this.bounds.width;
+            const h = this.bounds.height;
+            let remaining = (w + h) * 2 * entryProgress;
+            const x = this.bounds.x;
+            const y = this.bounds.y;
+            const sides = [
+                [x, y, x + w, y, w],
+                [x + w, y, x + w, y + h, h],
+                [x + w, y + h, x, y + h, w],
+                [x, y + h, x, y, h]
+            ];
+            s.push();
+            s.noFill();
+            s.stroke(249, 201, 17, alpha);
+            s.strokeWeight(2);
+            for (const side of sides) {
+                if (remaining <= 0)
+                    break;
+                const t = s.constrain(remaining / side[4], 0, 1);
+                s.line(side[0], side[1],
+                    side[0] + (side[2] - side[0]) * t,
+                    side[1] + (side[3] - side[1]) * t);
+                remaining -= side[4];
+            }
+            s.pop();
+        }
+    }
+
+    class DirectionArrow {
+        constructor(direction, color) {
+            this.direction = direction;
+            this.color = color;
+            this.arrow = undefined;
+            this.jumpTimers = [undefined, undefined];
+        }
+
+        show(bounds) {
+            const frame = s.frameCount;
+            if (frame < arrowsStart || !bounds)
+                return;
+            const x = bounds.x + bounds.width + 55;
+            const centerY = bounds.y + bounds.height / 2;
+            let jumpOffset = 0;
+            for (let i = 0; i < this.jumpTimers.length; i++) {
+                const start = arrowsMoveStart + i * frames(
+                    arrowJumpDuration + arrowJumpInterval
+                );
+                if (!this.jumpTimers[i] && frame >= start)
+                    this.jumpTimers[i] = new Timer2(
+                        frames(arrowJumpDuration)
+                    );
+                if (this.jumpTimers[i])
+                    jumpOffset += -this.direction * 45 * Math.sin(
+                        Math.PI * this.jumpTimers[i].advance()
+                    );
+            }
+            const tipY = centerY - this.direction * 22 + jumpOffset;
+            const tailY = centerY + this.direction * 22 + jumpOffset;
+            if (!this.arrow) {
+                this.arrow = new Arrow(s, {
+                    x1: x,
+                    y1: tailY,
+                    x2: x,
+                    y2: tipY,
+                    start: arrowsStart,
+                    end: arrowsFadeStart,
+                    duration: 0.6,
+                    strokeweight: 6,
+                    tipLen: 14,
+                    color: this.color
+                });
+                this.arrow.timer_sw = new StrokeWeightTimer(
+                    s, arrowsFadeStart, 6, 0.5
+                );
+            } else {
+                this.arrow.reset({x1: x, y1: tailY, x2: x, y2: tipY});
+            }
+            this.arrow.show();
+        }
+    }
+
+    class TableRowHighlight {
+        constructor() {
+            const tableX = 180;
+            const tableY = 570;
+            const cellWidth = 109;
+            const textSize = 45;
+            const x = tableX + cellWidth * 1.3;
+            const right = tableX + cellWidth * 1.4 * 10;
+            const top = tableY + textSize * 0.17;
+            const middle = tableY + textSize * 1.32;
+            const bottom = tableY + textSize * 2.47;
+            this.bounds = {x: x, y: top, width: right - x,
+                height: middle - top};
+            this.targetY = middle;
+            this.motion = undefined;
+            this.fadeTimer = undefined;
+        }
+
+        show() {
+            const frame = s.frameCount;
+            if (frame < tableHighlightStart)
+                return;
+            if (!this.motion && frame >= tableHighlightMoveStart &&
+                Math.abs(this.bounds.y - this.targetY) > 1) {
+                this.motion = {
+                    fromY: this.bounds.y,
+                    timer: new Timer2(frames(tableHighlightMoveDuration))
+                };
+            }
+            if (this.motion) {
+                const t = this.motion.timer.advance();
+                this.bounds.y = this.motion.fromY +
+                    (this.targetY - this.motion.fromY) * t;
+                if (t >= 1)
+                    this.motion = undefined;
+            }
+            if (!this.fadeTimer && frame >= tableHighlightFadeStart)
+                this.fadeTimer = new Timer0(frames(0.7));
+            const alpha = this.fadeTimer ?
+                255 * (1 - this.fadeTimer.advance()) : 255;
+            const linear = s.constrain(
+                (frame - tableHighlightStart) /
+                    frames(tableHighlightEntryDuration), 0, 1
+            );
+            const progress = 1 - Math.pow(1 - linear, 3);
+            const b = this.bounds;
+            let remaining = (b.width + b.height) * 2 * progress;
+            const sides = [
+                [b.x, b.y, b.x + b.width, b.y, b.width],
+                [b.x + b.width, b.y, b.x + b.width,
+                    b.y + b.height, b.height],
+                [b.x + b.width, b.y + b.height, b.x,
+                    b.y + b.height, b.width],
+                [b.x, b.y + b.height, b.x, b.y, b.height]
+            ];
+            s.push();
+            s.noFill();
+            s.stroke(249, 201, 17, alpha);
+            s.strokeWeight(5);
+            for (const side of sides) {
+                if (remaining <= 0)
+                    break;
+                const t = s.constrain(remaining / side[4], 0, 1);
+                s.line(side[0], side[1],
+                    side[0] + (side[2] - side[0]) * t,
+                    side[1] + (side[3] - side[1]) * t);
+                remaining -= side[4];
+            }
+            s.pop();
+        }
+    }
+
+    // Build scene 28 from scene 25 itself so every object, position, and final
+    // style remains identical when the edit on either scene changes later.
+    DPOScene25(s);
+    const scene25Preload = s.preload;
+    const scene25Setup = s.setup;
+    const scene25Draw = s.draw;
+
+    s.preload = function () {
+        scene25Preload();
+        overlayFont = s.loadFont("../../lib/font/times.ttf");
+    };
 
     s.setup = function () {
-        setup2D(s);
-        preferenceLikelihoodExpressions = new PreferenceLikelihoodExpressions(s, {
-            x: 1000,
-            loserY: 840,
-            gap: 95,
-            font_size: 40,
+        scene25Setup();
+        const actualFrame = s.frameCount;
+        for (let frame = 0; frame <= scene25EndFrame; frame++) {
+            s.frameCount = frame;
+            scene25Draw();
+        }
+        s.frameCount = actualFrame;
+        highlight = new ValueHighlight();
+        upArrow = new DirectionArrow(1, chosenArrowColor);
+        downArrow = new DirectionArrow(-1, rejectedArrowColor);
+        tableHighlight = new TableRowHighlight();
+        lessLikely = new TextWriteIn(s, {
+            str: "less likely",
+            x: 0,
+            y: 0,
+            mode: 3,
+            size: 29,
+            color: [247, 227, 47],
+            start: annotationStart,
+            charactersPerSecond: 22,
+            font: overlayFont
+        });
+        logProbabilityNote = new TextFade(s, {
+            str: "We add up more (negative) log probabilities.",
+            x: 55,
+            y: 50,
             mode: 0,
-            winnerValue: "-2.04",
-            loserValue: "-1.63",
-            winnerColor: "#4dd999",
-            loserColor: "#ff7080",
-            start: frames(0.5),
-            loserOffsetY: 0
+            size: 27,
+            color: [217, 222, 229],
+            start: tableHighlightMoveStart,
+            end: tableHighlightFadeStart,
+            duration: 0.5,
+            font: overlayFont
         });
-
-        dpoLossEquation = new Katex(s, {
-            text: "\\mathcal{L}_{\\mathrm{DPO}}(\\pi_\\theta;\\pi_{\\mathrm{ref}})" +
-                "=-\\mathbb{E}_{(x,y_w,y_l)\\sim\\mathcal{D}}" +
-                "\\left[\\log\\sigma\\left(\\beta\\left(" +
-                "\\left[\\log\\pi_\\theta(y_w\\mid x)" +
-                "-\\log\\pi_{\\mathrm{ref}}(y_w\\mid x)\\right]" +
-                "-\\left[\\log\\pi_\\theta(y_l\\mid x)" +
-                "-\\log\\pi_{\\mathrm{ref}}(y_l\\mid x)\\right]" +
-                "\\right)\\right)\\right]",
-            x: s.width / 2,
-            y: 305,
-            mode: 1,
-            font_size: 30,
-            color: "#ffffff",
-            start: dpoLossEquationStartTime
+        winnerThought = new Bubble(s, {
+            x: 375,
+            y: 519,
+            w: 610,
+            h: 245,
+            str: "I'm longer and naturally less likely,\nit's unfair!",
+            start: thoughtStart,
+            end: thoughtEnd,
+            fadeOutDuration: 0.7,
+            size: 34,
+            font: overlayFont,
+            fill: [8, 12, 22],
+            opacity: 230
         });
+        winnerThought.text.start = thoughtStart;
     };
 
     s.draw = function () {
-        if (!expressionsMoveStarted && s.frameCount >= expressionsMoveTime) {
-            preferenceLikelihoodExpressions.moveToCenter(1.2);
-            expressionsMoveStarted = true;
-        }
+        const actualFrame = s.frameCount;
+        s.frameCount = scene25EndFrame + actualFrame;
+        scene25Draw();
+        s.frameCount = actualFrame;
 
-        preferenceLikelihoodExpressions.show();
-        dpoLossEquation.show();
+        const winner = valueBounds("-2.04");
+        const loser = valueBounds("-1.63");
+        highlight.show(winner, loser);
+        if (winner) {
+            lessLikely.x = winner.x + winner.width + 35;
+            lessLikely.y = winner.y + winner.height / 2;
+        }
+        if (!annotationFadeStarted &&
+            s.frameCount >= annotationFadeStart) {
+            lessLikely.ft.fadeOut(0.7);
+            annotationFadeStarted = true;
+        }
+        lessLikely.show();
+        upArrow.show(winner);
+        downArrow.show(loser);
+        tableHighlight.show();
+        logProbabilityNote.show();
+        winnerThought.show();
     };
 };
 
@@ -1998,4 +2310,4 @@ const DPOScene04 = function (s) {
     };
 };
 
-let dpo1 = new p5(DPOScene25);
+let dpo1 = new p5(DPOScene28);

@@ -284,6 +284,132 @@ class NeuralNetwork {
 }
 
 /**
+ * Plays a repeating, left-to-right inference pass over a NeuralNetwork.
+ * Activated neurons and moving edge segments are drawn over the base network,
+ * so this can be combined with the existing static edges without modifying
+ * their weights or colors.
+ *
+ * ----args list parameters----
+ * @mandatory (NeuralNetwork) network; (number) start
+ * @optional (number) activationDuration, edgeDuration, pauseDuration,
+ *                    strokeweight, edgeAlpha; (array) positiveColor,
+ *                    negativeColor
+ */
+class Feedforward {
+    constructor(ctx, args) {
+        this.s = ctx;
+        this.network = args.network;
+        this.start = args.start;
+        this.activationDuration = args.activationDuration || 0.16;
+        this.edgeDuration = args.edgeDuration || 0.32;
+        this.pauseDuration = args.pauseDuration || 0.18;
+        this.strokeweight = args.strokeweight || 5;
+        this.edgeAlpha = args.edgeAlpha || 235;
+        this.positiveColor = args.positiveColor || [45, 225, 205];
+        this.negativeColor = args.negativeColor || [255, 157, 47];
+        this.activationFrames = frames(this.activationDuration);
+        this.edgeFrames = frames(this.edgeDuration);
+        // The packet head reaches the target center at 2/3 of its edge pass.
+        this.travelFrames = Math.max(1, Math.round(this.edgeFrames * 2 / 3));
+        this.holdFrames = this.activationFrames;
+        this.fadeOutFrames = this.activationFrames;
+        const lastLayerStart = this.activationFrames +
+            Math.max(0, this.network.layers.length - 2) * this.travelFrames;
+        const lastEdgeEnd = this.activationFrames +
+            Math.max(0, this.network.layers.length - 2) * this.travelFrames +
+            this.edgeFrames;
+        const lastLayerEnd = lastLayerStart + this.travelFrames +
+            this.holdFrames + this.fadeOutFrames;
+        this.cycleFrames = Math.max(1,
+            Math.max(lastEdgeEnd, lastLayerEnd) + frames(this.pauseDuration));
+    }
+
+    showActivatedLayer(layer, age, fadeInFrames) {
+        const visibleFrames = fadeInFrames + this.holdFrames +
+            this.fadeOutFrames;
+        if (age < 0 || age > visibleFrames)
+            return;
+
+        let alpha;
+        if (age < fadeInFrames) {
+            alpha = 255 * age / Math.max(1, fadeInFrames);
+        } else if (age <= fadeInFrames + this.holdFrames) {
+            alpha = 255;
+        } else {
+            alpha = 255 * (1 - (age - fadeInFrames - this.holdFrames) /
+                Math.max(1, this.fadeOutFrames));
+        }
+        const color = this.positiveColor;
+        for (let neuron of this.network.neurons[layer]) {
+            this.s.push();
+            this.s.stroke(color[0], color[1], color[2], alpha);
+            this.s.strokeWeight(4);
+            this.s.fill(24, 100, 96, alpha * 0.72);
+            this.s.ellipse(neuron.x, neuron.y,
+                this.network.radius, this.network.radius);
+            this.s.pop();
+        }
+    }
+
+    showMovingEdges(layer, progress) {
+        if (progress < 0 || progress > 1)
+            return;
+
+        // A short packet grows onto each edge, travels right, then leaves it.
+        const head = Math.min(1, progress * 1.5);
+        const tail = Math.max(0, progress * 1.5 - 0.5);
+        for (let from = 0; from < this.network.layers[layer]; from++) {
+            const source = this.network.neurons[layer][from];
+            for (let to = 0; to < this.network.layers[layer + 1]; to++) {
+                const target = this.network.neurons[layer + 1][to];
+                const weight = this.network.weights[layer][from][to];
+                const color = weight >= 0 ? this.positiveColor : this.negativeColor;
+                const intensity = 0.45 + Math.abs(weight) * 0.55;
+
+                this.s.push();
+                this.s.stroke(color[0], color[1], color[2],
+                    this.edgeAlpha * intensity);
+                this.s.strokeWeight(this.strokeweight * intensity);
+                this.s.strokeCap(this.s.ROUND);
+                this.s.line(
+                    source.x + (target.x - source.x) * tail,
+                    source.y + (target.y - source.y) * tail,
+                    source.x + (target.x - source.x) * head,
+                    source.y + (target.y - source.y) * head
+                );
+                this.s.pop();
+            }
+        }
+    }
+
+    show() {
+        if (this.s.frameCount < this.start)
+            return;
+
+        const cycleFrame = (this.s.frameCount - this.start) % this.cycleFrames;
+        // Draw every animated edge first so activated neurons remain on top.
+        for (let layer = 0; layer < this.network.layers.length - 1; layer++) {
+            const edgeStart = this.activationFrames + layer * this.travelFrames;
+            const edgeProgress = (cycleFrame - edgeStart) /
+                Math.max(1, this.edgeFrames);
+            this.showMovingEdges(layer, edgeProgress);
+        }
+        for (let layer = 0; layer < this.network.layers.length; layer++) {
+            const layerStart = layer === 0 ? 0 : this.activationFrames +
+                (layer - 1) * this.travelFrames;
+            const fadeInFrames = layer === 0 ? this.activationFrames :
+                this.travelFrames;
+            this.showActivatedLayer(layer, cycleFrame - layerStart,
+                fadeInFrames);
+        }
+    }
+}
+
+function animateFeedforward(ctx, args) {
+    return new Feedforward(ctx, args);
+}
+
+/**
  * A constant-width backpropagation edge that wipes away from its right-hand
  * source toward its left-hand target.
  */
@@ -578,20 +704,27 @@ class RotatingRewardCube {
         this.size = args.size || 27;
         this.strokeweight = args.strokeweight || 2;
         this.start = args.start || 0;
+        this.end = args.end === undefined ? Infinity : args.end;
         this.wiggleAmplitude = args.wiggleAmplitude === undefined ? 6 : args.wiggleAmplitude;
         this.wigglePeriod = args.wigglePeriod || 2.4;
         this.entryTimer = new Timer1(frames(args.entryDuration || 0.7));
+        this.exitDuration = frames(args.exitDuration || 0.7);
+        this.exitTimer = new Timer1(this.exitDuration);
         this.bufferSize = this.size * 3;
         this.g = this.s.createGraphics(this.bufferSize, this.bufferSize, this.s.WEBGL);
         this.g.pixelDensity(1);
     }
 
     show() {
-        if (this.s.frameCount <= this.start)
+        if (this.s.frameCount <= this.start ||
+            this.s.frameCount >= this.end + this.exitDuration)
             return;
 
         const elapsed = this.s.frameCount - this.start;
-        const scale = this.s.constrain(this.entryTimer.advance(), 0, 1);
+        const entryScale = this.s.constrain(this.entryTimer.advance(), 0, 1);
+        const exitScale = this.s.frameCount >= this.end ?
+            1 - this.s.constrain(this.exitTimer.advance(), 0, 1) : 1;
+        const scale = entryScale * exitScale;
         const displayY = this.y + this.wiggleAmplitude * Math.sin(
             this.s.TWO_PI * elapsed / frames(this.wigglePeriod)
         );
